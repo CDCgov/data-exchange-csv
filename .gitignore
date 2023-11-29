@@ -1,0 +1,5 @@
+# Default ignored files
+/shelf/
+/workspace.xml
+/fns-csv-pipeline//csv-structure-validation/target
+/spikes/csv-structure-validation-function-app/target
