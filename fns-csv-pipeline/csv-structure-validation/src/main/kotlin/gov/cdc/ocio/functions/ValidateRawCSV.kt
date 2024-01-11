@@ -6,8 +6,11 @@ import com.microsoft.azure.functions.HttpResponseMessage
 import com.microsoft.azure.functions.HttpStatus
 import com.opencsv.CSVParserBuilder
 import com.opencsv.CSVReaderBuilder
+import com.opencsv.enums.CSVReaderNullFieldIndicator
+import com.opencsv.validators.RowMustHaveSameNumberOfColumnsAsFirstRowValidator
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.StringReader
+
 
 class ValidateRawCSV {
     fun run(request: HttpRequestMessage<String>, context: ExecutionContext): HttpResponseMessage {
@@ -28,10 +31,20 @@ class ValidateRawCSV {
     fun isValidCSVStructure(csvContent: String): Boolean {
         try {
             StringReader(csvContent).use {
-                stringReader ->
+                    stringReader ->
                 val csvParser = CSVParserBuilder().withSeparator(',').build()
-                val csvReader = CSVReaderBuilder(stringReader).withCSVParser(csvParser).build()
-                val headers = csvReader.readNext() ?: return false
+                val rowValidator = RowMustHaveSameNumberOfColumnsAsFirstRowValidator();
+                val csvReader = CSVReaderBuilder(stringReader)
+                    .withCSVParser(csvParser)
+                    .withFieldAsNull(CSVReaderNullFieldIndicator.BOTH)
+                    .withKeepCarriageReturn(true)
+                    .withRowValidator(rowValidator)
+                    .build()
+
+                var line: Array<String?>?
+                while (csvReader.readNext().also { line = it } != null) {
+                    continue
+                }
                 return true
             }
         } catch(e: Exception) {
