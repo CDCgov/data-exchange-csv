@@ -1,0 +1,200 @@
+openapi: 3.0.1
+info:
+  title: CSV Structure Validation API
+  description: |
+    Swagger definition of the Data Exchange (DEX) CSV Validation API.
+    ## Overview
+    ### What it does:
+    -  Standardized CSV Validations of Single File
+    ### What it doesn’t do:
+    -  Advanced Query Options
+    -  Validation of multiple fragments
+    
+    ## Functionality
+    The csv validation API validates teh structure of the csv using OPEN CSV library.
+  version: 1.0.0
+servers:
+  - url: 'https://ocio-ede-dev-csv-structure-validation-api.azurewebsites.net/api/status/health'
+    description: Development server
+  - url: 'https://api.cdc.gov/processingstatus'
+    description: Production server
+tags:
+  - name: CSV Validation
+    description: CDC Data Exchange CSV
+    externalDocs:
+      description: Find out more
+      url: 'https://github.com/CDCgov/data-exchange-csv'
+  - name: Health
+    description: Health endpoint
+security:
+  - bearerAuth: []
+paths:
+  '/validateRawCsv':
+    post:
+      tags:
+        - DEX CSV Validation
+      summary: Validates raw CSV.
+      description: >-
+        It validates the raw format of CSV file.
+      requestBody:
+        description: >-
+          The raw csv file is sent in the body of the request. 
+          If the body content is null or empty, 
+            the request returns CSV data not provided.
+          Else,
+            the api validates and return the status back in response.
+        required: false
+        content:
+          application/text:
+            schema:
+              $ref: '#/components/schemas/Tags'
+      responses:
+        '200':
+          description: Http response OK. CSV structure valid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateTrace'
+        '400':
+          description: Http response Bad request.  CSV structure is invalid or CSV Data not provided.
+        '401':
+          description: Authorization information is missing or invalid.
+  '/validateMultiPartCsvUpload':
+    post:
+      tags:
+        - DEX CSV Validation for multipart file.
+      summary: Validates raw CSV.
+      description: >-
+        It validates the raw format of CSV file.
+      requestBody:
+        description: >-
+          The raw csv file is sent in the body of the request. 
+          If the body content is null or empty, 
+            the request returns CSV data not provided.
+          Else,
+            the api validates and return the status back in response.
+        required: false
+        content:
+          application/text:
+            schema:
+              $ref: '#/components/schemas/Tags'
+      responses:
+        '200':
+          description: Http response OK . CSV structure valid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateTrace'
+        '400':
+          description: Http response - Bad request.  CSV Data not provided.
+        '401':
+          description: Authorization information is missing or invalid.
+  '/health':
+    get:
+      tags:
+        - Health
+      summary: Gets the health status of the service.
+      description: >-
+        Retrieves the health status of the service.
+      responses:
+        '200':
+          description: Health status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                    format: date
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+  schemas:
+    GetTrace:
+      type: object
+      properties:
+        trace_id:
+          type: string
+        span_id:
+          type: string
+        upload_id:
+          type: string
+          format: uuid
+        timesteamp:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum: [running, completed]
+        elapsed:
+          type: number
+          description: length of time in microseconds the stage ran or has run if status is in_progress
+          example: 765024
+        destination_id:
+          type: string
+        event_type:
+          type: string
+        metadata:
+          type: array
+          items:
+            type: object
+            properties:
+              key:
+                type: string
+              value:
+                oneOf:
+                  - type: string
+                  - type: integer
+    Tags:
+      type: array
+      items:
+        type: object
+        properties:
+          key:
+            type: string
+          value:
+            type: string
+    Summary:
+      type: object
+      properties:
+        total_issues:
+          type: integer
+          description: TODO
+          example: 2
+        warnings:
+          type: integer
+          description: TODO
+          example: 1
+        errors:
+          type: integer
+          description: TODO
+          example: 1
+        issue_types:
+          $ref: '#/components/schemas/HL7IssueTypes'
+    PageSummary:
+      type: object
+      properties:
+        page_number:
+          type: integer
+          example: 1
+        number_of_pages:
+          type: integer
+          example: 8
+        page_size:
+          type: integer
+          example: 20
+        total_items:
+          type: integer
+          example: 157
+    KeyValuePair:
+      type: object
+      properties:
+        key:
+          type: string
+        value:
+          oneOf:
+          - type: string
+          - type: number

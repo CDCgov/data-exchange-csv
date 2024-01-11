@@ -1,6 +1,8 @@
 # Build output
 target/
 *.class
+.gradle
+build
 
 # Log file
 *.log
@@ -38,3 +40,5 @@ src/main/java/local.settings.json
 src/main/kotlin/local.settings.json
 bin/
 obj/
+
+.gradle
