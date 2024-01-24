@@ -1,0 +1,117 @@
+{
+	"info": {
+		"_postman_id": "fd9a9b89-8a81-4aa6-8508-9a7099e00aad",
+		"name": "CSV Structure Validation",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "32549016",
+		"_collection_link": "https://warped-rocket-914985.postman.co/workspace/CDC-DEX~4809cae3-fa77-4dd8-bfdd-f884e393798e/collection/32549016-fd9a9b89-8a81-4aa6-8508-9a7099e00aad?action=share&source=collection_link&creator=32549016"
+	},
+	"item": [
+		{
+			"name": "HealthCheckStatus",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://ocio-ede-dev-csv-structure-validation-api.azurewebsites.net/api/status/health?",
+					"protocol": "https",
+					"host": [
+						"ocio-ede-dev-csv-structure-validation-api",
+						"azurewebsites",
+						"net"
+					],
+					"path": [
+						"api",
+						"status",
+						"health"
+					],
+					"query": [
+						{
+							"key": "",
+							"value": null
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "ValidateRawCsv - Invalid Case",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "Index,Account Id,Lead Owner,First Name,Last Name,Company,Phone 1,Phone 2,Email,Website,Notes\r\n1,\r\n15a39d5cDE6CBb6,Bill Butler,Melvin,Orozco,\r\n\"Peck, Olsen and Cobb\",\r\n498-650-7488x407,\r\n001-088-191-4759,neil80@kane.org,https: //juarez-baxter.org/,Including law first this realize president assume.\r\n2,B5ABd4CEbfdeb00,Cole Austin,Tommy,Russo,Murphy-Walter,\r\n611.784.3902,+1-878-547-4892,aedwards@hale.com,http: //bush.info/,Member court really talk.\r\n3,D97FA45A0a7Fdb2,Tim Rogers,Sophia,Wiggins,Kelley-Garrison,\r\n001-298-342-4708,(408)595-9294x7938,haley41@montes.com,http: //webb-gould.com/,Instead peace training fast site degree loss.\r\n4,A039bE54aEFDbEF,Gail Reyes,Debbie,Wiggins,Figueroa-Galvan,\r\n554-760-6490x8764,\r\n409.799.6319,oponce@galloway.com,http: //www.scott.com/,Civil usually player policy.\r\n5,fAFF4D8ea4Dd942,Kim Gibson,Leonard,Hampton,Steele-Shepard,\r\n001-530-066-8880x32319,+1-417-204-0238x2593,schmidtdaisy@vaughan-cardenas.com,http: //vargas.com/,Price contain can free set simple.\r\n6,\r\n7C98b7d0Fc406Ec,Roberta Perez,Marc,Miles,Christian Inc,\r\n637-181-0221x524,\r\n001-927-632-9530x7776,phelpsmarisa@braun.com,https: //www.ware.com/,Clear out mean bad serious democratic.\r\n7,A3Ba161Db2aDF87,Sherry Rich,Mckenzie,Reynolds,\r\n\"Jackson, Hull and Murphy\",\r\n751.958.5786x42138,\r\n361.880.9310,ishaw@andrade-stokes.com,http: //www.cunningham-james.com/,Hot drug now.\r\n8,f4D4e518F0C16bf,Jeff Nunez,Casey,Mckinney,Norton and Sons,\r\n001-225-264-9663,\r\n534-114-1015,princesheri@delacruz.com,https: //www.winters-sampson.org/,Election apply fall lead suggest long speech.\r\n9,AEcC0aE614eeDE4,Ray Allison,Bailey,Andrade,\r\n\"Yates, Santana and Holder\",(122)606-3170,\r\n944.118.0395x496,erin46@curry-rosario.com,https: //www.lee.com/,Sing town nothing any.\r\n10,d9DC7cECc95A2De,Caroline Cantrell,Emily,Jacobson,Moody-Webster,+1-197-454-1612,\r\n001-888-164-1877x98139,ojordan@reid.net,https: //juarez-caldwell.com/,Book foreign animal she news.\r\n11,D16F0B9Ea101ab9,Matthew Fuentes,Jermaine,Watson,Barry-Duffy,\r\n427.160.6598x841,(920)870-1076x349,erikapham@hendricks.com,https: //www.brady.com/,Value quite case last great arrive remain.\r\n12,EB1ce9bEF116F3f,Elizabeth Roman,Sonia,Allen,\r\n\"Porter, Davis and Schultz\",\r\n624-545-8747x226,(084)414-1294,ethomas@lucas-pineda.com,http: //bryan-sanchez.com/,Forward set whole hospital myself create trade.\r\n13,FcBC3bE5aabf37f,Meagan Munoz,Charlene,Cabrera,\r\n\"Floyd, Mclean and Barton\",+1-821-078-3132x5920,\r\n870.992.0167x00183,billy63@keller.com,https: //www.bush.com/,Face support like final just show various.\r\n14,a8272EA2dcdffB1,Crystal Goodwin,Renee,Marshall,Dean-Nelson,+1-126-897-9022x337,\r\n001-065-771-5890x5462,stuartbonilla@austin.com,http: //www.oconnor-floyd.com/,Open despite apply simple each.",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://ocio-ede-dev-csv-structure-validation-api.azurewebsites.net/api/validateRawCsv?code=ufmgNNiwBJcyMeD_CGEf7LIxmhpWwwc5-WiDxlBxu69LAzFubEbevw==",
+					"protocol": "https",
+					"host": [
+						"ocio-ede-dev-csv-structure-validation-api",
+						"azurewebsites",
+						"net"
+					],
+					"path": [
+						"api",
+						"validateRawCsv"
+					],
+					"query": [
+						{
+							"key": "code",
+							"value": "ufmgNNiwBJcyMeD_CGEf7LIxmhpWwwc5-WiDxlBxu69LAzFubEbevw=="
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "ValidateRawCsv - Valid Case",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "Index,Account Id,Lead Owner,First Name,Last Name,Company,Phone 1,Phone 2,Email,Website,Notes\r\n1,23,Ram Hello, trea Kth, TyrH Kjg, TYJG, 786-272-3739,908-263-7856X6283,yuu@ghj.com,https:\\/\\/www.abc.com, wwqwqw\r\n2,15a39d5cDE6CBb6,Bill Butler,Melvin, Orozco,\"Peck, Olsen and Cobb\",498-650-7488x407,001-088-191-4759,neil80@kane.org,https:\\/\\/juarez-baxter.org\\/,Including law first this realize president assume",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://ocio-ede-dev-csv-structure-validation-api.azurewebsites.net/api/validateRawCsv?code=ufmgNNiwBJcyMeD_CGEf7LIxmhpWwwc5-WiDxlBxu69LAzFubEbevw==",
+					"protocol": "https",
+					"host": [
+						"ocio-ede-dev-csv-structure-validation-api",
+						"azurewebsites",
+						"net"
+					],
+					"path": [
+						"api",
+						"validateRawCsv"
+					],
+					"query": [
+						{
+							"key": "code",
+							"value": "ufmgNNiwBJcyMeD_CGEf7LIxmhpWwwc5-WiDxlBxu69LAzFubEbevw=="
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
