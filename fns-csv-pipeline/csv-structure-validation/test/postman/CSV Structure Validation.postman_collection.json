@@ -38,26 +38,6 @@
 				"disableBodyPruning": true
 			},
 			"request": {
-				"auth": {
-					"type": "apikey",
-					"apikey": [
-						{
-							"key": "value",
-							"value": "ufmgNNiwBJcyMeD_CGEf7LIxmhpWwwc5-WiDxlBxu69LAzFubEbevw==",
-							"type": "string"
-						},
-						{
-							"key": "key",
-							"value": "code",
-							"type": "string"
-						},
-						{
-							"key": "in",
-							"value": "query",
-							"type": "string"
-						}
-					]
-				},
 				"method": "GET",
 				"header": [
 					{
@@ -94,26 +74,6 @@
 				"disableBodyPruning": true
 			},
 			"request": {
-				"auth": {
-					"type": "apikey",
-					"apikey": [
-						{
-							"key": "value",
-							"value": "ufmgNNiwBJcyMeD_CGEf7LIxmhpWwwc5-WiDxlBxu69LAzFubEbevw==",
-							"type": "string"
-						},
-						{
-							"key": "key",
-							"value": "code",
-							"type": "string"
-						},
-						{
-							"key": "in",
-							"value": "query",
-							"type": "string"
-						}
-					]
-				},
 				"method": "GET",
 				"header": [],
 				"body": {
