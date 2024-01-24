@@ -72,4 +72,7 @@ azurefunctions {
     runtime {
       os = 'linux'
     }
+    auth {
+        type = 'azure_cli'
+    }
 }

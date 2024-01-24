@@ -28,7 +28,7 @@ public class FunctionKotlinWrappers {
             name = "req",
             methods = [HttpMethod.GET, HttpMethod.POST],
             route = "validateRawCsv",
-            authLevel = AuthorizationLevel.FUNCTION
+            authLevel = AuthorizationLevel.ANONYMOUS
         ) request: HttpRequestMessage<String>,
         context: ExecutionContext
     ) : HttpResponseMessage {
@@ -41,7 +41,7 @@ public class FunctionKotlinWrappers {
                     name = "req",
                     methods = [HttpMethod.POST],
                     route = "validateMultiPartCSVUpload",
-                    authLevel = AuthorizationLevel.FUNCTION
+                    authLevel = AuthorizationLevel.ANONYMOUS
             ) request: HttpRequestMessage<Optional<String>>,
             context: ExecutionContext
     ) : HttpResponseMessage {
