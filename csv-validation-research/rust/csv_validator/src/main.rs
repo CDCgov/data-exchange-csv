@@ -6,13 +6,13 @@ use std::time::Instant;
 
 fn main() -> Result<(), Box<dyn Error>> {
   
-        read_csv("data/file-with-headers-100-rows.csv")
+        read_csv("data/file-with-headers-100000-rows.csv")
     
 }
 
 fn read_csv<P: AsRef<Path> + Copy>(csv_filename: P) -> Result<(), Box<dyn Error>>{
     let start_time = Instant::now();
-    for _ in 0..100 {
+    for _ in 0..5000 {
         let file = File::open(csv_filename)?;
         let mut rdr: csv::Reader<File> = csv::Reader::from_reader(file);
 
