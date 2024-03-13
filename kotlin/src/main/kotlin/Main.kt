@@ -73,8 +73,6 @@ class CSVValidator {
                 .withKeepCarriageReturn(true)
                 .build()
 
-            println (builder.keepCarriageReturns())
-
             var record: Array<String>?
             while (builder.readNext().also {record=it} !=null){
                 val row = record?.joinToString(",")
@@ -165,57 +163,76 @@ class CSVValidator {
         }
         val totalTime= ChronoUnit.MILLIS.between(startTime,endTime)
         println ("Total processing time $filename took  in milliseconds: $totalTime")
-
-
     }
 
     fun  deepHavenCSVParser(filename: String) {
-        val inputStream = object {}.javaClass.getResourceAsStream(filename)
-        val specs = CsvSpecs.builder()
-            .ignoreEmptyLines(false)
-            .hasHeaderRow(true)
-            .ignoreSurroundingSpaces(false)
-            .delimiter(',')
-            .build()
+        val startTime = LocalDateTime.now()
+        val endTime: LocalDateTime?
+        try {
+            val inputStream = object {}.javaClass.getResourceAsStream(filename)
+            val specs = CsvSpecs.builder()
+                .ignoreEmptyLines(false)
+                .hasHeaderRow(true)
+                .ignoreSurroundingSpaces(false)
+                .delimiter(',')
+                .build()
 
-        val result = CsvReader.read(specs,inputStream, SinkFactory.arrays())
+            val result = CsvReader.read(specs, inputStream, SinkFactory.arrays())
 
 
-        val numOfRows = result.numRows()
-        println (numOfRows)
+            //val numOfRows = result.numRows() //returns number of rows
 
-        for (col in result){
-            println ("The data type for ${col.name()} is ${col.dataType()}")
-            if (col.data() is Array<*>){
-                println ("Column: ${col.name()} fields:")
-                for (element in col.data() as Array<*>){
-                    println (element)
-                }
-            }else if (col.data() is IntArray){
-                println ("Column: ${col.name()} fields:")
-                for (element in col.data() as IntArray){
-                    println (element)
-                }
-            }else if (col.data() is StringArray){
-                for (element in col.data() as String){
-                    println (element)
+            for (col in result) {
+                println("The data type for ${col.name()} is ${col.dataType()}")
+                if (col.data() is Array<*>) {
+                    println("Column: ${col.name()} fields:")
+                    for (element in col.data() as Array<*>) {
+                        println(element)
+                    }
+                } else if (col.data() is IntArray) {
+                    println("Column: ${col.name()} fields:")
+                    for (element in col.data() as IntArray) {
+                        println(element)
+                    }
+                } else if (col.data() is StringArray) {
+                    for (element in col.data() as String) {
+                        println(element)
+                    }
                 }
             }
-
+        }catch(e: Exception){
+            e.printStackTrace()
+        }   finally {
+            endTime = LocalDateTime.now()
         }
-
+        val totalTime= ChronoUnit.MILLIS.between(startTime,endTime)
+        println ("Total processing time $filename took  in milliseconds: $totalTime")
     }
-
-
 }
 
 
 
 fun main(){
-    val validate = CSVValidator()
+    /*
+    to run with the profiler, you can surround each function logic with outer
+    for loop with number of iterations, then
     val startTime = LocalDateTime.now()
+    val validate = CSVValidator()
+    validate.validateWithOpenCSV("file-with-headers-100-rows.csv")
     val endTime: LocalDateTime?
+     */
+    val validate = CSVValidator()
 
     validate.validateWithOpenCSV("file-with-headers-100-rows.csv")
+    validate.univocityCSVParser("file-with-headers-100-rows.csv")
+    validate.deepHavenCSVParser("file-with-headers-100-rows.csv")
+    validate.validateWithKotlinCSV("file-with-headers-100-rows.csv")
+    validate.validateWithApacheCommons("file-with-headers-100-rows.csv")
+    validate.validateWithOpenCSV("file-with-headers-100000-rows.csv")
+    validate.univocityCSVParser("file-with-headers-100000-rows.csv")
+    validate.deepHavenCSVParser("file-with-headers-100000-rows.csv")
+    validate.validateWithKotlinCSV("file-with-headers-100000-rows.csv")
+    validate.validateWithApacheCommons("file-with-headers-100000-rows.csv")
+
 
 }
