@@ -1,0 +1,8 @@
+# Ignore compiled files and directories
+target/
+Cargo.lock
+
+# Ignore editor and IDE files
+*.swp
+.vscode/
+.idea/

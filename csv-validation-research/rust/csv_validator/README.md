@@ -4,8 +4,8 @@
 | --------------- | --------------- | --------------- |--------------- | --------------- | 
 | 100 |1880|||file-with-headers-100-rows.csv|
 | 5000|130865|||file-with-headers-100-rows.csv|
-| 100 |283355|||file-with-headers-100000-rows.csv|
-| 5000||||file-with-headers-100000-rows.csv|
+| 100 |283355|||file-with-headers-10000-rows.csv|
+| 5000||||file-with-headers-10000-rows.csv|
 
 ## How to Install Rust:
 - Download and install `Rust` from https://www.rust-lang.org/ (Note:`Cargo` Rust package manager will be installed during this step) 
