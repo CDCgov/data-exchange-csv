@@ -188,6 +188,62 @@ func TestRecordFieldsWithSpaces(t *testing.T) {
 	}
 }
 
+func TestLastFieldInRecordFollowedByComma(t *testing.T) {
+	//The last field in the record must not be followed by a comma.
+	csvData := "Name,Email\nJohn,john@example.com\nJane,jane@example.com\nAlice,alice@example.com\nBob,bob@example.com\nCharlie,charlie@example.com\nDiana,diana@example.com\nEva,eva@example.com\nFrank,frank@example.com\nGrace,grace@example.com\nHenry,henry@example.com,"
+
+	reader := csv.NewReader(strings.NewReader(csvData))
+
+	_, err := reader.ReadAll()
+
+	if err != nil {
+		expectedErrorMessage := errors.New("record on line 11: wrong number of fields")
+		fmt.Println(expectedErrorMessage)
+		fmt.Println(err.Error())
+		if err.Error() == expectedErrorMessage.Error() {
+			t.Logf("Expected error %e:", expectedErrorMessage)
+		} else {
+			t.Errorf("Unexpected error reading CSV file: %e", err)
+		}
+	}
+}
+
+func TestQuotesInFieldNotEnclosedWithDoubleQuotes(t *testing.T) {
+	//If fields are not enclosed with double quotes, then double quotes may not appear inside the fields
+	csvData := "Name,Email\nJohn,john@example.com\nJane,\"jane@example.com\"\nAlice,alice@example.com\n\"Bob\",\"bob@example.com\"\nCharlie,charlie@example.com\n\"Diana\",\"diana@example.com\"\nEva,eva@example.com\nFrank,frank@example.com\nGrace,grace@example.com\nHenry,henry@example.com"
+
+	reader := csv.NewReader(strings.NewReader(csvData))
+	reader.LazyQuotes = false
+	records, err := reader.ReadAll()
+
+	if err != nil {
+		t.Errorf("Unexpected error reading CSV file: %e", err)
+	}
+
+	expectedOutput := [][]string{
+		{"Name", "Email"},
+		{"John", "john@example.com"},
+		{"Jane", "jane@example.com"},
+		{"Alice", "alice@example.com"},
+		{"Bob", "bob@example.com"},
+		{"Charlie", "charlie@example.com"},
+		{"Diana", "diana@example.com"},
+		{"Eva", "eva@example.com"},
+		{"Frank", "frank@example.com"},
+		{"Grace", "grace@example.com"},
+		{"Henry", "henry@example.com"},
+	}
+
+	for rowIndex, record := range records {
+		for fieldIndex, field := range record {
+			if field != expectedOutput[rowIndex][fieldIndex] {
+				t.Errorf("Expected field: %s,  and actual field: %s", expectedOutput[rowIndex][fieldIndex], field)
+			}
+		}
+	}
+
+}
+
 func main() {
 
 	testing.Main(nil, nil, nil, nil)
