@@ -20,7 +20,7 @@ func main() {
 	totalStartTime := time.Now()
 
 	for i := 0; i < 100; i++ {
-		f, err := os.Open("data/file-with-headers-100000-rows.csv")
+		f, err := os.Open("data/file-with-headers-10000-rows.csv")
 		if err != nil {
 			fmt.Println("Error:", err)
 		}
@@ -75,6 +75,7 @@ func writeMemoryProfile(filename string) {
 	if err != nil {
 		log.Fatal("could not create memory profile: ", err)
 	}
+	defer f.Close()
 	runtime.GC() // get up-to-date statistics
 	if err := pprof.WriteHeapProfile(f); err != nil {
 		log.Fatal("could not write memory profile: ", err)

@@ -4,8 +4,8 @@
 | --------------- | --------------- | --------------- |--------------- | --------------- | 
 | 100 |26|NA|1.16|file-with-headers-100-rows.csv|
 | 5000|706|710|3.66|file-with-headers-100-rows.csv|
-| 100 |628|410|1.15|file-with-headers-100000-rows.csv|
-| 5000|31992|29040|6.6|file-with-headers-100000-rows.csv|
+| 100 |628|410|1.15|file-with-headers-10000-rows.csv|
+| 5000|31992|29040|6.6|file-with-headers-10000-rows.csv|
 
 
 ## To generate and view Profiling metrics with pprof:
