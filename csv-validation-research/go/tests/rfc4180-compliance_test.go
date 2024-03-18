@@ -153,6 +153,41 @@ func TestRecordWithDifferentNumberOfFields(t *testing.T) {
 
 }
 
+func TestRecordFieldsWithSpaces(t *testing.T) {
+	//Spaces are considered part of a field and should not be ignored.
+	csvData := "Name,Email\nJohn,john@example.com    \nJane    ,jane@example.com\nAlice,alice@example.com\nBob,bob@example.com\nCharlie,charlie@example.com\nDiana,diana@example.com       \nEva,eva@example.com\nFrank,frank@example.com\nGrace,grace@example.com\nHenry    ,henry@example.com"
+
+	reader := csv.NewReader(strings.NewReader(csvData))
+
+	records, err := reader.ReadAll()
+
+	if err != nil {
+		t.Errorf("Unexpected error reading CSV file: %e", err)
+	}
+
+	expectedOutput := [][]string{
+		{"Name", "Email"},
+		{"John", "john@example.com    "},
+		{"Jane    ", "jane@example.com"},
+		{"Alice", "alice@example.com"},
+		{"Bob", "bob@example.com"},
+		{"Charlie", "charlie@example.com"},
+		{"Diana", "diana@example.com       "},
+		{"Eva", "eva@example.com"},
+		{"Frank", "frank@example.com"},
+		{"Grace", "grace@example.com"},
+		{"Henry    ", "henry@example.com"},
+	}
+
+	for rowIndex, record := range records {
+		for fieldIndex, field := range record {
+			if field != expectedOutput[rowIndex][fieldIndex] {
+				t.Errorf("Expected field: %s,  and actual field: %s", expectedOutput[rowIndex][fieldIndex], field)
+			}
+		}
+	}
+}
+
 func main() {
 
 	testing.Main(nil, nil, nil, nil)
