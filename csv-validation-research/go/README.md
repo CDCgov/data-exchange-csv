@@ -12,3 +12,13 @@
 - run the Go code that will create cpu.pprof and memory.pprof files
 - using terminal run 'go tool pprof cpu.pprof or memory.pprof' that will start interactive shell with pprof.
 - type 'help' to see a list of available commands.
+
+## Unit Tests created for Compliance with RFC4180
+We have conducted an analysis to ensure that the Go CSV package complies fully with the RFC4180 standards for CSV files. Through a suite of unit tests, we have verified that the Go CSV package adheres to the guidelines outlined in RFC4180.
+ 
+
+### Running Unit Tests:
+1. Clone the repository to your local machine.
+2. Navigate to the root project directory.
+3. run `go test .\tests`
+
