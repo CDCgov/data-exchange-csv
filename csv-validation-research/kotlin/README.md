@@ -30,3 +30,7 @@
 |Each record is located on a separate line, delimited by a line break (CR)|"Name,Email\rJane Doe,johndoe@example.com"|Yes|
 |Each record is located on a separate line, delimited by a line break (LF)|"Name,Email\nJane Doe,johndoe@example.com"|Yes|
 |Each record is located on a separate line, delimited by a line break (CRLF)|"Name,Email\r\nJane Doe,johndoe@example.com"|Yes|
+|Within the header and within each record, there may be one or more fields, separated by commas|"Name,Email\rJane Doe,johndoe@example.com"|Yes|
+|Each record should contain the same number of fields throughout the file|"Name,Email\nJane Doe,johndoe@example.com"|No|
+|Spaces are considered part of a field and should not be ignored|"Name,Email\r\nJane       Doe,johndoe@example.com"|Yes|
+|The last field in the record must not be followed by a comma|"Name,Email\r\nJaneDoe,johndoe@example.com,"|No|

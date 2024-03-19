@@ -1,7 +1,10 @@
+import com.opencsv.CSVParserBuilder
 import com.opencsv.CSVReader
+import com.opencsv.CSVReaderBuilder
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import java.io.StringReader
+import java.util.*
 
 class OpenCsvRfc4180ComplianceTest {
 
@@ -114,11 +117,65 @@ class OpenCsvRfc4180ComplianceTest {
     }
     @Test
     fun recordFieldsWithSpaces(){
-        //
+        //Spaces are considered part of a field and should not be ignored.
+        val csvData = "Name,Email\nJohn,john@example.com    \nJane    ,jane@example.com\nAlice,alice@example.com\nBob,bob@example.com\nCharlie,charlie@example.com\nDiana,diana@example.com       \nEva,eva@example.com\nFrank,frank@example.com\nGrace,grace@example.com\nHenry    ,henry@example.com"
+
+        // Create StringReader
+        val reader = StringReader(csvData)
+
+        val parsedData = mutableListOf<String>()
+
+        val csvParserBuilder = CSVParserBuilder()
+            .withSeparator(',')
+            .withQuoteChar('"')
+            .withIgnoreLeadingWhiteSpace(false)
+            .withIgnoreQuotations(false)
+            .withEscapeChar('\r')
+
+            .build()
+        val builder = CSVReaderBuilder(reader)
+            .withCSVParser(csvParserBuilder)
+            .withErrorLocale(Locale.US)
+            .withKeepCarriageReturn(true)
+            .build()
+
+        var record: Array<String>?
+        while (builder.readNext().also {record=it} !=null){
+            val row = record?.joinToString(",")
+            println (row)
+            if (row != null) {
+                parsedData.add(row)
+            }
+        }
+        builder.close()
+
+        val expectedOutput = mutableListOf<String>()
+        expectedOutput.add("Name,Email")
+        expectedOutput.add("John,john@example.com    ")
+        expectedOutput.add("Jane    ,jane@example.com")
+        expectedOutput.add("Alice,alice@example.com")
+        expectedOutput.add("Bob,bob@example.com")
+        expectedOutput.add("Charlie,charlie@example.com")
+        expectedOutput.add("Diana,diana@example.com       ")
+        expectedOutput.add("Eva,eva@example.com")
+        expectedOutput.add("Frank,frank@example.com")
+        expectedOutput.add("Grace,grace@example.com")
+        expectedOutput.add("Henry    ,henry@example.com")
+
+        assertEquals(expectedOutput, parsedData, "Unexpected $parsedData")
     }
     @Test
     fun lastFieldInRecordFollowedByComma(){
-        //
+        //The last field in the record must not be followed by a comma.
+        // DOES NOT THROW ERROR WHEN file ends with ','
+        val csvData = "Name,Email\nJohn,john@example.com\nJane,jane@example.com\nAlice\nBob,bob@example.com\nCharlie\nDiana,diana@example.com\nEva,eva@example.com\nFrank,frank@example.com\nGrace,grace@example.com\nHenry,henry@example.com,"
+
+        // Create string  reader
+        val reader = StringReader(csvData)
+        // Create csv  reader
+        val csvReader = CSVReader(reader)
+
+        println (csvReader)
     }
     @Test
     fun quotesInFieldNotEnclosedWithDoubleQuotes(){
