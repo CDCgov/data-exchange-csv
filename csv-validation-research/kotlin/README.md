@@ -1,9 +1,11 @@
+# CSV Parsing Performance Metrics
+
 | **Library**       | **Number of executions** | **Total Time(MS)** | **Total CPU Time(MS)** | **Memory Allocation** | **Filename** | **Source** |
 |-------------------|--------------------------|---------------------|------------------------|---------------------------|--------------|-----------------|
-| **OpenCSV**      | 100|98|144|34.75MB|file-with-headers-100-rows.csv|https://opencsv.sourceforge.net/|
-| **Apache Commons**| 100|104|44|35.76MB|file-with-headers-100-rows.csv|https://commons.apache.org/proper/commons-csv/|
-| **Deephaven**     | 100|NA|NA|NA|NA|https://github.com/deephaven/deephaven-csv|
-| **Univocity Parser**|100|292|276|226.4MB|file-with-headers-100-rows.csv|https://www.baeldung.com/java-univocity-parsers|
+| **OpenCSV**      | 100|98|144|34.75MB|file-with-headers-100-rows.csv|[OpenCSV](https://opencsv.sourceforge.net/)|
+| **Apache Commons**| 100|104|44|35.76MB|file-with-headers-100-rows.csv|[Apache Commons](https://commons.apache.org/proper/commons-csv/)|
+| **Deephaven**     | 100|NA|NA|NA|NA|[DeepHaven](https://github.com/deephaven/deephaven-csv)|
+| **Univocity Parser**|100|292|276|226.4MB|file-with-headers-100-rows.csv|[Univocity Parsers](https://www.baeldung.com/java-univocity-parsers)|
 | **Kotlin-csv**    |100|158|99|31.54MB|file-with-headers-100-rows.csv||
 | **OpenCSV**      |5000|1464|1400|776.16MB|file-with-headers-100-rows.csv||
 | **Apache Commons**|5000|2651|2393|836.39MB|file-with-headers-100-rows.csv||
@@ -20,3 +22,11 @@
 | **Deephaven**     |5000|NA|NA|NA|file-with-headers-10000-rows.csv||
 | **Univocity Parser**|5000|53316|45934|59.45GB|file-with-headers-10000-rows.csv||
 | **Kotlin-csv**    |5000|279743|356336|138.72GB|file-with-headers-10000-rows.csv||
+
+
+# OpenCSV RFC-4180 Compliance Results
+| Rule | Example | Compliant (Yes/No) |
+|------|---------|--------------------|
+|Each record is located on a separate line, delimited by a line break (CR)|"Name,Email\rJane Doe,johndoe@example.com"|Yes|
+|Each record is located on a separate line, delimited by a line break (LF)|"Name,Email\nJane Doe,johndoe@example.com"|Yes|
+|Each record is located on a separate line, delimited by a line break (CRLF)|"Name,Email\r\nJane Doe,johndoe@example.com"|Yes|
