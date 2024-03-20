@@ -34,3 +34,7 @@
 |Each record should contain the same number of fields throughout the file|"Name,Email\nJane Doe,johndoe@example.com"|No|
 |Spaces are considered part of a field and should not be ignored|"Name,Email\r\nJane       Doe,johndoe@example.com"|Yes|
 |The last field in the record must not be followed by a comma|"Name,Email\r\nJaneDoe,johndoe@example.com,"|No|
+|If fields are not enclosed with double quotes, then double quotes may not appear inside the fields|"Name,Email\nJohn,john@example.com\nJane,jane@example.com\nAlice,alice@example.com"|Yes
+|If double-quotes are used to enclose fields, then a double-quote appearing inside a field must be escaped by preceding it with another double quote|"Name,Email\nJohn,john@example.com\nJane,\"jane\"\"@example.com\"\nAlice,alice@example.com"|Yes
+|Fields with line breaks inside quotes|"Name,Email\nJohn,john@example.com\nJane,\"jane   \n@example.com\"\nAlice,alice@example.com"|Yes
+|Fields with commas inside quotes|"Name,Email\nJohn,john@example.com\nJane,\"jane,@example.com\"\nAlice,alice@example.com|Yes
