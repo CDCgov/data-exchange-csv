@@ -22,3 +22,8 @@ We have conducted an analysis to ensure that the Go CSV package complies fully w
 2. Navigate to the root project directory.
 3. run `go test .\tests`
 
+### Running Benchmark:
+1. Clone the repository to your local machine
+2. Navigate to the root project directory
+3. Run `cd tests`
+4. Run `go test -bench=.`
