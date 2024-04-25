@@ -36,13 +36,17 @@ class CSVValidator {
         try {
             val resourceURL = object {}.javaClass.getResource(filename)
             val file: File? = resourceURL?.toURI()?.let { File(it) }
-
+            val rows = mutableListOf<Map<Int, String>>()
             if (file != null) {
                 csvReader().open(file) {
                     readAllAsSequence().forEach { row: List<String> ->
+                        val rowObject = mutableMapOf<Int,String>()
+                        var i =0
                         for (field in row){
-                            val f = field
+                            rowObject[i] = field
+                            i +=1
                         }
+                        rows.add(rowObject)
                     }
                 }
             }
@@ -64,12 +68,16 @@ class CSVValidator {
             val builder = CSVReaderBuilder(inputStream?.let { InputStreamReader(it) })
                 .withCSVParser(csvParserBuilder)
                 .build()
-
+            val rows = mutableListOf<Map<Int, String>>()
             var record: Array<String>?
             while (builder.readNext().also {record=it} !=null){
-                for (row in record!!){
-                    val field = row
+                val row = mutableMapOf<Int,String>()
+                var i = 0
+                for (field in record!!){
+                    row[i] =field
+                    i +=1
                 }
+                rows.add(row)
             }
             builder.close()
         }catch (e: Exception) {
@@ -83,12 +91,16 @@ class CSVValidator {
                 CSVValidator::class.java.getResourceAsStream("/$filename")
             val inputStreamReader = InputStreamReader(inputStream!!)
             val bufferedReader =  BufferedReader(inputStreamReader)
-
+            val rows = mutableListOf<Map<Int, String>>()
             val csvParser = CSVParser(bufferedReader,CSVFormat.RFC4180)
             for (csvRecord in csvParser){
+                val row = mutableMapOf<Int,String>()
+                var i = 0
                 for (field in csvRecord){
-                    val f = field
+                    row[i] = field
+                    i+=1
                 }
+                rows.add(row)
             }
             inputStream.close()
             inputStreamReader.close()
@@ -111,21 +123,26 @@ class CSVValidator {
 
             val inputStreamReader = InputStreamReader(inputStream!!)
             val bufferedReader = BufferedReader(inputStreamReader)
-
+            val rows = mutableListOf<Map<Int, String>>()
             parser.beginParsing(bufferedReader)
 
             var record: Array<String>?
             while (parser.parseNext()!=null){
 
                 record = arrayOf(parser.context.currentParsedContent())
+                val row = mutableMapOf<Int, String>()
                 //convert record to csv row
                 val csvRecord = record.joinToString(",")
+
+                // set index to 0
+                var i = 0
                 // get fields
                 for (field in csvRecord.split(",")){
-                    val f = field
+                    row[i] = field
+                    i +=1
                 }
+                rows.add(row)
             }
-
             // Close resources
             parser.stopParsing()
             bufferedReader.close()
@@ -168,17 +185,26 @@ class CSVValidator {
     }
 
     fun fastCSVParser(filename: String){
-
         val pathToCSV: Path? = CSVValidator::class.java.getResource("/$filename")?.toURI()?.let { Paths.get(it) }
+        val rows = mutableListOf<Map<Int, String>>()
         try {
-            val reader = FastCSVReader.builder().ofCsvRecord(pathToCSV).iterator()
-            while (reader.hasNext()) {
-                val csvRecord: CsvRecord = reader.next()
-                for (field in csvRecord.fields){
-                    val f = field
-                }
-            }
+            val reader = FastCSVReader.builder()
+                .fieldSeparator(',')
+                .quoteCharacter('"')
+                .ignoreDifferentFieldCount(false)
+                .ofCsvRecord(pathToCSV)
+                .iterator()
 
+            while (reader.hasNext()) {
+                val row = mutableMapOf<Int,String>()
+                val csvRecord: CsvRecord = reader.next()
+                var i =0
+                for (field in csvRecord.fields){
+                    row[i] = field
+                    i+=1
+                }
+                rows.add(row)
+            }
         } catch (e: Exception){
             e.printStackTrace()
         }
@@ -187,17 +213,21 @@ class CSVValidator {
     fun superCSVParser(filename: String) {
         val csvInputSteam: InputStream? = CSVValidator::class.java.getResourceAsStream("/$filename")
         val reader = csvInputSteam?.let { InputStreamReader(it) }
-        val csvReader = CsvListReader(reader, CsvPreference.STANDARD_PREFERENCE) // you can also configure with Tab
-
+        val csvReader = CsvListReader(reader, CsvPreference.STANDARD_PREFERENCE) // you can also configure with Tab, standard is CSV
+        val rows = mutableListOf<Map<Int, String>>()
         try {
 
             var rowRecord: List<String>?
             while (csvReader.read().also { rowRecord = it } != null) {
+                var i = 0
+                val row = mutableMapOf<Int,String>()
                 rowRecord?.let {
                     for (field in rowRecord!!){
-                        val f = field
+                        row[i] = field
+                        i+=1
                     }
                 }
+                rows.add(row)
             }
         } finally {
             csvReader.close()
@@ -206,19 +236,24 @@ class CSVValidator {
         }
     }
     fun jacksonCSVParser(filename: String){
-        val mapper = CsvMapper() // create mapper to provide reading or writing functionality
+        val mapper = CsvMapper()
 
         val csvFile = File("src/main/resources/$filename")
+        val rows = mutableListOf<Map<Int, String>>()
         val iter = mapper
             .readerForListOf(String::class.java)
             .with(com.fasterxml.jackson.dataformat.csv.CsvParser.Feature.WRAP_AS_ARRAY)
-            .readValues<List<String>>(csvFile)// converts each row list of strings
+            .readValues<List<String>>(csvFile)
 
         while (iter.hasNext()) {
             val row = iter.next()
+            val rowObject = mutableMapOf<Int,String>()
+            var i = 0
             for (field in row){
-                val f = field
+                rowObject[i] = field
+                i+=1
             }
+            rows.add(rowObject)
         }
     }
 }
@@ -227,14 +262,23 @@ class CSVValidator {
 fun main(){
     val startTime = LocalDateTime.now()
     val validate = CSVValidator()
-    repeat(1){
-        validate.superCSVParser("file-with-headers-100-rows.csv")
+    var totalDuration: Long =0
+    val numOfRuns = 60
+        repeat(numOfRuns){
+            val innerStartTime = LocalDateTime.now()
+            validate.validateWithKotlinCSV("file-with-headers-10000-rows.csv")
+            val innerEndTime = LocalDateTime.now()
+            totalDuration += java.time.Duration.between(innerStartTime, innerEndTime).toMillis()
     }
 
     val endTime = LocalDateTime.now()
-    val duration = java.time.Duration.between(startTime, endTime).toMillis()
 
-    println("The Total processing time: $duration milliseconds")
+    val totalProcessingTime = java.time.Duration.between(startTime, endTime).toMillis()
+    val averageDuration = totalDuration / numOfRuns
+
+
+    println("Total processing time for $numOfRuns runs: $totalProcessingTime  milliseconds")
+    println("Average processing time per run: $averageDuration milliseconds")
 
 }
 
