@@ -65,13 +65,21 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.1</version> <!-- Adjust version as needed -->
+                <configuration>
+                    <source>8</source>
+                    <target>8</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version>
                 <configuration>
                     <annotationProcessorPaths>
                         <annotationProcessorPath>
                             <groupId>org.openjdk.jmh</groupId>
                             <artifactId>jmh-generator-annprocess</artifactId>
-                            <version>1.33</version> <!-- Adjust version as needed -->
+                            <version>1.33</version>
                         </annotationProcessorPath>
                     </annotationProcessorPaths>
                     <source>8</source>
@@ -155,14 +163,9 @@
             <version>2.17.0</version>
         </dependency>
         <dependency>
-            <groupId>org.openjdk.jmh</groupId>
-            <artifactId>jmh-generator-maven-plugin</artifactId>
-            <version>0.5.2</version>
-        </dependency>
-        <dependency>
-            <groupId>org.openjdk.jmh</groupId>
-            <artifactId>jmh-core</artifactId>
-            <version>1.37</version>
+            <groupId>org.jetbrains.kotlinx</groupId>
+            <artifactId>kotlinx-benchmark-runtime-jvm</artifactId>
+            <version>0.4.10</version>
         </dependency>
     </dependencies>
 </project>

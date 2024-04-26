@@ -2,27 +2,34 @@
 
 | **Library**       | **Number of executions** | **Total Time(MS)** | **Total CPU Time(MS)** | **Memory Allocation** | **Filename** | **Source** |
 |-------------------|--------------------------|---------------------|------------------------|---------------------------|--------------|-----------------|
-| **OpenCSV**      | 100|98|144|34.75MB|file-with-headers-100-rows.csv|[OpenCSV](https://opencsv.sourceforge.net/)|
-| **Apache Commons**| 100|104|44|35.76MB|file-with-headers-100-rows.csv|[Apache Commons](https://commons.apache.org/proper/commons-csv/)|
-| **Deephaven**     | 100|NA|NA|NA|NA|[DeepHaven](https://github.com/deephaven/deephaven-csv)|
-| **Univocity Parser**|100|292|276|226.4MB|file-with-headers-100-rows.csv|[Univocity Parsers](https://www.baeldung.com/java-univocity-parsers)|
-| **Kotlin-csv**    |100|158|99|31.54MB|file-with-headers-100-rows.csv||
-| **OpenCSV**      |5000|1464|1400|776.16MB|file-with-headers-100-rows.csv||
-| **Apache Commons**|5000|2651|2393|836.39MB|file-with-headers-100-rows.csv||
-| **Deephaven**     |5000|NA|NA|NA|NA||
-| **Univocity Parser**|5000|4817|3960|11.44GB|file-with-headers-100-rows.csv||
-| **Kotlin-csv**    |5000|3496|2667|1.53GB|file-with-headers-100-rows.csv||
-| **OpenCSV**      |100|2293|2427|1.13GB|file-with-headers-10000-rows.csv||
-| **Apache Commons**|100|3666|4502|1.12GB|file-with-headers-10000-rows.csv||
-| **Deephaven**     |100|NA|NA|NA|file-with-headers-10000-rows.csv||
-| **Univocity Parser**|100|1448|1236|1.21GB|file-with-headers-10000-rows.csv||
-| **Kotlin-csv**    |100|5605|6346|2.78GB|file-with-headers-10000-rows.csv||
-| **OpenCSV**      |5000|70190|81432|57.23GB|file-with-headers-10000-rows.csv||
-| **Apache Commons**|5000|202819|191314|55.29GB|file-with-headers-10000-rows.csv||
-| **Deephaven**     |5000|NA|NA|NA|file-with-headers-10000-rows.csv||
-| **Univocity Parser**|5000|53316|45934|59.45GB|file-with-headers-10000-rows.csv||
-| **Kotlin-csv**    |5000|279743|356336|138.72GB|file-with-headers-10000-rows.csv||
-
+| **OpenCSV**      | 100|151|133|44.99MB|file-with-headers-100-rows.csv|[OpenCSV](https://opencsv.sourceforge.net/)|
+| **Apache Commons**| 100|170|156|46.91MB|file-with-headers-100-rows.csv|[Apache Commons](https://commons.apache.org/proper/commons-csv/)|
+| **Univocity Parser**|100|433|408|255.84MB|file-with-headers-100-rows.csv|[Univocity Parsers](https://www.baeldung.com/java-univocity-parsers)|
+| **Kotlin-csv**    |100|211|122|62.46MB|file-with-headers-100-rows.csv|[Kotlin CSV](https://github.com/doyaaaaaken/kotlin-csv)|
+| **FastCSV**    |100|180|120|45.08MB|file-with-headers-100-rows.csv|[Fast CSV](https://github.com/osiegmar/FastCSV)|
+| **SuperCSV**    |100|121|110|44.5MB|file-with-headers-100-rows.csv|[Super CSV](https://github.com/super-csv/super-csvj)|
+| **JacksonCSV**    |100|492|348|55.78MB|file-with-headers-100-rows.csv|[Jackson CSV](https://github.com/FasterXML/jackson-dataformats-text/tree/2.18/csv)|
+| **OpenCSV**      |5000|2392|951|1.08GB|file-with-headers-100-rows.csv|[OpenCSV](https://opencsv.sourceforge.net/)|
+| **Apache Commons**|5000|4024|2542|1.14GB|file-with-headers-100-rows.csv|[Apache Commons](https://commons.apache.org/proper/commons-csv/)|
+| **Univocity Parser**|5000|5407|2477|12.48GB|file-with-headers-100-rows.csv|[Univocity Parsers](https://www.baeldung.com/java-univocity-parsers)|
+| **Kotlin-csv**    |5000|5169|3593|1.84GB|file-with-headers-100-rows.csv|[Kotlin CSV](https://github.com/doyaaaaaken/kotlin-csv)|
+| **FastCSV**    |5000|1898|637|1.05GB|file-with-headers-100-rows.csv|[Fast CSV](https://github.com/osiegmar/FastCSV)|
+| **SuperCSV**    |5000|2671|1335|1.01GB|file-with-headers-100-rows.csv|[Super CSV](https://github.com/super-csv/super-csvj)|
+| **JacksonCSV**    |5000|2700|1232|899.72MB|file-with-headers-100-rows.csv|[Jackson CSV](https://github.com/FasterXML/jackson-dataformats-text/tree/2.18/csv)|
+| **OpenCSV**      |100|1804|1665|1.74GB|file-with-headers-10000-rows.csv|[OpenCSV](https://opencsv.sourceforge.net/)|
+| **Apache Commons**|100|5204|5084|1.72GB|file-with-headers-10000-rows.csv|[Apache Commons](https://commons.apache.org/proper/commons-csv/)|
+| **Univocity Parser**|100|1920|1732|3.13GB|file-with-headers-10000-rows.csv|[Univocity Parsers](https://www.baeldung.com/java-univocity-parsers)|
+| **Kotlin-csv**    |100|6830|6673|3.39GB|file-with-headers-10000-rows.csv|[Kotlin CSV](https://github.com/doyaaaaaken/kotlin-csv)|
+| **FastCSV**    |100|864|763|1.45GB|file-with-headers-100-rows.csv|[Fast CSV](https://github.com/osiegmar/FastCSV)|
+| **SuperCSV**    |100|2131|1984|1.62GB|file-with-headers-100-rows.csv|[Super CSV](https://github.com/super-csv/super-csvj)|
+| **JacksonCSV**    |100|1665|1496|1.45GB|file-with-headers-100-rows.csv|[Jackson CSV](https://github.com/FasterXML/jackson-dataformats-text/tree/2.18/csv)|
+| **OpenCSV**      |5000|103020|94175|86.88GB|file-with-headers-10000-rows.csv|[OpenCSV](https://opencsv.sourceforge.net/)|
+| **Apache Commons**|5000|260236|252665|84.94GB|file-with-headers-10000-rows.csv|[Apache Commons](https://commons.apache.org/proper/commons-csv/)|
+| **Univocity Parser**|5000|91813|83598|155.71GB|file-with-headers-10000-rows.csv|[Univocity Parsers](https://www.baeldung.com/java-univocity-parsers)|
+| **Kotlin-csv**    |5000|367716|360520|168.38GB|file-with-headers-10000-rows.csv|[Kotlin CSV](https://github.com/doyaaaaaken/kotlin-csv)|
+| **FastCSV**    |5000|29210|34311|7102GB|file-with-headers-100-rows.csv|[Fast CSV](https://github.com/osiegmar/FastCSV)|
+| **SuperCSV**    |5000|122951|116569|80.09GB|file-with-headers-100-rows.csv|[Super CSV](https://github.com/super-csv/super-csvj)|
+| **JacksonCSV**    |5000|75316|70233|70.3GB|file-with-headers-100-rows.csv|[Jackson CSV](https://github.com/FasterXML/jackson-dataformats-text/tree/2.18/csv)|
 
 # OpenCSV RFC-4180 Compliance Results
 | Rule | Example | Compliant (Yes/No) |
