@@ -27,7 +27,7 @@
 | **Apache Commons**|5000|260236|252665|84.94GB|file-with-headers-10000-rows.csv|[Apache Commons](https://commons.apache.org/proper/commons-csv/)|
 | **Univocity Parser**|5000|91813|83598|155.71GB|file-with-headers-10000-rows.csv|[Univocity Parsers](https://www.baeldung.com/java-univocity-parsers)|
 | **Kotlin-csv**    |5000|367716|360520|168.38GB|file-with-headers-10000-rows.csv|[Kotlin CSV](https://github.com/doyaaaaaken/kotlin-csv)|
-| **FastCSV**    |5000|29210|34311|7102GB|file-with-headers-100-rows.csv|[Fast CSV](https://github.com/osiegmar/FastCSV)|
+| **FastCSV**    |5000|29210|34311|71.02GB|file-with-headers-100-rows.csv|[Fast CSV](https://github.com/osiegmar/FastCSV)|
 | **SuperCSV**    |5000|122951|116569|80.09GB|file-with-headers-100-rows.csv|[Super CSV](https://github.com/super-csv/super-csvj)|
 | **JacksonCSV**    |5000|75316|70233|70.3GB|file-with-headers-100-rows.csv|[Jackson CSV](https://github.com/FasterXML/jackson-dataformats-text/tree/2.18/csv)|
 
