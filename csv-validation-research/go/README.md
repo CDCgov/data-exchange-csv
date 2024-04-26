@@ -25,5 +25,5 @@ We have conducted an analysis to ensure that the Go CSV package complies fully w
 ### Running Benchmark:
 1. Clone the repository to your local machine
 2. Navigate to the root project directory
-3. Run `cd tests`
-4. Run `go test -bench=.`
+3. Run `cd tests/benchmark`
+4. Run `go test -bench . -benchmem` to see results
