@@ -12,37 +12,33 @@ suite.add('Papaparse benchmark results: ', {
     defer: true, // This will defer the execution of the benchmark
     
     fn: deferred => {
-        // Measure memory usage before
-        const memoryBefore = process.memoryUsage().heapUsed;
-
         fileSystem.readFile(csvFilePath, 'utf8', (err, data) => {
             if (err) {
                 console.error('Error reading the file:', err);
                 return;
             }
-
+            //create array to hold row objects
+            const rows = [];
             papaParse.parse(data, {
                 header: true,
                 step: function(row){ 
+                    const rowObject = {};
+                    let i =0;
                     for (const field in row.data) {
                         const value = row.data[field]
+                        rowObject[i] = value;
+                        i++;
                     }
                     if (Object.keys(row.errors).length !=0) {
                         console.log("errors ", row.errors)
                     }
+                    rows.push(row);
                 }
             });
-
-            // Measure memory usage after parsing
-            const memoryAfter = process.memoryUsage().heapUsed;
-
-            // Calculate the memory usage difference
-            const memoryDifference = memoryAfter - memoryBefore;
-
-            console.log(`Memory usage difference: ${memoryDifference} bytes`);
-
             deferred.resolve(); // signal the end of the benchmark
         });
+        // memory usage object
+        console.log(process.memoryUsage())
     }
    
 });
