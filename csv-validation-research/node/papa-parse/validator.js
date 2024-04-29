@@ -9,9 +9,10 @@ const suite = new Benchmark.Suite;
 // Add a benchmark for reading and parsing the CSV file
 suite.add('Papaparse benchmark results: ', {
 
-    defer: true, // This will defer the execution of the benchmark
+    defer: true, // defer execution of benchmark until its manually stopped
     
     fn: deferred => {
+        // read the csv file async
         fileSystem.readFile(csvFilePath, 'utf8', (err, data) => {
             if (err) {
                 console.error('Error reading the file:', err);
@@ -33,12 +34,13 @@ suite.add('Papaparse benchmark results: ', {
                         console.log("errors ", row.errors)
                     }
                     rows.push(row);
-                }
+                },
+                complete: function() {
+                    deferred.resolve(); // end of the benchmark execution
+                },
             });
-            deferred.resolve(); // signal the end of the benchmark
+           
         });
-        // memory usage object
-        console.log(process.memoryUsage())
     }
    
 });
@@ -46,6 +48,9 @@ suite.add('Papaparse benchmark results: ', {
 // Run the benchmark
 suite.on('complete', function() {
     this.forEach(result => {
-        console.log(`${result}`); //result.hz-> number of times per second the benchmarked operation was executed
+        console.log(`${result.name}: ${result.hz} ops/sec ±${result.stats.rme}%`); 
     });
+    const memoryAllocated = process.memoryUsage().heapUsed;
+    const memoryAsMegabytes = memoryAllocated  / (1024 * 1024);
+    console.log("Memory usage in MB :", memoryAsMegabytes);
 }).run({ async: true });
