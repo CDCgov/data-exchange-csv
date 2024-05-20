@@ -1,6 +1,6 @@
-package rowtransformation
+package transform
 
-func transformRowToJson(row string) (map[string]interface{}, error) {
+func transformRowToJson(row string, rowCount int) (map[string]interface{}, error) {
 	data := make(map[string]interface{})
 	data["col1"] = "value1"
 
