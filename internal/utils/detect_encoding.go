@@ -10,20 +10,17 @@ import (
 )
 
 func DetectEncoding(randomBytes []byte) constants.EncodingType {
-	fmt.Println("THIS IS TEST")
 
-	// Detect encoding
 	var encoding constants.EncodingType
 
 	if utf8.Valid(randomBytes) {
-
-		fmt.Println("THIS IS VALID UTF-8")
 		encoding = constants.UTF8
-		//still need to call functions to check character sets if
+		//TBD- should unparseable characters be checked?
+	} else {
+		_, name, _ := charset.DetermineEncoding(randomBytes, "")
+		encoding = constants.EncodingType(name)
 	}
-	enc, name, certain := charset.DetermineEncoding(randomBytes, "")
-	fmt.Println(enc, certain)
-	fmt.Println("Detected encoding is ", name)
+	//TBD-How to utilize the functions below
 	fmt.Println(isValidUSASCII(randomBytes))
 	fmt.Println(isValidISO_8859_1(randomBytes))
 	fmt.Println(isValidWindows1252(randomBytes))
@@ -52,11 +49,9 @@ func isValidISO_8859_1(bytes []byte) bool {
 
 func isValidWindows1252(bytes []byte) bool {
 	for _, b := range bytes {
-		if (b < 32 && b != 9 && b != 10 && b != 13) || (b > 127 && b < 160) {
-			fmt.Println("its not windows1252 due to ", b, string(b))
+		if b < 32 && b != 9 && b != 10 && b != 13 {
 			return false
 		}
-
 	}
 	return true
 }

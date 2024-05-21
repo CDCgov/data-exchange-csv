@@ -1,8 +1,6 @@
 package utils
 
 import (
-	"strings"
-
 	"github.com/CDCgov/data-exchange-csv/cmd/internal/constants"
 )
 
@@ -27,22 +25,28 @@ func (s *DelimiterDetector) DetectDelimiter(sample string) *Delimiter {
 }
 
 func (s *DelimiterDetector) mostFrequentDelimiter(sample string) rune {
-	// Count occurrences of common delimiters
+
 	supportedDelimiters := []rune{constants.COMMA, constants.TAB}
-	counts := make(map[rune]int)
-	for _, candidate := range supportedDelimiters {
-		counts[candidate] = strings.Count(sample, string(candidate))
+
+	counts := make(map[rune]int, len(supportedDelimiters))
+
+	for _, delimiter := range supportedDelimiters {
+		counts[delimiter] = 0
 	}
 
-	// Return the most common delimiter
-	var maxCount int
-	var detectedDelimiter rune
-	for r, count := range counts {
-		if count > maxCount {
-			maxCount = count
-			detectedDelimiter = r
+	for _, char := range sample {
+		if _, exists := counts[char]; exists {
+			counts[char]++
 		}
 	}
 
+	var mostFrequent int
+	var detectedDelimiter rune
+	for r, count := range counts {
+		if count > mostFrequent {
+			mostFrequent = count
+			detectedDelimiter = r
+		}
+	}
 	return detectedDelimiter
 }

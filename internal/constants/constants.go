@@ -18,8 +18,6 @@ const (
 	UNSUPPORTED                         = "unsupported"
 	TAB                                 = '\t'
 	COMMA                               = ','
-	PIPE                                = '|'
-	SEMICOLON                           = ';'
 	COLON                               = ':'
 	NO_DELIMITERS_DETECTED              = "There were no delimiters detected in the file"
 	FILE_READ_ERROR                     = "Error reading first 1024 bytes"
@@ -32,17 +30,6 @@ var DelimiterCharacters = map[rune]string{
 	0:  UNSUPPORTED,
 	9:  TSV,
 	44: CSV,
-}
-
-type FileValidationResult struct {
-	Name      string       `json:"name"`
-	Source    string       `json:"source"`
-	Size      int64        `json:"size"`
-	FileUUID  UUID         `json:"uuid"`
-	Error     error        `json:"error"`
-	Encoding  EncodingType `json:"encoding"`
-	Delimiter string       `json:"delimiter"`
-	Status    string       `json:"status"` // or object
 }
 
 type RowValidationResult struct{}

@@ -10,8 +10,8 @@ type Row struct {
 	Hash      []byte
 }
 
-func IsValid(row string) (bool, error) {
-	// verify the row agains rules/requirements
+func Validate(row string) (bool, error) {
+	// verify the row against rules/requirements
 
 	return true, nil
 }

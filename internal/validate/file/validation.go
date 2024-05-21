@@ -1,80 +1,76 @@
+/*
+Package file provides functionalities for validating and working with files in the context of file-level validation.
+This package is designed to handle CSV and TSV files, within the bounded context of file-level validation.
+Key components contributing to the overall validation of a file include:
+  - HeaderValidation - if provided in the config file
+  - Detecting Delimiter
+  - Detecting Encoding type
+*/
 package file
 
 import (
-	"encoding/csv"
 	"fmt"
-	"io"
-	"log/slog"
 	"os"
 
 	"github.com/CDCgov/data-exchange-csv/cmd/internal/constants"
 	"github.com/CDCgov/data-exchange-csv/cmd/internal/utils"
-	"golang.org/x/text/encoding/charmap"
 )
 
-func IsValid(source string) constants.FileValidationResult {
-	file, err := os.Open(source)
+type FileValidationResult struct {
+	Name      string                 `json:"name"`
+	Source    string                 `json:"source"`
+	Size      int64                  `json:"size"`
+	FileUUID  constants.UUID         `json:"uuid"`
+	Error     error                  `json:"error"`
+	Encoding  constants.EncodingType `json:"encoding"`
+	Delimiter string                 `json:"delimiter"`
+	Status    string                 `json:"status"` // or object
+}
 
+func Validate(filePath string) FileValidationResult {
+	file, err := os.Open(filePath)
 	if err != nil {
-		slog.Error(constants.FILE_OPEN_ERROR)
-	}
-	defer func(file *os.File) {
-		err := file.Close()
-		if err != nil {
-			slog.Error(constants.FILE_CLOSE_ERROR)
+		return FileValidationResult{
+			Source: filePath,
+			Error:  err,
 		}
-	}(file)
+	}
+	defer func() {
+		if err := file.Close(); err != nil {
+			fmt.Println(constants.FILE_CLOSE_ERROR)
+			return
+		}
+	}()
 
-	//initialize file object
-	var result constants.FileValidationResult
-	result.Name = "csv file"
-	result.Source = source
+	result := FileValidationResult{
+		Name:   file.Name(),
+		Source: filePath,
+	}
 
-	//check for bom
+	// Detect BOM
 	hasBOM, err := utils.DetectBOM(file)
 	if err != nil {
-		fmt.Println("Error Detecting Bom", err)
+		result.Error = err
+		return result
 	}
 
-	//get sample data at random places to detect delimiter, and encoding
-	randomSampleData, err := utils.GetRandomSample(file)
+	// Get a random sample of the file data
+	sampleData, err := utils.GetRandomSample(file)
 	if err != nil {
-		fmt.Println("Error getting randomSampleData ", randomSampleData, err)
+		result.Error = err
+		return result
 	}
 
-	detector := &utils.DelimiterDetector{}
-	delimiter := detector.DetectDelimiter(string(randomSampleData))
-	result.Delimiter = constants.DelimiterCharacters[delimiter.Character]
+	// Detect delimiter
+	delimiterDetector := &utils.DelimiterDetector{}
+	detectedDelimiter := delimiterDetector.DetectDelimiter(string(sampleData))
+	result.Delimiter = constants.DelimiterCharacters[detectedDelimiter.Character]
 
-	enc := constants.DelimiterCharacters[delimiter.Character]
-	fmt.Println(enc)
-	result.Delimiter = enc
-
+	// Detect encoding
 	if hasBOM {
 		result.Encoding = constants.UTF8_BOM
 	} else {
-		//detect encoding with random sample data
-		//enc := utils.DetectEncoding(randomSampleData)
-		decoder := charmap.Windows1252.NewDecoder()
-
-		//tempcode-> check if windows1252 decoder can correctly parse the csv file
-		_, err = file.Seek(0, 0)
-		if err != nil {
-			result.Error = err
-			return result
-		}
-		reader := csv.NewReader(decoder.Reader(file))
-
-		fmt.Println(reader.ReadAll())
-		for {
-			record, err := reader.Read()
-			if err == io.EOF {
-				fmt.Println(err)
-				break
-			}
-			fmt.Println(record)
-		}
-		result.Encoding = utils.DetectEncoding(randomSampleData)
+		result.Encoding = utils.DetectEncoding(sampleData)
 	}
 
 	return result

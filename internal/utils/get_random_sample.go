@@ -33,7 +33,7 @@ func GetRandomSample(file *os.File) ([]byte, error) {
 	for len(randomBytes) < threshold && fileSize > 0 {
 		//generate random offset
 		offset := randomNumberGenerator.Int63n(fileSize)
-		//seek to the random offset
+		//reset the pointer to the beginning of the file
 		_, err := file.Seek(offset, 0)
 		if err != nil {
 			return nil, err
