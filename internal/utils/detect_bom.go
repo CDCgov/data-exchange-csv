@@ -1,9 +1,13 @@
 package utils
 
 import (
-	"github.com/CDCgov/data-exchange-csv/cmd/internal/constants"
+	"bytes"
 	"io"
 	"os"
+)
+
+var (
+	UTF8_BOM = []byte{0xEF, 0xBB, 0xBF}
 )
 
 func DetectBOM(file *os.File) (bool, error) {
@@ -13,9 +17,14 @@ func DetectBOM(file *os.File) (bool, error) {
 		return false, err
 	}
 
-	// check if BOM is present and return true
-	if string(bom) == constants.UTF8BOMHex || string(bom) == constants.UTF8BOMUnicode {
+	//reset the file pointer to the begining of the file
+	if _, err := file.Seek(0, 0); err != nil {
+		return false, err
+	}
+	//compare the first three bytes of the file with the UTF-8 BOM sequence
+	if bytes.Equal(bom, UTF8_BOM) {
 		return true, nil
 	}
+
 	return false, nil
 }
