@@ -6,37 +6,41 @@ import (
 	"io"
 	"os"
 
+	"github.com/CDCgov/data-exchange-csv/cmd/internal/constants"
 	"github.com/CDCgov/data-exchange-csv/cmd/internal/validate/file"
 	"golang.org/x/text/encoding/charmap"
 )
 
 func main() {
-	//source := "data/file-with-headers-100-rows.csv"
-	//source := "data/file-with-headers-100-rows_with_BOM.csv"
-	//source := "data/file-with-headers-100-rows_US_ASCII.csv"
-	//source := "data/file-with-headers-rows_iso8859-1.csv"
-	source := "data/file-with-headers-windows1252.csv"
+	source := "data/event_config.json"
 
-	fileValidationResult := file.Validate(source)
+	vaidationResult := &file.ValidationResult{}
+	vaidationResult.Validate(source)
 
-	fmt.Println("file validation result: ", fileValidationResult)
+	fmt.Println("final file validation result: ", vaidationResult)
 
-	//detect encoding with random sample data
-	//enc := utils.DetectEncoding(randomSampleData)
-	decoder := charmap.Windows1252.NewDecoder()
+	file, _ := os.Open(vaidationResult.ReceivedFile)
+	detectedEncoding := vaidationResult.Encoding
 
-	//tempcode-> check if windows1252 decoder can correctly parse the csv file
-	file, err := os.Open(source)
-	if err != nil {
-		fmt.Println(err)
+	var reader *csv.Reader
+
+	if detectedEncoding == constants.UTF8 || detectedEncoding == constants.UTF8_BOM {
+		reader = csv.NewReader(file)
+	} else if detectedEncoding == constants.ISO8859_1 {
+		decoder := charmap.ISO8859_1.NewDecoder()
+		reader = csv.NewReader(decoder.Reader(file))
+	} else if detectedEncoding == constants.WINDOWS1252 {
+		decoder := charmap.Windows1252.NewDecoder()
+		reader = csv.NewReader(decoder.Reader(file))
 	}
-	reader := csv.NewReader(decoder.Reader(file))
 
 	for {
 		record, err := reader.Read()
 		if err == io.EOF {
 			break
 		}
+		// TODO - row validate, file uuid.
 		fmt.Println(record)
 	}
+
 }
