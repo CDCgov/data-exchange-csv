@@ -4,7 +4,8 @@ type EncodingType string
 type UUID [16]byte
 
 const (
-	MAX_READ                            = 1024
+	MAX_READ_THRESHOLD                  = 1024
+	MAX_EXECUTION_TIME                  = 60000
 	UTF8BOMHex                          = "\xEF\xBB\xBF"
 	UTF8BOMUnicode                      = "\uFEFF"
 	UTF8                   EncodingType = "UTF-8"
