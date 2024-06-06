@@ -32,6 +32,9 @@ func main() {
 	} else if detectedEncoding == constants.WINDOWS1252 {
 		decoder := charmap.Windows1252.NewDecoder()
 		reader = csv.NewReader(decoder.Reader(file))
+	} else {
+		fmt.Println("TODO: handle unsupported encoding")
+		return
 	}
 
 	for {
