@@ -17,8 +17,6 @@ func main() {
 	vaidationResult := &file.ValidationResult{}
 	vaidationResult.Validate(source)
 
-	fmt.Println("final file validation result: ", vaidationResult)
-
 	file, _ := os.Open(vaidationResult.ReceivedFile)
 	detectedEncoding := vaidationResult.Encoding
 
@@ -38,12 +36,12 @@ func main() {
 	}
 
 	for {
-		record, err := reader.Read()
+		_, err := reader.Read()
 		if err == io.EOF {
 			break
 		}
 		// TODO - row validate, file uuid.
-		fmt.Println(record)
+
 	}
 
 }

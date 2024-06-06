@@ -34,15 +34,22 @@ const (
 	UNSUPPORTED_DELIMITER_ERROR                  = "Unsupported delimiter found in the file. Please use a supported delimiter and try again."
 	UNSUPPORTED_ENCODING_ERROR                   = "Unsupported encoding detected. Ensure the file is encoded in a supported format."
 	BOM_NOT_DETECTED_ERROR                       = "Byte Order Mark was not detected."
+	FILE_MISSING_ERROR                           = "received_filename is a required metadata field."
 )
 
 const (
 	DATA_STREAM_ID    = "dex-csv-test"
 	SENDER_ID         = "filevalidation-csv-test"
+	RECEIVED_FILENAME = "received_filename"
 	DATA_PRODUCER_ID  = "dex-csv"
-	DATA_STREAM_ROUTE = ""
+	DATA_STREAM_ROUTE = "dex-route"
 	JURISDICTION      = "NJ"
 	VERSION           = "1.0.0"
+)
+
+const (
+	DEAD_LETTER_QUEUE = "results/DLQ"
+	FILE_REPORTS      = "results/filereports"
 )
 
 const (
