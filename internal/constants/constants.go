@@ -53,7 +53,11 @@ const (
 )
 
 const (
-	MSBMask = 0x80 // most significant bit, binary:10000000 decimal: 128
+	MSBMask               = 0x80 // most significant bit, binary:10000000 decimal: 128
+	InvalidStartISO88591  = 0x80 // as decimal 128
+	InvalidEndISO88591    = 0x9F // as decimal 159
+	ValidStartWindows1252 = 0x80 // as decimal 128
+	ValidEndWindows1252   = 0x9F // as decimal 159
 
 )
 

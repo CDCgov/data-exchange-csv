@@ -28,10 +28,8 @@ func Encoding(data []byte) constants.EncodingType {
 }
 
 func isValidUSASCII(data []byte) bool {
-	// Initialize most significant bit
-	const MSBMask = 0x80
 	for _, byteVal := range data {
-		if byteVal&MSBMask != 0 {
+		if byteVal&constants.MSBMask != 0 {
 			return false
 		}
 	}
@@ -39,12 +37,8 @@ func isValidUSASCII(data []byte) bool {
 }
 
 func isValidISO_8859_1(data []byte) bool {
-	const (
-		invalidStart = 0x80 // as decimal 128
-		invalidEnd   = 0x9F // as decimal 159
-	)
 	for _, byteVal := range data {
-		if byteVal >= invalidStart && byteVal <= invalidEnd {
+		if byteVal >= constants.InvalidStartISO88591 && byteVal <= constants.InvalidEndISO88591 {
 			return false
 		}
 	}
@@ -52,12 +46,8 @@ func isValidISO_8859_1(data []byte) bool {
 }
 
 func isValidWindows1252(data []byte) bool {
-	const (
-		validStart = 0x80 // as decimal 128
-		validEnd   = 0x9F // as decimal 159
-	)
 	for _, byteVal := range data {
-		if byteVal >= validStart && byteVal <= validEnd {
+		if byteVal >= constants.ValidStartWindows1252 && byteVal <= constants.ValidEndWindows1252 {
 			return true
 		}
 	}
