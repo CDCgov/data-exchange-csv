@@ -28,6 +28,9 @@ func Encoding(data []byte) constants.EncodingType {
 }
 
 func isValidUSASCII(data []byte) bool {
+	if len(data) == 0 {
+		return false
+	}
 	for _, byteVal := range data {
 		if byteVal&constants.MSBMask != 0 {
 			return false
@@ -37,6 +40,10 @@ func isValidUSASCII(data []byte) bool {
 }
 
 func isValidISO_8859_1(data []byte) bool {
+	if len(data) == 0 {
+		return false
+	}
+
 	for _, byteVal := range data {
 		if byteVal >= constants.InvalidStartISO88591 && byteVal <= constants.InvalidEndISO88591 {
 			return false
@@ -46,6 +53,10 @@ func isValidISO_8859_1(data []byte) bool {
 }
 
 func isValidWindows1252(data []byte) bool {
+	if len(data) == 0 {
+		return false
+	}
+
 	for _, byteVal := range data {
 		if byteVal >= constants.ValidStartWindows1252 && byteVal <= constants.ValidEndWindows1252 {
 			return true
