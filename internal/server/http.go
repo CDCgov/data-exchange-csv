@@ -1,7 +1,8 @@
 package server
 
 import (
-	log "log/slog"
+	"fmt"
+	"log/slog"
 	"net/http"
 )
 
@@ -11,15 +12,22 @@ const endpoint = ":" + port
 func New() *http.Server {
 	svr := &http.Server{
 		Addr:    endpoint,
-		Handler: http.HandlerFunc(handler),
+		Handler: http.HandlerFunc(defaultHandler),
 	}
-	log.Info("Server listening on port 8080...")
-	log.Error("server.New(): %s", svr.ListenAndServeTLS("server.crt", "server.key"))
+	slog.Info(fmt.Sprintf("Server listening on port %s...", port))
+	// TODO: Certs can probably go into an env variable
+	// TODO: Use HTTPS in prod?
+	// log.Error("server.New(): %s", svr.ListenAndServeTLS("server.crt", "server.key"))
+	slog.Error("server.New():", svr.ListenAndServe()) // TODO: If svr errors out, this won't log to console I think
 
 	return svr
 }
 
-func handler(w http.ResponseWriter, r *http.Request) {
-	log.Info("Connected to %s", r.Proto)
+func defaultHandler(w http.ResponseWriter, r *http.Request) {
+	slog.Info(fmt.Sprintf("Connected to %s using %s", endpoint, r.Proto))
 	_, _ = w.Write([]byte("Hello, World!"))
+}
+
+func healthCheckHandler(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
 }
