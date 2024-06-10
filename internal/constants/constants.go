@@ -38,6 +38,19 @@ const (
 )
 
 const (
+	EMPTY_INPUT                  = "Empty input test"
+	VALID_SINGLE_BYTE_SEQUENCE   = "Valid single byte sequence"
+	INVALID_SINGLE_BYTE_SEQUENCE = "Invalid single byte sequence"
+	MIXED_BYTE_SEQUENCES         = "Multi-Byte and single-byte mix"
+	ALL_VALID_BYTES              = "All valid bytes"
+	ALL_INVALID_BYTES            = "All invalid bytes"
+	VALID_FIRST_BYTE_SEQUENCE    = "Valid initial byte with invalid trailing Bytes"
+	INVALID_FIRST_BYTE_SEQUENCE  = "Invalid initial byte with valid trailing Bytes"
+	BYTE_ABOVE_UPPER_RANGE       = "Byte above upper range"
+	BYTE_BELOW_LOWER_RANGE       = "Byte below lower range"
+)
+
+const (
 	DATA_STREAM_ID    = "dex-csv-test"
 	SENDER_ID         = "filevalidation-csv-test"
 	RECEIVED_FILENAME = "received_filename"

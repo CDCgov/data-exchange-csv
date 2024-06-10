@@ -58,9 +58,9 @@ func isValidWindows1252(data []byte) bool {
 	}
 
 	for _, byteVal := range data {
-		if byteVal >= constants.ValidStartWindows1252 && byteVal <= constants.ValidEndWindows1252 {
-			return true
+		if byteVal < constants.ValidStartWindows1252 || byteVal > constants.ValidEndWindows1252 {
+			return false
 		}
 	}
-	return false
+	return true
 }
