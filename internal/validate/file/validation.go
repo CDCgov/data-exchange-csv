@@ -60,7 +60,7 @@ func (vr *ValidationResult) Validate(configFile string) {
 		return
 	}
 
-	detectedDelimiter := detect.Delimiter(string(data))
+	detectedDelimiter := detect.Delimiter(data)
 	vr.Delimiter = constants.DelimiterCharacters[detectedDelimiter]
 
 	if vr.Delimiter == constants.DelimiterCharacters[0] {

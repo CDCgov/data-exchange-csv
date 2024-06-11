@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/csv"
-	"fmt"
 	"io"
 	"os"
 
@@ -14,11 +13,11 @@ import (
 func main() {
 	source := "data/event_config.json"
 
-	vaidationResult := &file.ValidationResult{}
-	vaidationResult.Validate(source)
+	validationResult := &file.ValidationResult{}
+	validationResult.Validate(source)
 
-	file, _ := os.Open(vaidationResult.ReceivedFile)
-	detectedEncoding := vaidationResult.Encoding
+	file, _ := os.Open(validationResult.ReceivedFile)
+	detectedEncoding := validationResult.Encoding
 
 	var reader *csv.Reader
 
@@ -31,7 +30,7 @@ func main() {
 		decoder := charmap.Windows1252.NewDecoder()
 		reader = csv.NewReader(decoder.Reader(file))
 	} else {
-		fmt.Println("TODO: handle unsupported encoding")
+		validationResult.Encoding = constants.UNDEF
 		return
 	}
 

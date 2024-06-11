@@ -74,7 +74,7 @@ const (
 
 )
 
-var DelimiterCharacters = map[rune]string{
+var DelimiterCharacters = map[byte]string{
 	0:  UNSUPPORTED,
 	9:  TSV,
 	44: CSV,

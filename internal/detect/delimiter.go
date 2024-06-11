@@ -4,10 +4,10 @@ import (
 	"github.com/CDCgov/data-exchange-csv/cmd/internal/constants"
 )
 
-func Delimiter(data string) rune {
+func Delimiter(data []byte) byte {
 
-	delimiters := []rune{constants.COMMA, constants.TAB}
-	delimiterFrequency := make(map[rune]int, len(delimiters))
+	delimiters := []byte{constants.COMMA, constants.TAB}
+	delimiterFrequency := make(map[byte]int, len(delimiters))
 
 	for _, delimiter := range delimiters {
 		delimiterFrequency[delimiter] = 0
@@ -20,7 +20,7 @@ func Delimiter(data string) rune {
 	}
 
 	var mostFrequentDelimiter int
-	var detectedDelimiter rune
+	var detectedDelimiter byte
 
 	for delimiter, frequency := range delimiterFrequency {
 		if frequency > mostFrequentDelimiter {
