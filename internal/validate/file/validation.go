@@ -7,7 +7,8 @@ import (
 	"path/filepath"
 
 	"github.com/CDCgov/data-exchange-csv/cmd/internal/constants"
-	"github.com/CDCgov/data-exchange-csv/cmd/internal/detect"
+	"github.com/CDCgov/data-exchange-csv/cmd/internal/detector"
+
 	"github.com/CDCgov/data-exchange-csv/cmd/internal/utils"
 	"github.com/google/uuid"
 )
@@ -60,7 +61,7 @@ func (vr *ValidationResult) Validate(configFile string) {
 		return
 	}
 
-	detectedDelimiter := detect.Delimiter(data)
+	detectedDelimiter := detector.DetectDelimiter(data)
 	vr.Delimiter = constants.DelimiterCharacters[detectedDelimiter]
 
 	if vr.Delimiter == constants.DelimiterCharacters[0] {
@@ -68,7 +69,7 @@ func (vr *ValidationResult) Validate(configFile string) {
 		copyToDestination(vr, constants.DEAD_LETTER_QUEUE)
 	}
 
-	hasBOM, err := detect.BOM(file)
+	hasBOM, err := detector.DetectBOM(file)
 
 	if err != nil {
 		vr.Error = &Error{Message: err.Error(), Code: 13}
@@ -81,7 +82,7 @@ func (vr *ValidationResult) Validate(configFile string) {
 		return
 	}
 
-	detectedEncoding := detect.Encoding(data)
+	detectedEncoding := detector.DetectEncoding(data)
 	vr.Encoding = detectedEncoding
 	copyToDestination(vr, constants.FILE_REPORTS)
 }

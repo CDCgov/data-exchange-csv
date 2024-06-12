@@ -1,4 +1,4 @@
-package detect
+package detector
 
 import (
 	"bytes"
@@ -8,7 +8,7 @@ import (
 	"github.com/CDCgov/data-exchange-csv/cmd/internal/constants"
 )
 
-func BOM(file *os.File) (bool, error) {
+func DetectBOM(file *os.File) (bool, error) {
 	bom := make([]byte, 3)
 
 	_, err := file.Read(bom)

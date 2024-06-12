@@ -1,10 +1,10 @@
-package detect
+package detector
 
 import (
 	"github.com/CDCgov/data-exchange-csv/cmd/internal/constants"
 )
 
-func Delimiter(data []byte) byte {
+func DetectDelimiter(data []byte) byte {
 
 	delimiters := []byte{constants.COMMA, constants.TAB}
 	delimiterFrequency := make(map[byte]int, len(delimiters))

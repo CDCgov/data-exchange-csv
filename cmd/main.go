@@ -2,21 +2,29 @@ package main
 
 import (
 	"encoding/csv"
-	"io"
+	"log"
 	"os"
 
 	"github.com/CDCgov/data-exchange-csv/cmd/internal/constants"
 	"github.com/CDCgov/data-exchange-csv/cmd/internal/validate/file"
+	"github.com/CDCgov/data-exchange-csv/cmd/internal/validate/row"
 	"golang.org/x/text/encoding/charmap"
 )
 
 func main() {
-	source := "data/event_config.json"
+	event := "data/event_config.json"
 
 	validationResult := &file.ValidationResult{}
-	validationResult.Validate(source)
+	validationResult.Validate(event)
 
 	file, _ := os.Open(validationResult.ReceivedFile)
+	defer func(file *os.File) {
+		err := file.Close()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}(file)
+
 	detectedEncoding := validationResult.Encoding
 
 	var reader *csv.Reader
@@ -34,13 +42,7 @@ func main() {
 		return
 	}
 
-	for {
-		_, err := reader.Read()
-		if err == io.EOF {
-			break
-		}
-		// TODO - row validate, file uuid.
-
-	}
+	row := &row.ValidationResult{}
+	row.Validate(reader, validationResult.FileUUID)
 
 }

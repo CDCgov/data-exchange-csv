@@ -1,4 +1,4 @@
-package detect
+package detector
 
 import (
 	"testing"
@@ -11,7 +11,7 @@ func TestDelimiterComma(t *testing.T) {
 	csvDataAsBytes := []byte(csvData)
 
 	expectedDelimiter := constants.CSV
-	actualDelimiter := constants.DelimiterCharacters[Delimiter(csvDataAsBytes)]
+	actualDelimiter := constants.DelimiterCharacters[DetectDelimiter(csvDataAsBytes)]
 
 	if expectedDelimiter != actualDelimiter {
 		t.Errorf("Expected %s records, and got %s ", expectedDelimiter, actualDelimiter)
@@ -23,7 +23,7 @@ func TestDelimiterTab(t *testing.T) {
 	tsvDataAsBytes := []byte(tsvData)
 
 	expectedDelimiter := constants.TSV
-	actualDelimiter := constants.DelimiterCharacters[Delimiter(tsvDataAsBytes)]
+	actualDelimiter := constants.DelimiterCharacters[DetectDelimiter(tsvDataAsBytes)]
 
 	if expectedDelimiter != actualDelimiter {
 		t.Errorf("Expected %s records, and got %s ", expectedDelimiter, actualDelimiter)
@@ -34,7 +34,7 @@ func TestUnsupportedDelimiter(t *testing.T) {
 	invalidDataAsBytes := []byte(invalidData)
 
 	expectedDelimiter := constants.UNSUPPORTED
-	actualDelimiter := constants.DelimiterCharacters[Delimiter(invalidDataAsBytes)]
+	actualDelimiter := constants.DelimiterCharacters[DetectDelimiter(invalidDataAsBytes)]
 
 	if expectedDelimiter != actualDelimiter {
 		t.Errorf("Expected %s records, and got %s ", expectedDelimiter, actualDelimiter)

@@ -1,4 +1,4 @@
-package detect
+package detector
 
 import (
 	"unicode/utf8"
@@ -6,7 +6,7 @@ import (
 	"github.com/CDCgov/data-exchange-csv/cmd/internal/constants"
 )
 
-func Encoding(data []byte) constants.EncodingType {
+func DetectEncoding(data []byte) constants.EncodingType {
 
 	if isValidUSASCII(data) {
 		return constants.UTF8
