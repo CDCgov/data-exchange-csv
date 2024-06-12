@@ -24,7 +24,7 @@ func TestDetectBOM(t *testing.T) {
 
 	file, _ := os.Open(csvFileWithBOM.Name())
 	expectedBom := true
-	bomFound, err := BOM(file)
+	bomFound, err := DetectBOM(file)
 
 	if err != nil {
 		t.Errorf(constants.FILE_OPEN_ERROR)
@@ -51,7 +51,7 @@ func TestNotDetectBOM(t *testing.T) {
 
 	file, _ := os.Open(csvFileWithBOM.Name())
 	expectedBom := false
-	bomFound, err := BOM(file)
+	bomFound, err := DetectBOM(file)
 
 	if err != nil {
 		t.Errorf(constants.FILE_OPEN_ERROR)
