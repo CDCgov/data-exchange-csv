@@ -2,7 +2,6 @@ package row
 
 import (
 	"encoding/csv"
-	"fmt"
 	"io"
 
 	"github.com/google/uuid"
@@ -12,24 +11,35 @@ type ValidationResult struct {
 	FileUUID  uuid.UUID `json:"file_uuid"`
 	RowNumber int       `json:"row_number"`
 	RowUUID   uuid.UUID `json:"row_uuid"`
-	Hash      []byte    `json:"row_hash"`
+	Hash      [32]byte  `json:"row_hash"`
 	Error     error     `json:"error"`
 }
 
-func (vr *ValidationResult) Validate(reader *csv.Reader, fileUUID uuid.UUID) (bool, error) {
-	// verify the row against rules/requirements
+func (vr *ValidationResult) Validate(reader *csv.Reader, fileUUID uuid.UUID) {
+	vr.FileUUID = fileUUID
+
+	rowCount := 0
+
 	for {
 		row, err := reader.Read()
+
+		vr.Hash = ComputeHash(row)
+
 		if err == io.EOF {
 			break
 		}
+		vr.RowNumber = rowCount
+		rowCount++
+
+		vr.RowUUID = uuid.New()
 
 		if err != nil {
-			fmt.Println("error ", err)
+			//send to DLQ
+			// PS API
+			//TODO-ERROR Object
+			vr.Error = err
 		}
-
-		fmt.Println(row)
+		// valid row, ready to transform to json
 
 	}
-	return true, nil
 }

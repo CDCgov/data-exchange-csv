@@ -42,7 +42,6 @@ func main() {
 		return
 	}
 
-	row := &row.ValidationResult{}
-	row.Validate(reader, validationResult.FileUUID)
-
+	rows := &row.ValidationResult{}
+	rows.Validate(reader, validationResult.FileUUID)
 }
