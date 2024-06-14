@@ -15,7 +15,7 @@ type ValidationResult struct {
 	Error     error     `json:"error"`
 }
 
-func (vr *ValidationResult) Validate(reader *csv.Reader, fileUUID uuid.UUID) {
+func (vr *ValidationResult) Validate(reader *csv.Reader, fileUUID uuid.UUID, seperator string) {
 	vr.FileUUID = fileUUID
 
 	rowCount := 0
@@ -23,7 +23,7 @@ func (vr *ValidationResult) Validate(reader *csv.Reader, fileUUID uuid.UUID) {
 	for {
 		row, err := reader.Read()
 
-		vr.Hash = ComputeHash(row)
+		vr.Hash = ComputeHash(row, seperator)
 
 		if err == io.EOF {
 			break
@@ -39,7 +39,9 @@ func (vr *ValidationResult) Validate(reader *csv.Reader, fileUUID uuid.UUID) {
 			//TODO-ERROR Object
 			vr.Error = err
 		}
-		// valid row, ready to transform to json
+		//
+		// valid row
+		// ready to transform to json
 
 	}
 }

@@ -43,5 +43,5 @@ func main() {
 	}
 
 	rows := &row.ValidationResult{}
-	rows.Validate(reader, validationResult.FileUUID)
+	rows.Validate(reader, validationResult.FileUUID, validationResult.Delimiter)
 }
