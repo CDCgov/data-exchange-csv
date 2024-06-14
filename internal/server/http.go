@@ -13,8 +13,8 @@ const endpoint = ":" + port
 func New() *http.Server {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", defaultHandler)
-	mux.HandleFunc("/health", healthCheckHandler)
-	mux.HandleFunc("/validate/csv", validateCSVHandler)
+	mux.HandleFunc("/v1/api/health", healthCheckHandler) // TODO: Not hard code API version
+	mux.HandleFunc("/v1/api/validate/csv", validateCSVHandler)
 
 	svr := &http.Server{
 		Addr:    endpoint,
@@ -35,6 +35,7 @@ func New() *http.Server {
 // defaultHandler is the default handler that writes 404 HTTP status to response header
 func defaultHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotFound)
+	slog.Warn("Connection to default handler. Upstream error?")
 }
 
 // validateCSVHandler processes a URL to CSV file in payload and validates it

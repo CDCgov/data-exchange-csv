@@ -1,6 +1,7 @@
 package main
 
 // TODO: Move run() into a separate app package? That way we can organize how we define different execution envs - Thomas
+// TODO: Use absolute paths from project structure for importing internal packages
 import (
 	"context"
 	"fmt"
@@ -25,8 +26,7 @@ func run(
 
 	log.Info("Starting DEX CSV Validation")
 
-	// TODO: Add event loop
-	server.New()
+	server.New() // Event loop in here
 
 	log.Info("Exiting DEX CSV Validation")
 
