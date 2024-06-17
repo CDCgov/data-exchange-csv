@@ -4,20 +4,22 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
 type unitTest struct {
-	method     string
-	queryStr   string
-	body       io.Reader
-	httpStatus int // Expected status
+	method      string
+	contentType string // Using RFC 6838 standards (MIME types)
+	body        io.Reader
+	httpStatus  int // Expected status
 }
 
 type httpTests struct {
 	endpoint string
+	queryStr string
 	tests    []unitTest
 }
 
@@ -48,8 +50,27 @@ func TestDefaultHandler(t *testing.T) {
 	}
 }
 
-// TestValidateCSVHandler tests /validate/csv endpoint, allowing only GET, HEAD, and POST methods
+// TestValidateCSVHandler tests /validate/csv endpoint, allowing only GET, HEAD, and POST methods.
+// POST methods allow CSV and TSV files in payload.
+// Note: This test doesn't validate business logic of CSV validation.
 func TestValidateCSVHandler(t *testing.T) {
+	csvTestData := "first_name,last_name\nJohn,Doe\nMary,Jane"
+	tsvTestData := "first_name\tlast_name\nJohn\tDoe\nMary\tJane"
+	jsonTestData := `{
+{
+	first_name: John,
+	last_name: Doe
+},
+{
+	first_name: Mary,
+	last_name: Jane
+}
+}`
+
+	csvReader := strings.NewReader(csvTestData)
+	tsvReader := strings.NewReader(tsvTestData)
+	jsonReader := strings.NewReader(jsonTestData)
+
 	httpTests := httpTests{
 		endpoint: "/v1/api/validate/csv",
 		tests: []unitTest{
@@ -59,7 +80,28 @@ func TestValidateCSVHandler(t *testing.T) {
 			{method: "HEAD", httpStatus: http.StatusOK},
 			{method: "OPTIONS", httpStatus: http.StatusMethodNotAllowed},
 			{method: "PATCH", httpStatus: http.StatusMethodNotAllowed},
-			{method: "POST", httpStatus: http.StatusOK},
+			// TODO: Move POST test cases to a separate function for readability
+			// Missing file in body
+			{method: "POST", httpStatus: http.StatusBadRequest,
+				contentType: "text/csv"},
+			// Non-CSV file in body
+			{method: "POST", httpStatus: http.StatusBadRequest,
+				contentType: "application/json", body: jsonReader},
+			// CSV file in body but wrong content type (JSON)
+			{method: "POST", httpStatus: http.StatusBadRequest,
+				contentType: "application/json", body: csvReader},
+			// CSV file in body but wrong content type (Excel, CSV adjacent format)
+			{method: "POST", httpStatus: http.StatusBadRequest,
+				contentType: "application/vnd.ms-excel", body: csvReader},
+			// CSV file in body but accepted file format for processing (any format with delimiter-separated values)
+			{method: "POST", httpStatus: http.StatusAccepted,
+				contentType: "text/tab-separated-values", body: csvReader},
+			// TSV file in body
+			{method: "POST", httpStatus: http.StatusAccepted,
+				contentType: "text/tab-separated-values", body: tsvReader},
+			// Base success case
+			{method: "POST", httpStatus: http.StatusAccepted,
+				contentType: "text/csv", body: csvReader},
 			{method: "PUT", httpStatus: http.StatusMethodNotAllowed},
 			{method: "TRACE", httpStatus: http.StatusMethodNotAllowed},
 		},
@@ -67,6 +109,8 @@ func TestValidateCSVHandler(t *testing.T) {
 
 	for _, test := range httpTests.tests {
 		req, _ := http.NewRequest(test.method, httpTests.endpoint, test.body)
+		req.Header.Set("Content-Type", test.contentType)
+
 		w := httptest.NewRecorder()
 
 		validateCSVHandler(w, req)
@@ -104,5 +148,5 @@ func TestHealthCheckHandler(t *testing.T) {
 
 // TestDuplicateServer confirms if only one HTTP server can be active at any time
 func TestDuplicateServer(t *testing.T) {
-
+	// TODO: Implement this
 }
