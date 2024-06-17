@@ -21,12 +21,31 @@ type httpTests struct {
 	body       io.Reader
 }
 
-// TestDefaultHandler tests if / returns a 200 HTTP status
+// TestDefaultHandler tests if / returns a 403 HTTP status
 func TestDefaultHandler(t *testing.T) {
+	tests := []httpTests{
+		{method: "GET", endpoint: "/", httpStatus: http.StatusNotFound},
+		{method: "HEAD", endpoint: "/", httpStatus: http.StatusNotFound},
+		{method: "POST", endpoint: "/", httpStatus: http.StatusNotFound},
+		{method: "PUT", endpoint: "/", httpStatus: http.StatusNotFound},
+		{method: "DELETE", endpoint: "/", httpStatus: http.StatusNotFound},
+		{method: "CONNECT", endpoint: "/", httpStatus: http.StatusNotFound},
+		{method: "OPTIONS", endpoint: "/", httpStatus: http.StatusNotFound},
+		{method: "TRACE", endpoint: "/", httpStatus: http.StatusNotFound},
+		{method: "PATCH", endpoint: "/", httpStatus: http.StatusNotFound},
+	}
 
+	for _, test := range tests {
+		req, _ := http.NewRequest(test.method, test.endpoint, test.body)
+		w := httptest.NewRecorder()
+
+		defaultHandler(w, req)
+
+		assert.Equal(t, http.StatusNotFound, w.Code)
+	}
 }
 
-// TestValidateCSVHandler tests if /validate/csv returns a 200 HTTP status
+// TestValidateCSVHandler tests /validate/csv endpoint, allowing only GET, HEAD, and POST methods
 func TestValidateCSVHandler(t *testing.T) {
 	tests := []httpTests{
 		{method: "GET", endpoint: "/v1/api/validate/csv", httpStatus: http.StatusOK},
@@ -50,14 +69,28 @@ func TestValidateCSVHandler(t *testing.T) {
 	}
 }
 
-// TestHealthCheckHandler tests if /health returns a 200 HTTP status
+// TestHealthCheckHandler tests if GET /health returns a 200 HTTP status
 func TestHealthCheckHandler(t *testing.T) {
-	req, _ := http.NewRequest("GET", "/v1/api/health", nil)
-	w := httptest.NewRecorder()
+	tests := []httpTests{
+		{method: "GET", endpoint: "/v1/api/health", httpStatus: http.StatusOK},
+		{method: "HEAD", endpoint: "/v1/api/health", httpStatus: http.StatusOK},
+		{method: "POST", endpoint: "/v1/api/health", httpStatus: http.StatusMethodNotAllowed},
+		{method: "PUT", endpoint: "/v1/api/health", httpStatus: http.StatusMethodNotAllowed},
+		{method: "DELETE", endpoint: "/v1/api/health", httpStatus: http.StatusMethodNotAllowed},
+		{method: "CONNECT", endpoint: "/v1/api/health", httpStatus: http.StatusMethodNotAllowed},
+		{method: "OPTIONS", endpoint: "/v1/api/health", httpStatus: http.StatusMethodNotAllowed},
+		{method: "TRACE", endpoint: "/v1/api/health", httpStatus: http.StatusMethodNotAllowed},
+		{method: "PATCH", endpoint: "/v1/api/health", httpStatus: http.StatusMethodNotAllowed},
+	}
 
-	healthCheckHandler(w, req)
+	for _, test := range tests {
+		req, _ := http.NewRequest(test.method, test.endpoint, test.body)
+		w := httptest.NewRecorder()
 
-	assert.Equal(t, 200, w.Code)
+		healthCheckHandler(w, req)
+
+		assert.Equal(t, test.httpStatus, w.Code)
+	}
 }
 
 // TestDuplicateServer confirms if only one HTTP server can be active at any time
