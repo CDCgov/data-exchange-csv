@@ -32,12 +32,12 @@ func New() {
 // defaultHandler is the default handler that writes 404 HTTP status to response header
 func defaultHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotFound)
-	slog.Warn("Connection to default handler. Upstream error?")
+	slog.Warn("Connected to default handler. Upstream error?", "method", r.Method, "protocol", r.Proto)
 }
 
 // validateCSVHandler processes a URL to CSV file in payload and validates it
 func validateCSVHandler(w http.ResponseWriter, r *http.Request) {
-	slog.Info(fmt.Sprintf("Connected to %s using %s", endpoint, r.Proto))
+	slog.Info(fmt.Sprintf("Connected to %s", endpoint), "method", r.Method, "protocol", r.Proto)
 	_, _ = w.Write([]byte("Hello, World!"))
 	// TODO: Call CSV validation business logic
 }
@@ -45,4 +45,5 @@ func validateCSVHandler(w http.ResponseWriter, r *http.Request) {
 // healthCheckHandler writes 200 HTTP status to response header
 func healthCheckHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
+	slog.Info("Connected to health check handler.", "method", r.Method, "protocol", r.Proto)
 }

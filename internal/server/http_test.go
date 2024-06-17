@@ -9,35 +9,32 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+type unitTest struct {
+	method     string
+	queryStr   string
+	body       io.Reader
+	httpStatus int // Expected status
+}
+
 type httpTests struct {
 	endpoint string
-	tests    []struct {
-		method     string
-		queryStr   string
-		body       io.Reader
-		httpStatus int // Expected status
-	}
+	tests    []unitTest
 }
 
 // TestDefaultHandler tests if / returns a 403 HTTP status
 func TestDefaultHandler(t *testing.T) {
 	httpTests := httpTests{
 		endpoint: "/",
-		tests: []struct {
-			method     string
-			queryStr   string
-			body       io.Reader
-			httpStatus int
-		}{
+		tests: []unitTest{
+			{method: "CONNECT", httpStatus: http.StatusNotFound},
+			{method: "DELETE", httpStatus: http.StatusNotFound},
 			{method: "GET", httpStatus: http.StatusNotFound},
 			{method: "HEAD", httpStatus: http.StatusNotFound},
+			{method: "OPTIONS", httpStatus: http.StatusNotFound},
+			{method: "PATCH", httpStatus: http.StatusNotFound},
 			{method: "POST", httpStatus: http.StatusNotFound},
 			{method: "PUT", httpStatus: http.StatusNotFound},
-			{method: "DELETE", httpStatus: http.StatusNotFound},
-			{method: "CONNECT", httpStatus: http.StatusNotFound},
-			{method: "OPTIONS", httpStatus: http.StatusNotFound},
 			{method: "TRACE", httpStatus: http.StatusNotFound},
-			{method: "PATCH", httpStatus: http.StatusNotFound},
 		},
 	}
 
@@ -55,21 +52,16 @@ func TestDefaultHandler(t *testing.T) {
 func TestValidateCSVHandler(t *testing.T) {
 	httpTests := httpTests{
 		endpoint: "/v1/api/validate/csv",
-		tests: []struct {
-			method     string
-			queryStr   string
-			body       io.Reader
-			httpStatus int
-		}{
+		tests: []unitTest{
+			{method: "CONNECT", httpStatus: http.StatusMethodNotAllowed},
+			{method: "DELETE", httpStatus: http.StatusMethodNotAllowed},
 			{method: "GET", httpStatus: http.StatusOK},
 			{method: "HEAD", httpStatus: http.StatusOK},
+			{method: "OPTIONS", httpStatus: http.StatusMethodNotAllowed},
+			{method: "PATCH", httpStatus: http.StatusMethodNotAllowed},
 			{method: "POST", httpStatus: http.StatusOK},
 			{method: "PUT", httpStatus: http.StatusMethodNotAllowed},
-			{method: "DELETE", httpStatus: http.StatusMethodNotAllowed},
-			{method: "CONNECT", httpStatus: http.StatusMethodNotAllowed},
-			{method: "OPTIONS", httpStatus: http.StatusMethodNotAllowed},
 			{method: "TRACE", httpStatus: http.StatusMethodNotAllowed},
-			{method: "PATCH", httpStatus: http.StatusMethodNotAllowed},
 		},
 	}
 
@@ -87,21 +79,16 @@ func TestValidateCSVHandler(t *testing.T) {
 func TestHealthCheckHandler(t *testing.T) {
 	httpTests := httpTests{
 		endpoint: "/v1/api/health",
-		tests: []struct {
-			method     string
-			queryStr   string
-			body       io.Reader
-			httpStatus int
-		}{
+		tests: []unitTest{
+			{method: "CONNECT", httpStatus: http.StatusMethodNotAllowed},
+			{method: "DELETE", httpStatus: http.StatusMethodNotAllowed},
 			{method: "GET", httpStatus: http.StatusOK},
 			{method: "HEAD", httpStatus: http.StatusOK},
+			{method: "OPTIONS", httpStatus: http.StatusMethodNotAllowed},
+			{method: "PATCH", httpStatus: http.StatusMethodNotAllowed},
 			{method: "POST", httpStatus: http.StatusMethodNotAllowed},
 			{method: "PUT", httpStatus: http.StatusMethodNotAllowed},
-			{method: "DELETE", httpStatus: http.StatusMethodNotAllowed},
-			{method: "CONNECT", httpStatus: http.StatusMethodNotAllowed},
-			{method: "OPTIONS", httpStatus: http.StatusMethodNotAllowed},
 			{method: "TRACE", httpStatus: http.StatusMethodNotAllowed},
-			{method: "PATCH", httpStatus: http.StatusMethodNotAllowed},
 		},
 	}
 
