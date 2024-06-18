@@ -23,7 +23,7 @@ type httpTests struct {
 	tests    []unitTest
 }
 
-// TestDefaultHandler tests if / returns a 403 HTTP status
+// TestDefaultHandler tests if root returns a 403 HTTP status
 func TestDefaultHandler(t *testing.T) {
 	httpTests := httpTests{
 		endpoint: "/",
@@ -50,10 +50,37 @@ func TestDefaultHandler(t *testing.T) {
 	}
 }
 
-// TestValidateCSVHandler tests /validate/csv endpoint, allowing only GET, HEAD, and POST methods.
+// TestValidateCSVHandler tests non-POST methods to /validate/csv endpoint.
+func TestValidateCSVHandler(t *testing.T) {
+	httpTests := httpTests{
+		endpoint: "/v1/api/validate/csv",
+		tests: []unitTest{
+			{method: "CONNECT", httpStatus: http.StatusMethodNotAllowed},
+			{method: "DELETE", httpStatus: http.StatusMethodNotAllowed},
+			{method: "GET", httpStatus: http.StatusOK},
+			{method: "HEAD", httpStatus: http.StatusOK},
+			{method: "OPTIONS", httpStatus: http.StatusMethodNotAllowed},
+			{method: "PATCH", httpStatus: http.StatusMethodNotAllowed},
+			{method: "PUT", httpStatus: http.StatusMethodNotAllowed},
+			{method: "TRACE", httpStatus: http.StatusMethodNotAllowed},
+		},
+	}
+
+	for _, test := range httpTests.tests {
+		req, _ := http.NewRequest(test.method, httpTests.endpoint, test.body)
+
+		w := httptest.NewRecorder()
+
+		validateCSVHandler(w, req)
+
+		assert.Equal(t, test.httpStatus, w.Code)
+	}
+}
+
+// TestValidateCSVHandlerPOST tests POST method to /validate/csv endpoint.
 // POST methods allow CSV and TSV files in payload.
 // Note: This test doesn't validate business logic of CSV validation.
-func TestValidateCSVHandler(t *testing.T) {
+func TestValidateCSVHandlerPOST(t *testing.T) {
 	csvTestData := "first_name,last_name\nJohn,Doe\nMary,Jane"
 	tsvTestData := "first_name\tlast_name\nJohn\tDoe\nMary\tJane"
 	jsonTestData := `{
@@ -74,13 +101,6 @@ func TestValidateCSVHandler(t *testing.T) {
 	httpTests := httpTests{
 		endpoint: "/v1/api/validate/csv",
 		tests: []unitTest{
-			{method: "CONNECT", httpStatus: http.StatusMethodNotAllowed},
-			{method: "DELETE", httpStatus: http.StatusMethodNotAllowed},
-			{method: "GET", httpStatus: http.StatusOK},
-			{method: "HEAD", httpStatus: http.StatusOK},
-			{method: "OPTIONS", httpStatus: http.StatusMethodNotAllowed},
-			{method: "PATCH", httpStatus: http.StatusMethodNotAllowed},
-			// TODO: Move POST test cases to a separate function for readability
 			// Missing file in body
 			{method: "POST", httpStatus: http.StatusBadRequest,
 				contentType: "text/csv"},
@@ -102,8 +122,6 @@ func TestValidateCSVHandler(t *testing.T) {
 			// Base success case
 			{method: "POST", httpStatus: http.StatusAccepted,
 				contentType: "text/csv", body: csvReader},
-			{method: "PUT", httpStatus: http.StatusMethodNotAllowed},
-			{method: "TRACE", httpStatus: http.StatusMethodNotAllowed},
 		},
 	}
 
