@@ -10,23 +10,29 @@ const port = "8080" // TODO: Replace with env variable
 const endpoint = ":" + port
 
 // New creates a new HTTP server
-func New() {
+func New() error {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", defaultHandler)
 	mux.HandleFunc("/v1/api/health", healthCheckHandler) // TODO: Not hard code API version
 	mux.HandleFunc("/v1/api/validate/csv", validateCSVHandler)
 
-	svr := &http.Server{
-		Addr:    endpoint,
-		Handler: mux,
+	run := func() error {
+		svr := &http.Server{
+			Addr:    endpoint,
+			Handler: mux,
+		}
+
+		slog.Info(fmt.Sprintf("Server listening on port %s...", port))
+		// TODO: Certs can probably go into an env variable
+		// TODO: Use HTTPS in prod?
+		// Certs are handled on Kubernetes-level
+		// log.Error("server.New(): %s", "error", svr.ListenAndServeTLS("server.crt", "server.key"))
+		err := svr.ListenAndServe()
+		slog.Error("server.New():", "error", err)
+		return err
 	}
 
-	slog.Info(fmt.Sprintf("Server listening on port %s...", port))
-	// TODO: Certs can probably go into an env variable
-	// TODO: Use HTTPS in prod?
-	// Certs are handled on Kubernetes-level
-	// log.Error("server.New(): %s", "error", svr.ListenAndServeTLS("server.crt", "server.key"))
-	slog.Error("server.New():", "error", svr.ListenAndServe())
+	return run()
 }
 
 // defaultHandler is the default handler that writes 404 HTTP status to response header

@@ -23,7 +23,7 @@ type httpTests struct {
 	tests    []unitTest
 }
 
-// TestDefaultHandler tests if root returns a 403 HTTP status
+// TestDefaultHandler tests if root returns a 403 HTTP status for unsupported HTTP methods.
 func TestDefaultHandler(t *testing.T) {
 	httpTests := httpTests{
 		endpoint: "/",
@@ -167,4 +167,6 @@ func TestHealthCheckHandler(t *testing.T) {
 // TestDuplicateServer confirms if only one HTTP server can be active at any time
 func TestDuplicateServer(t *testing.T) {
 	// TODO: Implement this
+	_ = New()
+	assert.NotNil(t, New())
 }
