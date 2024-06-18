@@ -50,6 +50,33 @@ func TestDefaultHandler(t *testing.T) {
 	}
 }
 
+// TestDefaultHandlerWithNonRoot tests if root returns a 403 HTTP status for unsupported HTTP methods.
+func TestDefaultHandlerWithNonRoot(t *testing.T) {
+	httpTests := httpTests{
+		endpoint: "/test",
+		tests: []unitTest{
+			{method: "CONNECT", httpStatus: http.StatusNotFound},
+			{method: "DELETE", httpStatus: http.StatusNotFound},
+			{method: "GET", httpStatus: http.StatusNotFound},
+			{method: "HEAD", httpStatus: http.StatusNotFound},
+			{method: "OPTIONS", httpStatus: http.StatusNotFound},
+			{method: "PATCH", httpStatus: http.StatusNotFound},
+			{method: "POST", httpStatus: http.StatusNotFound},
+			{method: "PUT", httpStatus: http.StatusNotFound},
+			{method: "TRACE", httpStatus: http.StatusNotFound},
+		},
+	}
+
+	for _, test := range httpTests.tests {
+		req, _ := http.NewRequest(test.method, httpTests.endpoint, test.body)
+		w := httptest.NewRecorder()
+
+		defaultHandler(w, req)
+
+		assert.Equal(t, http.StatusNotFound, w.Code)
+	}
+}
+
 // TestValidateCSVHandler tests non-POST methods to /validate/csv endpoint.
 func TestValidateCSVHandler(t *testing.T) {
 	httpTests := httpTests{
@@ -57,8 +84,8 @@ func TestValidateCSVHandler(t *testing.T) {
 		tests: []unitTest{
 			{method: "CONNECT", httpStatus: http.StatusMethodNotAllowed},
 			{method: "DELETE", httpStatus: http.StatusMethodNotAllowed},
-			{method: "GET", httpStatus: http.StatusOK},
-			{method: "HEAD", httpStatus: http.StatusOK},
+			{method: "GET", httpStatus: http.StatusMethodNotAllowed},
+			{method: "HEAD", httpStatus: http.StatusMethodNotAllowed},
 			{method: "OPTIONS", httpStatus: http.StatusMethodNotAllowed},
 			{method: "PATCH", httpStatus: http.StatusMethodNotAllowed},
 			{method: "PUT", httpStatus: http.StatusMethodNotAllowed},
@@ -137,7 +164,7 @@ func TestValidateCSVHandlerPOST(t *testing.T) {
 	}
 }
 
-// TestHealthCheckHandler tests if GET /health returns a 200 HTTP status
+// TestHealthCheckHandler tests if GET /health returns a 200 HTTP status and JSON payload
 func TestHealthCheckHandler(t *testing.T) {
 	httpTests := httpTests{
 		endpoint: "/v1/api/health",
@@ -145,7 +172,7 @@ func TestHealthCheckHandler(t *testing.T) {
 			{method: "CONNECT", httpStatus: http.StatusMethodNotAllowed},
 			{method: "DELETE", httpStatus: http.StatusMethodNotAllowed},
 			{method: "GET", httpStatus: http.StatusOK},
-			{method: "HEAD", httpStatus: http.StatusOK},
+			{method: "HEAD", httpStatus: http.StatusMethodNotAllowed},
 			{method: "OPTIONS", httpStatus: http.StatusMethodNotAllowed},
 			{method: "PATCH", httpStatus: http.StatusMethodNotAllowed},
 			{method: "POST", httpStatus: http.StatusMethodNotAllowed},
