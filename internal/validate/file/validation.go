@@ -3,6 +3,7 @@ package file
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 
@@ -13,83 +14,169 @@ import (
 	"github.com/google/uuid"
 )
 
-type ValidationResult struct {
-	ReceivedFile    string                 `json:"received_filename"`
-	Source          string                 `json:"source"`
-	Size            int64                  `json:"size"`
-	FileUUID        uuid.UUID              `json:"uuid"`
-	Error           *Error                 `json:"error"`
-	Encoding        constants.EncodingType `json:"encoding"`
-	Delimiter       string                 `json:"delimiter"`
-	Status          string                 `json:"status"` // or object?
-	Jurisdiction    string                 `json:"jurisdiction"`
-	DataStreamID    string                 `json:"data_stream_id"`
-	DataStreamRoute string                 `json:"data_stream_route"`
-	SenderID        string                 `json:"sender_id"`
-	DataProducerID  string                 `json:"data_producer_id"`
-	Version         string                 `json:"version"`
-}
 type Error struct {
 	Message string `json:"message"`
 	Code    int    `json:"code"`
 }
+type MetadataValidationResult struct {
+	ReceivedFile    string `json:"received_filename"`
+	Error           *Error `json:"error"`
+	Status          string `json:"status"` // or object?
+	Jurisdiction    string `json:"jurisdiction"`
+	DataStreamID    string `json:"data_stream_id"`
+	DataStreamRoute string `json:"data_stream_route"`
+	SenderID        string `json:"sender_id"`
+	DataProducerID  string `json:"data_producer_id"`
+	Version         string `json:"version"`
+}
+type configValidationResult struct {
+	//TODO
+	Status   string `json:"status"`
+	FileName string `json:"file_name"`
+}
 
-func (vr *ValidationResult) Validate(configFile string) {
+type fileValidationResult struct {
+	ReceivedFile string                    `json:"received_filename"`
+	Encoding     constants.EncodingType    `json:"encoding"`
+	FileUUID     uuid.UUID                 `json:"uuid"`
+	Size         int64                     `json:"size"`
+	Delimiter    string                    `json:"delimiter"`
+	Error        *Error                    `json:"error"`
+	Status       string                    `json:"status"` // or object?
+	Metadata     *MetadataValidationResult `json:"metadata"`
+}
 
-	vr.FileUUID = uuid.New()
-	vr.processMetadataFields(configFile)
+func Validate(configFile string) fileValidationResult {
+	metadataValidationResult := validateMetadataFile(configFile)
+	if metadataValidationResult.Status != constants.STATUS_VALID {
+		copyToDestination(metadataValidationResult, constants.DEAD_LETTER_QUEUE)
+	}
 
-	file, err := os.Open(vr.ReceivedFile)
+	configValidationResult := validateConfig(configFile)
+	if configValidationResult.Status != constants.STATUS_VALID {
+		copyToDestination(configValidationResult, constants.DEAD_LETTER_QUEUE)
+	}
+
+	fileValidationResult := validateFile(metadataValidationResult.ReceivedFile)
+	if fileValidationResult.Status != constants.STATUS_VALID {
+		copyToDestination(fileValidationResult, constants.DEAD_LETTER_QUEUE)
+	}
+	fileValidationResult.Metadata = &metadataValidationResult
+
+	return fileValidationResult
+}
+
+func validateMetadataFile(fileMetadata string) MetadataValidationResult {
+	validationResult := MetadataValidationResult{}
+
+	file, err := os.Open(fileMetadata)
 	if err != nil {
-		vr.Error = &Error{Message: err.Error(), Code: 13}
-		copyToDestination(vr, constants.DEAD_LETTER_QUEUE)
-		return
+		validationResult.Error = &Error{Message: constants.FILE_OPEN_ERROR, Code: 13}
+		validationResult.Status = constants.STATUS_INVALID
+		copyToDestination(validationResult, constants.DEAD_LETTER_QUEUE)
+	}
+	defer file.Close()
+
+	fields, err := io.ReadAll(file)
+	if err != nil {
+		validationResult.Error = &Error{Message: err.Error(), Code: 13}
+		validationResult.Status = constants.STATUS_INVALID
+		copyToDestination(validationResult, constants.DEAD_LETTER_QUEUE)
+	}
+
+	var metadataMap map[string]string
+	err = json.Unmarshal(fields, &metadataMap)
+	if err != nil {
+		validationResult.Error = &Error{Message: err.Error(), Code: 13}
+		validationResult.Status = constants.STATUS_INVALID
+		copyToDestination(validationResult, constants.DEAD_LETTER_QUEUE)
+
+	}
+
+	validationResult.Jurisdiction = metadataMap[constants.JURISDICTION]
+	if filename, ok := metadataMap[constants.RECEIVED_FILENAME]; ok {
+		validationResult.ReceivedFile = filename
+	} else {
+		validationResult.Error = &Error{Message: constants.RECEIVED_FILENAME, Code: 13}
+		validationResult.Status = constants.STATUS_INVALID
+		copyToDestination(validationResult, constants.DEAD_LETTER_QUEUE)
+	}
+
+	validationResult.DataStreamID = metadataMap[constants.DATA_STREAM_ID]
+	validationResult.DataProducerID = metadataMap[constants.DATA_PRODUCER_ID]
+	validationResult.Version = metadataMap[constants.VERSION]
+	validationResult.Status = constants.STATUS_VALID
+	return validationResult
+}
+
+func validateConfig(configFile string) configValidationResult {
+	//TODO
+	validationResult := configValidationResult{}
+	validationResult.Status = constants.STATUS_VALID
+	validationResult.FileName = configFile
+	return validationResult
+}
+
+func validateFile(fileURI string) fileValidationResult {
+	validationResult := fileValidationResult{}
+
+	fileUUID := uuid.New()
+	validationResult.FileUUID = fileUUID
+	validationResult.ReceivedFile = fileURI
+
+	file, err := os.Open(fileURI)
+	if err != nil {
+		validationResult.Error = &Error{Message: err.Error(), Code: 13}
+		copyToDestination(validationResult, constants.DEAD_LETTER_QUEUE)
+		return validationResult
 	}
 
 	defer func(file *os.File) {
 		if err := file.Close(); err != nil {
-			vr.Error = &Error{Message: err.Error(), Code: 13}
-			copyToDestination(vr, constants.DEAD_LETTER_QUEUE)
+			validationResult.Error = &Error{Message: err.Error(), Code: 13}
+			copyToDestination(validationResult, constants.DEAD_LETTER_QUEUE)
 			return
 		}
 	}(file)
 
 	data, err := utils.ReadFileRandomly(file)
 	if err != nil {
-		vr.Error = &Error{Message: err.Error(), Code: 13}
-		copyToDestination(vr, constants.DEAD_LETTER_QUEUE)
-		return
+		validationResult.Error = &Error{Message: err.Error(), Code: 13}
+		copyToDestination(validationResult, constants.DEAD_LETTER_QUEUE)
+		return validationResult
+
 	}
 
 	detectedDelimiter := detector.DetectDelimiter(data)
-	vr.Delimiter = constants.DelimiterCharacters[detectedDelimiter]
+	validationResult.Delimiter = constants.DelimiterCharacters[detectedDelimiter]
 
-	if vr.Delimiter == constants.DelimiterCharacters[0] {
-		vr.Error = &Error{Message: constants.UNSUPPORTED_DELIMITER_ERROR, Code: 13}
-		copyToDestination(vr, constants.DEAD_LETTER_QUEUE)
+	if validationResult.Delimiter == constants.DelimiterCharacters[0] {
+		validationResult.Error = &Error{Message: constants.UNSUPPORTED_DELIMITER_ERROR, Code: 13}
+		copyToDestination(validationResult, constants.DEAD_LETTER_QUEUE)
+		return validationResult
 	}
 
 	hasBOM, err := detector.DetectBOM(file)
 
 	if err != nil {
-		vr.Error = &Error{Message: err.Error(), Code: 13}
-		copyToDestination(vr, constants.DEAD_LETTER_QUEUE)
-		return
+		validationResult.Error = &Error{Message: err.Error(), Code: 13}
+		copyToDestination(validationResult, constants.DEAD_LETTER_QUEUE)
+		return validationResult
 	}
 	if hasBOM {
-		vr.Encoding = constants.UTF8_BOM
-		copyToDestination(vr, constants.FILE_REPORTS)
-		return
+		validationResult.Encoding = constants.UTF8_BOM
+		copyToDestination(validationResult, constants.FILE_REPORTS)
+		return validationResult
 	}
 
 	detectedEncoding := detector.DetectEncoding(data)
-	vr.Encoding = detectedEncoding
-	copyToDestination(vr, constants.FILE_REPORTS)
-}
+	validationResult.Encoding = detectedEncoding
+	copyToDestination(validationResult, constants.FILE_REPORTS)
 
-func copyToDestination(result *ValidationResult, destination string) error {
+	return validationResult
+}
+func copyToDestination(result interface{}, destination string) error {
 	//This is temporary function that copies result  into destination
-	// Serialize the struct to JSON
 	jsonContent, err := json.Marshal(result)
 	if err != nil {
 		return fmt.Errorf("failed to marshal struct to JSON: %s", err)
@@ -107,6 +194,5 @@ func copyToDestination(result *ValidationResult, destination string) error {
 	if _, err := destFile.Write(jsonContent); err != nil {
 		return fmt.Errorf("failed to write to destination file: %s", err)
 	}
-
 	return nil
 }

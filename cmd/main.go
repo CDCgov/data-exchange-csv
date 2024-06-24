@@ -14,8 +14,7 @@ import (
 func main() {
 	event := "data/event_config.json"
 
-	validationResult := &file.ValidationResult{}
-	validationResult.Validate(event)
+	validationResult := file.Validate(event)
 
 	file, _ := os.Open(validationResult.ReceivedFile)
 	defer func(file *os.File) {
@@ -42,6 +41,5 @@ func main() {
 		return
 	}
 
-	rows := &row.ValidationResult{}
-	rows.Validate(reader, validationResult.FileUUID, validationResult.Delimiter)
+	row.Validate(reader, validationResult.FileUUID, validationResult.Delimiter)
 }

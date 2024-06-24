@@ -18,6 +18,8 @@ const (
 	UNSUPPORTED                                  = "UNSUPPORTED"
 	TAB                                          = '\t'
 	COMMA                                        = ','
+	STATUS_VALID                                 = "Valid"
+	STATUS_INVALID                               = "Invalid"
 	NO_DELIMITERS_DETECTED                       = "No delimiters were detected in the file. Please ensure the file has the correct format."
 	FILE_READ_ERROR                              = "Error reading the file. Check if the file is accessible and not corrupted."
 	FILE_OPEN_ERROR                              = "Error opening the file. Verify the file path and permissions."
