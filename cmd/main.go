@@ -18,6 +18,7 @@ func run(
 	stdout, stderr io.Writer,
 ) error {
 	// TODO: Add elapsed time since service starts to logging?
+	// TODO: Provide reflection in slogs so we can print function name that slog functions are called in
 	log := slog.New(slog.NewTextHandler(stdout, nil))
 	slog.SetDefault(log)
 
