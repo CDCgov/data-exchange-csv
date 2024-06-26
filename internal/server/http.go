@@ -42,8 +42,8 @@ func New() error {
 
 // defaultHandler is the default handler that writes 404 HTTP status to response header
 func defaultHandler(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusNotFound)
 	slog.Warn("Connected to default handler. Upstream error?", "method", r.Method, "protocol", r.Proto)
+	w.WriteHeader(http.StatusNotFound)
 }
 
 // validateCSVHandler processes a URL to CSV file in payload and validates it
@@ -94,11 +94,11 @@ func hasEmptyBody(r *http.Request) bool {
 
 // healthCheckHandler writes 200 HTTP status to response header
 func healthCheckHandler(w http.ResponseWriter, r *http.Request) {
+	slog.Info("Connected to health check handler.", "method", r.Method, "protocol", r.Proto)
 	switch r.Method {
 
 	case http.MethodGet:
 		w.WriteHeader(http.StatusOK)
-		slog.Info("Connected to health check handler.", "method", r.Method, "protocol", r.Proto)
 
 	default:
 		http.Error(w, "Unsupported method", http.StatusMethodNotAllowed)
