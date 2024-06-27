@@ -1,6 +1,8 @@
 package server
 
 import (
+	"bytes"
+	"encoding/json"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -9,6 +11,9 @@ import (
 
 	"github.com/stretchr/testify/assert"
 )
+
+type EventMock struct {
+}
 
 type unitTest struct {
 	method      string
@@ -169,11 +174,10 @@ func TestValidateCSVHandlerPOSTFailures(t *testing.T) {
 // TestValidateCSVHandlerPOSTSuccesses tests success states of POST method to /validate/csv endpoint.
 // Note: This test doesn't validate business logic of CSV validation.
 func TestValidateCSVHandlerPOSTSuccesses(t *testing.T) {
-	jsonTestData := `{
-	// TODO: Implement mock service bus event to consume by this service
-}`
+	jsonTestData := EventMock{} // TODO: Update with mock data
 
-	jsonReader := strings.NewReader(jsonTestData)
+	jsonBytes, _ := json.Marshal(jsonTestData)
+	jsonReader := bytes.NewReader(jsonBytes)
 
 	httpTests := httpTests{
 		endpoint: "/v1/api/validate/csv",
