@@ -104,10 +104,12 @@ func TestValidateCSVHandler(t *testing.T) {
 	}
 }
 
-// TestValidateCSVHandlerPOST tests POST method to /validate/csv endpoint.
-// POST methods allow CSV and TSV files in payload.
+// TODO: Reevaluate this model; I don't think we will get flat files in initial request body because this service
+// will read events off a service bus and use details in those event messages to get the endpoint where file is stored
+// so we can stream it
+// TestValidateCSVHandlerPOSTFailures tests fail states of POST method to /validate/csv endpoint.
 // Note: This test doesn't validate business logic of CSV validation.
-func TestValidateCSVHandlerPOST(t *testing.T) {
+func TestValidateCSVHandlerPOSTFailures(t *testing.T) {
 	csvTestData := "first_name,last_name\nJohn,Doe\nMary,Jane"
 	tsvTestData := "first_name\tlast_name\nJohn\tDoe\nMary\tJane"
 	jsonTestData := `{
@@ -141,14 +143,44 @@ func TestValidateCSVHandlerPOST(t *testing.T) {
 			{method: "POST", httpStatus: http.StatusBadRequest,
 				contentType: "application/vnd.ms-excel", body: csvReader},
 			// CSV file in body but accepted file format for processing (any format with delimiter-separated values)
-			{method: "POST", httpStatus: http.StatusAccepted,
+			{method: "POST", httpStatus: http.StatusBadRequest,
 				contentType: "text/tab-separated-values", body: csvReader},
 			// TSV file in body
-			{method: "POST", httpStatus: http.StatusAccepted,
+			{method: "POST", httpStatus: http.StatusBadRequest,
 				contentType: "text/tab-separated-values", body: tsvReader},
+			// CSV file in body
+			{method: "POST", httpStatus: http.StatusBadRequest,
+				contentType: "text/csv", body: csvReader},
+		},
+	}
+
+	for _, test := range httpTests.tests {
+		req, _ := http.NewRequest(test.method, httpTests.endpoint, test.body)
+		req.Header.Set("Content-Type", test.contentType)
+
+		w := httptest.NewRecorder()
+
+		validateCSVHandler(w, req)
+
+		assert.Equal(t, test.httpStatus, w.Code)
+	}
+}
+
+// TestValidateCSVHandlerPOSTSuccesses tests success states of POST method to /validate/csv endpoint.
+// Note: This test doesn't validate business logic of CSV validation.
+func TestValidateCSVHandlerPOSTSuccesses(t *testing.T) {
+	jsonTestData := `{
+	// TODO: Implement mock service bus event to consume by this service
+}`
+
+	jsonReader := strings.NewReader(jsonTestData)
+
+	httpTests := httpTests{
+		endpoint: "/v1/api/validate/csv",
+		tests: []unitTest{
 			// Base success case
 			{method: "POST", httpStatus: http.StatusAccepted,
-				contentType: "text/csv", body: csvReader},
+				contentType: "application/json", body: jsonReader},
 		},
 	}
 
