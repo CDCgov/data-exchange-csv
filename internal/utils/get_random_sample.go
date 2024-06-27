@@ -51,7 +51,11 @@ func ReadFileRandomly(file *os.File) ([]byte, error) {
 		}
 		randomBytes = append(randomBytes, buffer[:n]...)
 	}
-
+	// reset the pointer in the begining of the file
+	_, err = file.Seek(0, 0)
+	if err != nil {
+		return nil, err
+	}
 	return randomBytes, nil
 
 }
