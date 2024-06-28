@@ -11,14 +11,14 @@ import (
 const port = "8080" // TODO: Replace with env variable
 const endpoint = ":" + port
 
-// TODO: Do we need to authenticate sender?
+// TODO: Do we need to authenticate sender? Likely no because this API is just for testing purposes
 
-// TODO: Find out what is the structure of the event that is being read from service bus
-type EventRequest struct {
-	// ServiceId
-	// Timestamp
-	FileURI string
-}
+// TODO: Remove all instances of EventRequest; we are not using this API as an endpoint to feed event messages into
+//type EventRequest struct {
+//	// ServiceId
+//	// Timestamp
+//	FileURI string
+//}
 
 // New creates a new HTTP server that serves as REST API
 func New() error {
@@ -75,16 +75,16 @@ func validateCSVHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusAccepted)
 		_, _ = w.Write([]byte("Hello, World!"))
 
-		var event EventRequest
-		err := json.NewDecoder(r.Body).Decode(&event) // JSON body should match schema as EventRequest struct
-
-		if err != nil {
-			slog.Warn("Sender sent invalid JSON in request body", "error", err.Error())
-			http.Error(w, "Invalid JSON in body", http.StatusBadRequest)
-		}
+		//var event EventRequest
+		//err := json.NewDecoder(r.Body).Decode(&event) // JSON body should match schema as EventRequest struct
+		//
+		//if err != nil {
+		//	slog.Warn("Sender sent invalid JSON in request body", "error", err.Error())
+		//	http.Error(w, "Invalid JSON in body", http.StatusBadRequest)
+		//}
 
 		slog.Info("Calling validation function")
-		validationResult := file.Validate(event.FileURI) // TODO: Replace with a file path or an URL to remote resource to be validated
+		validationResult := file.Validate("")
 		serializedResult, _ := json.Marshal(validationResult)
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write(serializedResult)

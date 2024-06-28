@@ -44,6 +44,10 @@ type httpTests struct {
 
 // TestDefaultHandler tests if root returns a 403 HTTP status for unsupported HTTP methods.
 func TestDefaultHandler(t *testing.T) {
+	// TODO: Refactor this unit test struct b/c if one specific test fails, it is harder to backtrace which one of these elements
+	// gave error. Is there a way to feed in a table of arguments and expected outputs in Go?
+	// Similar to Java JUnit 5 parameterized tests?
+	// https://junit.org/junit5/docs/current/user-guide/#writing-tests-parameterized-tests
 	httpTests := httpTests{
 		endpoint: "/",
 		tests: []unitTest{
