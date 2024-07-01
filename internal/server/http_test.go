@@ -16,16 +16,16 @@ import (
 // MockEvent represents a sample event from a message broker
 // We will be using Azure so mimicking Azure Service Bus' event message structure, but this should be agnostic
 type MockEvent struct {
-	ID              string      `json:"id"`
-	EventType       string      `json:"eventType"`
-	Subject         string      `json:"subject"`
-	EventTime       time.Time   `json:"eventTime"`
-	Data            newFileData `json:"data"`
-	DataVersion     string      `json:"dataVersion,omitempty"`
-	MetadataVersion string      `json:"metadataVersion,omitempty"`
+	ID              string    `json:"id"`
+	EventType       string    `json:"eventType"`
+	Subject         string    `json:"subject"`
+	EventTime       time.Time `json:"eventTime"`
+	Data            fileData  `json:"data"`
+	DataVersion     string    `json:"dataVersion,omitempty"`
+	MetadataVersion string    `json:"metadataVersion,omitempty"`
 }
 
-type newFileData struct {
+type fileData struct {
 	FileURL string `json:"fileUrl"`
 }
 
@@ -201,7 +201,7 @@ func TestValidateCSVHandlerEventMessage(t *testing.T) {
 		EventType: "NewFile",
 		Subject:   "csv",
 		EventTime: time.Now(),
-		Data: newFileData{
+		Data: fileData{
 			FileURL: "https://example.blob.core.windows.net/container/file.csv",
 		},
 		DataVersion:     "1.0",
@@ -214,7 +214,6 @@ func TestValidateCSVHandlerEventMessage(t *testing.T) {
 	httpTests := httpTests{
 		endpoint: "/v1/api/validate/csv",
 		tests: []unitTest{
-			// Base success case
 			{method: "POST", httpStatus: http.StatusBadRequest,
 				contentType: "application/json", body: jsonReader},
 		},
