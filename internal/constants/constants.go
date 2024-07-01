@@ -53,13 +53,19 @@ const (
 )
 
 const (
-	DATA_STREAM_ID    = "dex-csv-test"
-	SENDER_ID         = "filevalidation-csv-test"
+	DATA_STREAM_ID    = "data_producer_id"
+	SENDER_ID         = "sender_id"
 	RECEIVED_FILENAME = "received_filename"
-	DATA_PRODUCER_ID  = "dex-csv"
-	DATA_STREAM_ROUTE = "dex-route"
-	JURISDICTION      = "NJ"
+	DATA_PRODUCER_ID  = "data_producer_id"
+	DATA_STREAM_ROUTE = "data_stream_route"
+	JURISDICTION      = "jurisdiction"
 	VERSION           = "1.0.0"
+
+	CSV_DATA_STREAM_ID    = "dex-csv"
+	CSV_DATA_PRODUCER_ID  = "dex-csv"
+	CSV_DATA_STREAM_ROUTE = "dex-csv"
+	CSV_SENDER_ID         = "nrss-csv"
+	CSV_JURISDICTION      = "NJ"
 )
 
 const (
@@ -74,6 +80,12 @@ const (
 	ValidStartWindows1252 byte = 0x80 // as decimal 128
 	ValidEndWindows1252   byte = 0x9F // as decimal 159
 
+)
+
+const (
+	ERR_MISMATCHED_FIELD_COUNTS              = "Row %d contains %d fields, while the previous row contained %d. Please ensure each row contains correct number of fields."
+	ERR_UNESCAPED_QUOTES                     = "Row %d Column %d contains extra quote. Please ensure quotes within a quoted field are escaped by preceding it with another double quote."
+	ERR_HEADER_LAST_FIELD_TRAILING_DELIMITER = "The last field in the header should not be followed by a delimiter: comma or tab. Please ensure the delimiter is removed."
 )
 
 var DelimiterCharacters = map[byte]string{
