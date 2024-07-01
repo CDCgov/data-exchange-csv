@@ -61,6 +61,7 @@ func Validate(configFile string) fileValidationResult {
 	if fileValidationResult.Status != constants.STATUS_VALID {
 		copyToDestination(fileValidationResult, constants.DEAD_LETTER_QUEUE)
 	}
+
 	fileValidationResult.Metadata = &metadataValidationResult
 
 	return fileValidationResult
@@ -105,7 +106,10 @@ func validateMetadataFile(fileMetadata string) MetadataValidationResult {
 	validationResult.DataStreamID = metadataMap[constants.DATA_STREAM_ID]
 	validationResult.DataProducerID = metadataMap[constants.DATA_PRODUCER_ID]
 	validationResult.Version = metadataMap[constants.VERSION]
+	validationResult.DataStreamRoute = metadataMap[constants.DATA_STREAM_ROUTE]
 	validationResult.Status = constants.STATUS_VALID
+	validationResult.SenderID = metadataMap[constants.CSV_SENDER_ID]
+
 	return validationResult
 }
 
@@ -138,6 +142,18 @@ func validateFile(fileURI string) fileValidationResult {
 			return
 		}
 	}(file)
+	hasBOM, err := detector.DetectBOM(file)
+
+	if err != nil {
+		validationResult.Error = &Error{Message: err.Error(), Code: 13}
+		copyToDestination(validationResult, constants.DEAD_LETTER_QUEUE)
+		return validationResult
+	}
+	if hasBOM {
+		validationResult.Encoding = constants.UTF8_BOM
+		copyToDestination(validationResult, constants.FILE_REPORTS)
+		return validationResult
+	}
 
 	data, err := utils.ReadFileRandomly(file)
 	if err != nil {
@@ -153,19 +169,6 @@ func validateFile(fileURI string) fileValidationResult {
 	if validationResult.Delimiter == constants.DelimiterCharacters[0] {
 		validationResult.Error = &Error{Message: constants.UNSUPPORTED_DELIMITER_ERROR, Code: 13}
 		copyToDestination(validationResult, constants.DEAD_LETTER_QUEUE)
-		return validationResult
-	}
-
-	hasBOM, err := detector.DetectBOM(file)
-
-	if err != nil {
-		validationResult.Error = &Error{Message: err.Error(), Code: 13}
-		copyToDestination(validationResult, constants.DEAD_LETTER_QUEUE)
-		return validationResult
-	}
-	if hasBOM {
-		validationResult.Encoding = constants.UTF8_BOM
-		copyToDestination(validationResult, constants.FILE_REPORTS)
 		return validationResult
 	}
 
