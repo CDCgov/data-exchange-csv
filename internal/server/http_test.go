@@ -3,6 +3,7 @@ package server
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -254,6 +255,8 @@ func TestHealthCheckHandler(t *testing.T) {
 func TestDuplicateServer(t *testing.T) {
 	// TODO: Implement this
 	// TODO: This test may need to be in its own separate package for black-box testing
-	_ = New()
-	assert.NotNil(t, New())
+	// TODO: This unit tests works if it is implemented outside of server package (for example in main_test.go under main package); unsure why this is the case
+	err := New()
+	fmt.Println("Hello World")
+	assert.NotNil(t, err)
 }
