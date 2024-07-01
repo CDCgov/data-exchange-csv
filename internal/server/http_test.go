@@ -3,7 +3,6 @@ package server
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -14,11 +13,12 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// Test suite functions follow this flow: prepare data -> define unit tests -> execute tests -> validate results
+// Test suite functions follow this flow:
+// prepare/setup data -> define unit tests -> execute tests -> validate results -> clean up/teardown workspace to start next test fresh
 
-// MockEvent represents a sample event from a message broker
-// We will be using Azure so mimicking Azure Service Bus' event message structure, but this should be platform agnostic
-type MockEvent struct {
+// mockEvent represents a sample event from a message broker
+// We will be using Azure so mimicking Azure Service Bus' event message structure, but this should be platform-agnostic
+type mockEvent struct {
 	ID              string    `json:"id"`
 	EventType       string    `json:"eventType"`
 	Subject         string    `json:"subject"`
@@ -32,6 +32,7 @@ type fileData struct {
 	FileURL string `json:"fileUrl"`
 }
 
+// httpUnitTest represents a single HTTP request as a unit test
 type httpUnitTest struct {
 	name        string    // Optional name for unit test
 	method      string    // HTTP method
@@ -40,10 +41,11 @@ type httpUnitTest struct {
 	status      int       // Expected HTTP status
 }
 
+// httpTests stores a collection of similar unit tests for HTTP testing
 type httpTests struct {
-	endpoint string         // Relative endpoint
+	endpoint string         // Relative endpoint that unit tests will use
 	queryStr string         // Optional query string
-	tests    []httpUnitTest // List of unit tests cases
+	tests    []httpUnitTest // List of unit tests cases (table-driven testing)
 }
 
 // runTest executes a list of defined subtests against passed in HTTP handler function.
@@ -69,7 +71,7 @@ func runTest(t *testing.T, httpTests httpTests, handler func(w http.ResponseWrit
 
 // TestDefaultHandler tests if root returns a 403 HTTP status for unsupported HTTP methods.
 func TestDefaultHandler(t *testing.T) {
-	// TODO: Is there a way to feed in a table of arguments and expected outputs in Go?
+	// TODO: Is there a way to feed in a table of arguments and expected outputs in Go? (table-driven testing)
 	// Similar to Java JUnit 5 parameterized tests?
 	// https://junit.org/junit5/docs/current/user-guide/#writing-tests-parameterized-tests
 	httpTests := httpTests{
@@ -203,7 +205,7 @@ func TestValidateCSVHandlerEventMessage(t *testing.T) {
 	// TODO: Clarify whether this API endpoint is just for end-users to test their CSV file or is this API exclusive
 	// for internal use; that affects whether or not users can send a simple POST request with a CSV file in body vs.
 	// going through whole pipeline
-	jsonTestData := MockEvent{
+	jsonTestData := mockEvent{
 		ID:        "42",
 		EventType: "NewFile",
 		Subject:   "csv",
@@ -256,7 +258,9 @@ func TestDuplicateServer(t *testing.T) {
 	// TODO: Implement this
 	// TODO: This test may need to be in its own separate package for black-box testing
 	// TODO: This unit tests works if it is implemented outside of server package (for example in main_test.go under main package); unsure why this is the case
-	err := New()
-	fmt.Println("Hello World")
-	assert.NotNil(t, err)
+	//mockServer := new(MockServerWrapper)
+	//mockServer.On("ListenAndServe").Return(nil)
+	svr := New()
+	err := svr.Run()
+	assert.Contains(t, err.Error(), "Only one usage of each socket address (protocol/network address/port) is normally permitted")
 }

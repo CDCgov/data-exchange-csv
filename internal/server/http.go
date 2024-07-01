@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/CDCgov/data-exchange-csv/cmd/internal/validate/file"
@@ -13,31 +14,48 @@ const endpoint = ":" + port
 
 // TODO: Do we need to authenticate sender? Likely no because this API is just for testing purposes
 
+// HTTPServer is a wrapper around http.Server to extend its functionality
+type HTTPServer struct {
+	server *http.Server
+}
+
 // New creates a new HTTP server that serves as REST API
-func New() error {
+func New() *HTTPServer {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/", defaultHandler)
 	mux.HandleFunc("/v1/api/health", healthCheckHandler) // TODO: Not hard code API version
 	mux.HandleFunc("/v1/api/validate/csv", validateCSVHandler)
 
-	run := func() error {
-		svr := &http.Server{
+	svr := &HTTPServer{
+		server: &http.Server{
 			Addr:    endpoint,
 			Handler: mux,
-		}
-
-		slog.Info(fmt.Sprintf("Server listening on port %s...", port))
-		// TODO: Certs can probably go into an env variable
-		// TODO: Use HTTPS in prod?
-		// Certs are handled on Kubernetes-level
-		// log.Error("server.New(): %s", "error", svr.ListenAndServeTLS("server.crt", "server.key"))
-		err := svr.ListenAndServe()
-		slog.Error("server.New():", "error", err)
-		return err
+		},
 	}
 
-	return run()
+	return svr
+}
+
+// Run starts the server
+func (svr *HTTPServer) Run() error {
+	slog.Info(fmt.Sprintf("Server listening on port %s...", port))
+	// TODO: Certs can probably go into an env variable
+	// TODO: Use HTTPS in prod?
+	// Certs are handled on Kubernetes-level
+	// log.Error("server.New(): %s", "error", svr.ListenAndServeTLS("server.crt", "server.key"))
+	err := svr.server.ListenAndServe()
+	slog.Error("HTTPServer.Run():", "error", err) // TODO: Should this be a slog.Warn? Because a Shutdown() would probably give and error message.
+	return err
+}
+
+// Shutdown gracefully shuts down the server
+func (svr *HTTPServer) Shutdown(ctx context.Context) error {
+	// TODO: Implement and test this
+	slog.Info(fmt.Sprint("Server gracefully shutting down..."))
+	err := svr.server.Shutdown(ctx)
+	slog.Error("HTTPServer.Shutdown(ctx),", "error", err)
+	return err
 }
 
 // defaultHandler is the default handler that writes 404 HTTP status to response header

@@ -21,17 +21,18 @@ func run(
 	// TODO: Provide reflection in slogs so we can print function name that slog functions are called in
 	log := slog.New(slog.NewTextHandler(stdout, nil))
 	slog.SetDefault(log)
+	slog.Info("Command-line arguments:", args[:])
 
 	ctx, cancel := signal.NotifyContext(ctx, os.Interrupt)
 	defer cancel()
 
 	log.Info("Starting DEX CSV Validation")
 
-	server.New() // Event loop in here
+	err := server.New().Run() // Event loop in here
 
 	log.Info("Exiting DEX CSV Validation")
 
-	return nil
+	return err
 }
 
 func main() {
