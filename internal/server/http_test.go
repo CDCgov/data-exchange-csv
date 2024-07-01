@@ -13,8 +13,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// Test suite functions follow this flow: prepare data -> define unit tests -> execute tests -> validate results
+
 // MockEvent represents a sample event from a message broker
-// We will be using Azure so mimicking Azure Service Bus' event message structure, but this should be agnostic
+// We will be using Azure so mimicking Azure Service Bus' event message structure, but this should be platform agnostic
 type MockEvent struct {
 	ID              string    `json:"id"`
 	EventType       string    `json:"eventType"`
@@ -38,15 +40,20 @@ type httpUnitTest struct {
 }
 
 type httpTests struct {
-	endpoint string
-	queryStr string
-	tests    []httpUnitTest
+	endpoint string         // Relative endpoint
+	queryStr string         // Optional query string
+	tests    []httpUnitTest // List of unit tests cases
 }
 
 // runTest executes a list of defined subtests against passed in HTTP handler function.
 func runTest(t *testing.T, httpTests httpTests, handler func(w http.ResponseWriter, r *http.Request)) {
 	for _, test := range httpTests.tests {
-		t.Run(test.method, func(t *testing.T) {
+		testName := test.name
+		if testName == "" {
+			testName = test.method
+		}
+
+		t.Run(testName, func(t *testing.T) {
 			req, _ := http.NewRequest(test.method, httpTests.endpoint, test.body)
 			req.Header.Set("Content-Type", test.contentType)
 
@@ -148,18 +155,23 @@ func TestValidateCSVHandlerPOST(t *testing.T) {
 	httpTests := httpTests{
 		endpoint: "/v1/api/validate/csv",
 		tests: []httpUnitTest{
-			{name: "Missing file in body", method: "POST",
+			{name: "Missing file in body",
+				method:      "POST",
 				status:      http.StatusBadRequest,
-				contentType: "text/csv"},
-			{name: "Non-CSV file in body", method: "POST",
+				contentType: "text/csv",
+				body:        nil},
+			{name: "Non-CSV file in body",
+				method:      "POST",
 				status:      http.StatusBadRequest,
 				contentType: "application/json",
 				body:        jsonReader},
-			{name: "CSV file in body but wrong content type (JSON)", method: "POST",
+			{name: "CSV file in body but wrong content type (JSON)",
+				method:      "POST",
 				status:      http.StatusBadRequest,
 				contentType: "application/json",
 				body:        csvReader},
-			{name: "CSV file in body but wrong content type (Excel, CSV adjacent format)", method: "POST",
+			{name: "CSV file in body but wrong content type (Excel, CSV adjacent format)",
+				method:      "POST",
 				status:      http.StatusBadRequest,
 				contentType: "application/vnd.ms-excel",
 				body:        csvReader},
@@ -168,11 +180,13 @@ func TestValidateCSVHandlerPOST(t *testing.T) {
 				status:      http.StatusAccepted,
 				contentType: "text/tab-separated-values",
 				body:        csvReader},
-			{name: "TSV file in body", method: "POST",
+			{name: "TSV file in body",
+				method:      "POST",
 				status:      http.StatusAccepted,
 				contentType: "text/tab-separated-values",
 				body:        tsvReader},
-			{name: "CSV file in body", method: "POST",
+			{name: "CSV file in body",
+				method:      "POST",
 				status:      http.StatusAccepted,
 				contentType: "text/csv",
 				body:        csvReader},
@@ -206,8 +220,10 @@ func TestValidateCSVHandlerEventMessage(t *testing.T) {
 	httpTests := httpTests{
 		endpoint: "/v1/api/validate/csv",
 		tests: []httpUnitTest{
-			{method: "POST", status: http.StatusBadRequest,
-				contentType: "application/json", body: jsonReader},
+			{method: "POST",
+				status:      http.StatusBadRequest,
+				contentType: "application/json",
+				body:        jsonReader},
 		},
 	}
 
