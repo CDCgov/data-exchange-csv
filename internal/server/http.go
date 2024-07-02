@@ -20,6 +20,7 @@ type HTTPServer struct {
 }
 
 // New creates a new HTTP server that serves as REST API
+// TODO: Design decision: Do we want this program to run multiple HTTP servers? (pass in port # as argument to constructor)
 func New() *HTTPServer {
 	mux := http.NewServeMux()
 
@@ -45,7 +46,9 @@ func (svr *HTTPServer) Run() error {
 	// Certs are handled on Kubernetes-level
 	// log.Error("server.New(): %s", "error", svr.ListenAndServeTLS("server.crt", "server.key"))
 	err := svr.server.ListenAndServe()
-	slog.Error("HTTPServer.Run():", "error", err) // TODO: Should this be a slog.Warn? Because a Shutdown() would probably give and error message.
+	if err != nil {
+		slog.Error("HTTPServer.Run():", "error", err) // TODO: Should this be a slog.Warn? Because a Shutdown() would probably give and error message.
+	}
 	return err
 }
 
@@ -54,7 +57,9 @@ func (svr *HTTPServer) Shutdown(ctx context.Context) error {
 	// TODO: Implement and test this
 	slog.Info(fmt.Sprint("Server gracefully shutting down..."))
 	err := svr.server.Shutdown(ctx)
-	slog.Error("HTTPServer.Shutdown(ctx),", "error", err)
+	if err != nil {
+		slog.Error("HTTPServer.Shutdown(ctx),", "error", err)
+	}
 	return err
 }
 

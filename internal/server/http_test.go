@@ -2,6 +2,7 @@ package server
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -255,12 +256,16 @@ func TestHealthCheckHandler(t *testing.T) {
 
 // TestDuplicateServer confirms if only one HTTP server can be active at any time
 func TestDuplicateServer(t *testing.T) {
-	// TODO: Implement this
-	// TODO: This test may need to be in its own separate package for black-box testing
-	// TODO: This unit tests works if it is implemented outside of server package (for example in main_test.go under main package); unsure why this is the case
-	//mockServer := new(MockServerWrapper)
-	//mockServer.On("ListenAndServe").Return(nil)
 	svr := New()
 	err := svr.Run()
 	assert.Contains(t, err.Error(), "Only one usage of each socket address (protocol/network address/port) is normally permitted")
 }
+
+// TestHTTPServer_Shutdown tests if HTTP server can gracefully shutdown
+func TestHTTPServer_Shutdown(t *testing.T) {
+	svr := New()
+	err := svr.Shutdown(context.Background())
+	assert.Nil(t, err)
+}
+
+// TODO: Add integration tests for API. Right now we are only testing individual handler functions and not the actual API server with a mock client
