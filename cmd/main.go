@@ -41,5 +41,9 @@ func main() {
 		return
 	}
 
+	// if detected delimiter is TSV, change the seperator for a csv.Reader to a tab rune
+	if validationResult.Delimiter == constants.TSV {
+		reader.Comma = constants.TAB
+	}
 	row.Validate(reader, validationResult.FileUUID, validationResult.Delimiter)
 }
