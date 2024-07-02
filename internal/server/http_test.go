@@ -267,5 +267,3 @@ func TestHTTPServer_Shutdown(t *testing.T) {
 	err := svr.Shutdown(context.Background())
 	assert.Nil(t, err)
 }
-
-// TODO: Add integration tests for API. Right now we are only testing individual handler functions and not the actual API server with a mock client
