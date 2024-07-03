@@ -18,8 +18,8 @@ const (
 	UNSUPPORTED                                  = "UNSUPPORTED"
 	TAB                                          = '\t'
 	COMMA                                        = ','
-	STATUS_VALID                                 = "Valid"
-	STATUS_INVALID                               = "Invalid"
+	STATUS_SUCCESS                               = "success"
+	STATUS_FAILED                                = "failed"
 	NO_DELIMITERS_DETECTED                       = "No delimiters were detected in the file. Please ensure the file has the correct format."
 	FILE_READ_ERROR                              = "Error reading the file. Check if the file is accessible and not corrupted."
 	FILE_OPEN_ERROR                              = "Error opening the file. Verify the file path and permissions."
@@ -83,9 +83,10 @@ const (
 )
 
 const (
-	ERR_MISMATCHED_FIELD_COUNTS              = "Row %d contains %d fields, while the previous row contained %d. Please ensure each row contains correct number of fields."
-	ERR_UNESCAPED_QUOTES                     = "Row %d Column %d contains extra quote. Please ensure quotes within a quoted field are escaped by preceding it with another double quote."
-	ERR_HEADER_LAST_FIELD_TRAILING_DELIMITER = "The last field in the header should not be followed by a delimiter: comma or tab. Please ensure the delimiter is removed."
+	ERR_MISMATCHED_FIELD_COUNTS              = "Mismatched field count. Please ensure each row contains the correct number of fields."
+	ERR_UNESCAPED_QUOTES                     = "Unescaped quotes found in field. Please ensure quotes within a quoted field are escaped by preceding them with another double quote."
+	ERR_BARE_QUOTE                           = "Bare quote character found in unquoted field. Please ensure the field is correctly quoted."
+	ERR_HEADER_LAST_FIELD_TRAILING_DELIMITER = "Trailing delimiter found in the last field of the header. Please ensure the last field is not followed by a delimiter (comma or tab)."
 )
 
 var DelimiterCharacters = map[byte]string{

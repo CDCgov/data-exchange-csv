@@ -21,7 +21,7 @@ type Error struct {
 type MetadataValidationResult struct {
 	ReceivedFile    string `json:"received_filename"`
 	Error           *Error `json:"error"`
-	Status          string `json:"status"` // or object?
+	Status          string `json:"status"`
 	Jurisdiction    string `json:"jurisdiction"`
 	DataStreamID    string `json:"data_stream_id"`
 	DataStreamRoute string `json:"data_stream_route"`
@@ -48,17 +48,17 @@ type fileValidationResult struct {
 
 func Validate(configFile string) fileValidationResult {
 	metadataValidationResult := validateMetadataFile(configFile)
-	if metadataValidationResult.Status != constants.STATUS_VALID {
+	if metadataValidationResult.Status != constants.STATUS_SUCCESS {
 		copyToDestination(metadataValidationResult, constants.DEAD_LETTER_QUEUE)
 	}
 
 	configValidationResult := validateConfig(configFile)
-	if configValidationResult.Status != constants.STATUS_VALID {
+	if configValidationResult.Status != constants.STATUS_SUCCESS {
 		copyToDestination(configValidationResult, constants.DEAD_LETTER_QUEUE)
 	}
 
 	fileValidationResult := validateFile(metadataValidationResult.ReceivedFile)
-	if fileValidationResult.Status != constants.STATUS_VALID {
+	if fileValidationResult.Status != constants.STATUS_SUCCESS {
 		copyToDestination(fileValidationResult, constants.DEAD_LETTER_QUEUE)
 	}
 
@@ -73,7 +73,7 @@ func validateMetadataFile(fileMetadata string) MetadataValidationResult {
 	file, err := os.Open(fileMetadata)
 	if err != nil {
 		validationResult.Error = &Error{Message: constants.FILE_OPEN_ERROR, Code: 13}
-		validationResult.Status = constants.STATUS_INVALID
+		validationResult.Status = constants.STATUS_FAILED
 		copyToDestination(validationResult, constants.DEAD_LETTER_QUEUE)
 	}
 	defer file.Close()
@@ -81,7 +81,7 @@ func validateMetadataFile(fileMetadata string) MetadataValidationResult {
 	fields, err := io.ReadAll(file)
 	if err != nil {
 		validationResult.Error = &Error{Message: err.Error(), Code: 13}
-		validationResult.Status = constants.STATUS_INVALID
+		validationResult.Status = constants.STATUS_FAILED
 		copyToDestination(validationResult, constants.DEAD_LETTER_QUEUE)
 	}
 
@@ -89,7 +89,7 @@ func validateMetadataFile(fileMetadata string) MetadataValidationResult {
 	err = json.Unmarshal(fields, &metadataMap)
 	if err != nil {
 		validationResult.Error = &Error{Message: err.Error(), Code: 13}
-		validationResult.Status = constants.STATUS_INVALID
+		validationResult.Status = constants.STATUS_FAILED
 		copyToDestination(validationResult, constants.DEAD_LETTER_QUEUE)
 
 	}
@@ -99,7 +99,7 @@ func validateMetadataFile(fileMetadata string) MetadataValidationResult {
 		validationResult.ReceivedFile = filename
 	} else {
 		validationResult.Error = &Error{Message: constants.RECEIVED_FILENAME, Code: 13}
-		validationResult.Status = constants.STATUS_INVALID
+		validationResult.Status = constants.STATUS_FAILED
 		copyToDestination(validationResult, constants.DEAD_LETTER_QUEUE)
 	}
 
@@ -107,7 +107,7 @@ func validateMetadataFile(fileMetadata string) MetadataValidationResult {
 	validationResult.DataProducerID = metadataMap[constants.DATA_PRODUCER_ID]
 	validationResult.Version = metadataMap[constants.VERSION]
 	validationResult.DataStreamRoute = metadataMap[constants.DATA_STREAM_ROUTE]
-	validationResult.Status = constants.STATUS_VALID
+	validationResult.Status = constants.STATUS_SUCCESS
 	validationResult.SenderID = metadataMap[constants.CSV_SENDER_ID]
 
 	return validationResult
@@ -116,7 +116,7 @@ func validateMetadataFile(fileMetadata string) MetadataValidationResult {
 func validateConfig(configFile string) configValidationResult {
 	//TODO
 	validationResult := configValidationResult{}
-	validationResult.Status = constants.STATUS_VALID
+	validationResult.Status = constants.STATUS_SUCCESS
 	validationResult.FileName = configFile
 	return validationResult
 }
