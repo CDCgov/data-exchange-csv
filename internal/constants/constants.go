@@ -39,6 +39,13 @@ const (
 	FILE_MISSING_ERROR                           = "received_filename is a required metadata field."
 )
 
+type Severity string
+
+const (
+	Warning Severity = "warning"
+	Failure Severity = "failure"
+)
+
 const (
 	EMPTY_INPUT                  = "Empty input test"
 	VALID_SINGLE_BYTE_SEQUENCE   = "Valid single byte sequence"
@@ -71,6 +78,7 @@ const (
 const (
 	DEAD_LETTER_QUEUE = "results/DLQ"
 	FILE_REPORTS      = "results/filereports"
+	ROW_REPORTS       = "results/rowreports"
 )
 
 const (
