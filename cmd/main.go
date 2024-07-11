@@ -28,7 +28,10 @@ func main() {
 
 	var reader *csv.Reader
 
-	if detectedEncoding == constants.UTF8 || detectedEncoding == constants.UTF8_BOM {
+	if detectedEncoding == constants.UTF8 {
+		reader = csv.NewReader(file)
+	} else if detectedEncoding == constants.UTF8_BOM {
+		file.Seek(3, 0)
 		reader = csv.NewReader(file)
 	} else if detectedEncoding == constants.ISO8859_1 {
 		decoder := charmap.ISO8859_1.NewDecoder()

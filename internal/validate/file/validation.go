@@ -152,6 +152,7 @@ func validateFile(fileURI string) fileValidationResult {
 		CopyToDestination(validationResult, constants.DEAD_LETTER_QUEUE)
 		return validationResult
 	}
+
 	data, err := utils.ReadFileRandomly(file)
 	if err != nil {
 		validationResult.Error = &Error{Message: err.Error(), Code: 13}
@@ -163,9 +164,6 @@ func validateFile(fileURI string) fileValidationResult {
 
 	detectedDelimiter := detector.DetectDelimiter(data)
 	validationResult.Delimiter = constants.DelimiterCharacters[detectedDelimiter]
-	if hasBOM {
-		validationResult.Encoding = constants.UTF8_BOM
-	}
 
 	if validationResult.Delimiter == constants.DelimiterCharacters[0] {
 		validationResult.Error = &Error{Message: constants.UNSUPPORTED_DELIMITER_ERROR, Code: 13}
@@ -174,8 +172,12 @@ func validateFile(fileURI string) fileValidationResult {
 		return validationResult
 	}
 
-	detectedEncoding := detector.DetectEncoding(data)
-	validationResult.Encoding = detectedEncoding
+	if hasBOM {
+		validationResult.Encoding = constants.UTF8_BOM
+	} else {
+		validationResult.Encoding = detector.DetectEncoding(data)
+	}
+
 	validationResult.Status = constants.STATUS_SUCCESS
 
 	return validationResult
