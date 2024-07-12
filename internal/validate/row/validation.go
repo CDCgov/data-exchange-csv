@@ -14,7 +14,7 @@ type RowValidationResult struct {
 	FileUUID   uuid.UUID `json:"file_uuid"`
 	RowNumber  int       `json:"row_number"`
 	RowUUID    uuid.UUID `json:"row_uuid"`
-	RowContent []string  `json:""row_content`
+	RowContent []string  `json:"row_content"`
 	Hash       [32]byte  `json:"row_hash"`
 	Error      *Error    `json:"error"`
 	Status     string    `json:"status"`
