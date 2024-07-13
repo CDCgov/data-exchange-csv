@@ -12,7 +12,7 @@ import (
 )
 
 func main() {
-	event := "data/event_config.json"
+	event := "data/event_metadata.json"
 
 	validationResult := file.Validate(event)
 
@@ -48,5 +48,5 @@ func main() {
 	if validationResult.Delimiter == constants.TSV {
 		reader.Comma = constants.TAB
 	}
-	row.Validate(reader, validationResult.FileUUID, validationResult.Delimiter)
+	row.Validate(reader, validationResult.FileUUID, validationResult.Delimiter, validationResult.Config.Header)
 }

@@ -15,7 +15,7 @@ type RowValidationResult struct {
 	RowNumber  int       `json:"row_number"`
 	RowUUID    uuid.UUID `json:"row_uuid"`
 	RowContent []string  `json:"row_content"`
-	Hash       [32]byte  `json:"row_hash"`
+	Hash       string    `json:"row_hash"`
 	Error      *Error    `json:"error"`
 	Status     string    `json:"status"`
 }
@@ -27,9 +27,14 @@ type Error struct {
 	Severity constants.Severity `json:"severity"`
 }
 
-func Validate(reader *csv.Reader, fileUUID uuid.UUID, separator string) {
+func Validate(reader *csv.Reader, fileUUID uuid.UUID, separator string, header file.HeaderValidationResult) {
 	validationResult := RowValidationResult{}
 	validationResult.FileUUID = fileUUID
+
+	//if header row is present or failed to validate skip it.
+	if header.Status != constants.EMPTY_FIELD {
+		reader.Read()
+	}
 
 	rowCount := 0
 
@@ -55,7 +60,7 @@ func Validate(reader *csv.Reader, fileUUID uuid.UUID, separator string) {
 		file.CopyToDestination(validationResult, constants.ROW_REPORTS)
 
 		// ready to transform to json
-		transform.RowToJson(row, validationResult.FileUUID, validationResult.RowUUID)
+		transform.RowToJson(row, validationResult.FileUUID, validationResult.RowUUID, header.Actual)
 
 	}
 

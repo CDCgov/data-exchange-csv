@@ -1,11 +1,13 @@
 package file
 
 import (
+	"encoding/csv"
 	"encoding/json"
 	"fmt"
 	"io"
 	"os"
 	"path/filepath"
+	"reflect"
 
 	"github.com/CDCgov/data-exchange-csv/cmd/internal/constants"
 	"github.com/CDCgov/data-exchange-csv/cmd/internal/detector"
@@ -18,8 +20,13 @@ type Error struct {
 	Message string `json:"message"`
 	Code    int    `json:"code"`
 }
+
+type fileConfig struct {
+	Header []string `json:"header"`
+}
 type MetadataValidationResult struct {
 	ReceivedFile    string `json:"received_filename"`
+	ConfigFile      string `json:"config_file"`
 	Error           *Error `json:"error"`
 	Status          string `json:"status"`
 	Jurisdiction    string `json:"jurisdiction"`
@@ -29,10 +36,17 @@ type MetadataValidationResult struct {
 	DataProducerID  string `json:"data_producer_id"`
 	Version         string `json:"version"`
 }
-type configValidationResult struct {
-	//TODO
-	Status   string `json:"status"`
-	FileName string `json:"file_name"`
+type ConfigValidationResult struct {
+	Error    *Error                 `json:"error"`
+	Status   string                 `json:"status"`
+	FileName string                 `json:"file_name"`
+	Header   HeaderValidationResult `json:"header_validation_esult"`
+}
+type HeaderValidationResult struct {
+	Status   string   `json:"status"`
+	Error    *Error   `json:"error"`
+	Expected []string `json:"expected"`
+	Actual   []string `json:"actual"`
 }
 
 type fileValidationResult struct {
@@ -43,16 +57,19 @@ type fileValidationResult struct {
 	Delimiter    string                   `json:"delimiter"`
 	Error        *Error                   `json:"error"`
 	Status       string                   `json:"status"` // or object?
-	Metadata     MetadataValidationResult `json:"metadataValidationResult"`
-	Config       configValidationResult   `json:"configValidationResult"`
+	Metadata     MetadataValidationResult `json:"metadata_validation_result"`
+	Config       ConfigValidationResult   `json:"config_validation_result"`
 }
 
-func Validate(configFile string) fileValidationResult {
-	metadataValidationResult := validateMetadataFile(configFile)
+func Validate(eventMetadataFileURL string) fileValidationResult {
+	metadataValidationResult := validateMetadataFile(eventMetadataFileURL)
+
 	if metadataValidationResult.Status != constants.STATUS_SUCCESS {
 		CopyToDestination(metadataValidationResult, constants.DEAD_LETTER_QUEUE)
 	}
-	configValidationResult := validateConfig(configFile)
+
+	configValidationResult := validateConfigFile(metadataValidationResult.ConfigFile, metadataValidationResult.ReceivedFile)
+
 	if configValidationResult.Status != constants.STATUS_SUCCESS {
 		CopyToDestination(configValidationResult, constants.DEAD_LETTER_QUEUE)
 	}
@@ -67,6 +84,7 @@ func Validate(configFile string) fileValidationResult {
 	}
 
 	CopyToDestination(fileValidationResult, constants.FILE_REPORTS)
+
 	return fileValidationResult
 }
 
@@ -97,12 +115,17 @@ func validateMetadataFile(fileMetadata string) MetadataValidationResult {
 
 	}
 	validationResult.Jurisdiction = metadataMap[constants.JURISDICTION]
+
 	if filename, ok := metadataMap[constants.RECEIVED_FILENAME]; ok {
 		validationResult.ReceivedFile = filename
 	} else {
 		validationResult.Error = &Error{Message: constants.RECEIVED_FILENAME, Code: 13}
 		validationResult.Status = constants.STATUS_FAILED
 		CopyToDestination(validationResult, constants.DEAD_LETTER_QUEUE)
+	}
+
+	if configFile, ok := metadataMap[constants.CONFIG]; ok {
+		validationResult.ConfigFile = configFile
 	}
 
 	validationResult.DataStreamID = metadataMap[constants.DATA_STREAM_ID]
@@ -115,11 +138,69 @@ func validateMetadataFile(fileMetadata string) MetadataValidationResult {
 	return validationResult
 }
 
-func validateConfig(configFile string) configValidationResult {
-	//TODO
-	validationResult := configValidationResult{}
-	validationResult.Status = constants.STATUS_SUCCESS
+func validateConfigFile(configFile string, received_file string) ConfigValidationResult {
+
+	var config fileConfig
+
+	validationResult := ConfigValidationResult{}
 	validationResult.FileName = configFile
+
+	headerValidationResult := HeaderValidationResult{}
+
+	fields, err := os.ReadFile(configFile)
+	if err != nil {
+		validationResult.Error = &Error{Message: constants.FILE_READ_ERROR, Code: 13}
+		validationResult.Status = constants.STATUS_FAILED
+		CopyToDestination(validationResult, constants.DEAD_LETTER_QUEUE)
+		return validationResult
+	}
+
+	err = json.Unmarshal(fields, &config)
+	if err != nil {
+		validationResult.Error = &Error{Message: err.Error(), Code: 13}
+		validationResult.Status = constants.STATUS_FAILED
+		CopyToDestination(validationResult, constants.DEAD_LETTER_QUEUE)
+		return validationResult
+	}
+
+	expectedHeader := config.Header
+
+	// open the file, read first row to compare to expected header
+	file, _ := os.Open(received_file)
+	defer func(file *os.File) {
+		err := file.Close()
+		if err != nil {
+			validationResult.Status = constants.FILE_OPEN_ERROR
+		}
+	}(file)
+
+	//
+	hasBom, err := detector.DetectBOM(file)
+	if err != nil {
+		validationResult.Status = constants.BOM_NOT_DETECTED_ERROR
+	}
+	if hasBom {
+		file.Seek(3, 0)
+	}
+
+	//get the actual header from the file, compare with expected and set status accordingly
+	reader := csv.NewReader(file)
+	actualHeader, err := reader.Read()
+	if err != nil {
+		validationResult.Status = constants.CSV_READER_ERROR
+	}
+
+	if reflect.DeepEqual(expectedHeader, actualHeader) {
+		headerValidationResult.Status = constants.STATUS_SUCCESS
+	} else {
+		headerValidationResult.Status = constants.STATUS_FAILED
+		validationResult.Error = &Error{Message: constants.ERR_HEADER_VALIDATION, Code: 13}
+	}
+
+	headerValidationResult.Actual = actualHeader
+	headerValidationResult.Expected = expectedHeader
+
+	validationResult.Header = headerValidationResult
 
 	return validationResult
 }
@@ -182,6 +263,7 @@ func validateFile(fileURI string) fileValidationResult {
 
 	return validationResult
 }
+
 func CopyToDestination(result interface{}, destination string) error {
 	//This is temporary function that copies result  into destination
 	jsonContent, err := json.Marshal(result)
