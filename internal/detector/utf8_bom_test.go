@@ -7,30 +7,43 @@ import (
 	"github.com/CDCgov/data-exchange-csv/cmd/internal/constants"
 )
 
-func TestDetectBOM(t *testing.T) {
-
-	csvFileWithBOM, err := os.CreateTemp("", constants.CSV_FILENAME_WITH_BOM)
+func createTempFile(content []byte, fileName string) (*os.File, error) {
+	file, err := os.CreateTemp("", fileName)
 	if err != nil {
-		t.Errorf(constants.FILE_CREATE_ERROR)
+		return nil, err
 	}
 
-	defer os.Remove(csvFileWithBOM.Name())
-
-	bom := constants.UTF8Bom
-	_, err = csvFileWithBOM.Write(bom)
+	_, err = file.Write(content)
 	if err != nil {
-		t.Errorf(constants.FILE_WRITE_ERROR)
+		file.Close()
+		return nil, err
 	}
 
-	file, _ := os.Open(csvFileWithBOM.Name())
-	expectedBom := true
+	return file, nil
+}
+
+func checkForBom(filePath *os.File, t *testing.T) bool {
+	file, _ := os.Open(filePath.Name())
 	bomFound, err := DetectBOM(file)
+	defer os.Remove(file.Name())
 
 	if err != nil {
 		t.Errorf(constants.FILE_OPEN_ERROR)
 	}
 
-	if expectedBom != bomFound {
+	return bomFound
+
+}
+func TestDetectBOM(t *testing.T) {
+
+	csvFileWithBOM, err := createTempFile(constants.UTF8Bom, constants.CSV_FILENAME_WITH_BOM)
+	if err != nil {
+		t.Errorf(constants.FILE_CREATE_ERROR)
+	}
+	expectedBom := true
+	actualBom := checkForBom(csvFileWithBOM, t)
+
+	if expectedBom != actualBom {
 		t.Errorf(constants.BOM_NOT_DETECTED_ERROR)
 
 	}
@@ -38,26 +51,14 @@ func TestDetectBOM(t *testing.T) {
 
 func TestNotDetectBOM(t *testing.T) {
 
-	csvFileWithBOM, err := os.CreateTemp("", constants.CSV_FILENAME_WITHOUT_BOM)
+	csvFileWithNoBOM, err := createTempFile(constants.UTF8NoBom, constants.CSV_FILENAME_WITHOUT_BOM)
 	if err != nil {
 		t.Errorf(constants.FILE_CREATE_ERROR)
 	}
-	defer os.Remove(csvFileWithBOM.Name())
-
-	_, err = csvFileWithBOM.Write(constants.UTF8NoBom)
-	if err != nil {
-		t.Errorf(constants.FILE_WRITE_ERROR)
-	}
-
-	file, _ := os.Open(csvFileWithBOM.Name())
 	expectedBom := false
-	bomFound, err := DetectBOM(file)
+	actualBom := checkForBom(csvFileWithNoBOM, t)
 
-	if err != nil {
-		t.Errorf(constants.FILE_OPEN_ERROR)
-	}
-
-	if expectedBom != bomFound {
+	if expectedBom != actualBom {
 		t.Errorf(constants.BOM_NOT_DETECTED_ERROR)
 
 	}
