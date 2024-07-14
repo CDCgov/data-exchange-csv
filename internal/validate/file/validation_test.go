@@ -2,15 +2,17 @@ package file
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"testing"
 
 	"github.com/CDCgov/data-exchange-csv/cmd/internal/constants"
 )
 
-type eventConfig struct {
+type EventConfig struct {
 	ReceivedFilename string `json:"received_filename"`
 	DataStreamID     string `json:"data_stream_id"`
 	SenderID         string `json:"sender_id"`
@@ -20,44 +22,46 @@ type eventConfig struct {
 	Version          string `json:"version"`
 }
 
-type expectedValidationResult struct {
-	senderID     string
-	jurisdiction string
-	version      string
-	delimiter    string
-	encoding     string
-	metadata     *MetadataValidationResult
+type ExpectedValidationResult struct {
+	SenderID     string
+	Jurisdiction string
+	Version      string
+	Delimiter    string
+	Encoding     string
+	Metadata     *MetadataValidationResult
+	Config       *ConfigValidationResult
 }
 
-func verifyValidationResult(t *testing.T, source string, expectedResult expectedValidationResult) {
+func verifyValidationResult(t *testing.T, source string, expectedResult ExpectedValidationResult) {
 	t.Helper()
 
 	validationResult := Validate(source)
 
-	if expectedResult.encoding != string(validationResult.Encoding) {
-		t.Errorf("Expected encoding %s, got %s", expectedResult.encoding, validationResult.Encoding)
-	}
-	if expectedResult.metadata.DataStreamID != validationResult.Metadata.DataStreamID {
-		t.Errorf("Expected DataStreamID %s, got %s", expectedResult.metadata.DataStreamID, validationResult.Metadata.DataStreamID)
-	}
+	assertEqual(t, "encoding", expectedResult.Encoding, string(validationResult.Encoding))
+	assertEqual(t, "data_stream_id", expectedResult.Metadata.DataStreamID, validationResult.Metadata.DataStreamID)
+	assertEqual(t, "sender_id", expectedResult.SenderID, validationResult.Metadata.SenderID)
+	assertEqual(t, "data_producer_id", expectedResult.Metadata.DataProducerID, validationResult.Metadata.DataProducerID)
+	assertEqual(t, "jurisdiction", expectedResult.Jurisdiction, validationResult.Metadata.Jurisdiction)
+	assertEqual(t, "version", expectedResult.Version, validationResult.Metadata.Version)
 
-	if expectedResult.senderID != validationResult.Metadata.SenderID {
-		t.Errorf("Expected SenderID %s, got %s", expectedResult.senderID, validationResult.Metadata.SenderID)
+	if t.Name() == "TestValidateCSVFileHeader" {
+		fmt.Println(validationResult)
+		assertDeepEqual(t, "Header", expectedResult.Config.Header.Expected, validationResult.Config.Header.Actual)
 	}
-
-	if expectedResult.metadata.DataProducerID != validationResult.Metadata.DataProducerID {
-		t.Errorf("Expected DataProducerID %s, got %s", expectedResult.metadata.DataProducerID, validationResult.Metadata.DataProducerID)
-	}
-
-	if expectedResult.jurisdiction != validationResult.Metadata.Jurisdiction {
-		t.Errorf("Expected Jurisdiction %s, got %s", expectedResult.jurisdiction, validationResult.Metadata.Jurisdiction)
-	}
-
-	if expectedResult.version != validationResult.Metadata.Version {
-		t.Errorf("Expected Version %s, got %s", expectedResult.version, validationResult.Metadata.Version)
-	}
-
 }
+
+func assertEqual(t *testing.T, field string, expected, actual string) {
+	if expected != actual {
+		t.Errorf("Expected %s: %s, but got: %s", field, expected, actual)
+	}
+}
+
+func assertDeepEqual(t *testing.T, field string, expected, actual interface{}) {
+	if !reflect.DeepEqual(expected, actual) {
+		t.Errorf("Expected %s: %v, but got: %v", field, expected, actual)
+	}
+}
+
 func setupTest(tb testing.TB) func(tb testing.TB) {
 	tempDirectory := "dex-csv-file-validation-test-temp"
 	err := os.Mkdir(tempDirectory, 0755)
@@ -71,8 +75,8 @@ func setupTest(tb testing.TB) func(tb testing.TB) {
 		"USASCIIEncoding.csv":     "Chris~Wilson,DevOps engineer, ensures CI/CD pipelines and *NIX server maintenance.",
 		"Windows1252Encoding.csv": "L'éƒté en France,München Äpfel,José DíažŸ,François Dupont",
 		"ISO8859_1Encoding.csv":   "José Dí^az,Software engineer, working on CSV & Golang.",
-		"TestCSVHeader.csv":       "Index,Name,Description\nJosé Díaz,Software engineer, working on C++ & Python.\nFrançois Dupont,Product manager: oversees marketing & sales.",
-		"TestTSVHeader.tsv":       "Index\tName\tDescription\nJosé Díaz\tSoftware engineer\tworking on C++ & Python.\nFrançois Dupont\tProduct manager: oversees marketing & sales.",
+		"TestCSVHeader.csv":       "Index,Name,Description\n1,José Díaz, working on C++ & Python.\n2,François Dupont,Product manager oversees marketing & sales.",
+		"TestTSVHeader.tsv":       "Index\tName\tDescription\n1\tJosé Díaz\tSoftware engineer\tworking on C++ & Python.\n2\tFrançois Dupont\tProduct manager oversees marketing & sales.",
 	}
 
 	for file, content := range testFilesWithContent {
@@ -83,12 +87,8 @@ func setupTest(tb testing.TB) func(tb testing.TB) {
 			tb.Fatalf("%s %s: %v", constants.FILE_WRITE_ERROR, file, err)
 		}
 
-		var receivedFilenameBuilder strings.Builder
-		receivedFilenameBuilder.WriteString(tempDirectory + "/")
-		receivedFilenameBuilder.WriteString(file)
-
-		event := eventConfig{
-			ReceivedFilename: receivedFilenameBuilder.String(),
+		event := EventConfig{
+			ReceivedFilename: filepath.Join(tempDirectory, file),
 			DataStreamID:     constants.CSV_DATA_STREAM_ID,
 			SenderID:         constants.CSV_SENDER_ID,
 			DataStreamRoute:  constants.CSV_DATA_STREAM_ROUTE,
@@ -102,11 +102,10 @@ func setupTest(tb testing.TB) func(tb testing.TB) {
 			tb.Fatalf("%s %s: %v", constants.ERROR_CONVERTING_STRUCT_TO_JSON, file, err)
 		}
 
-		eventFileName := file[:len(file)-4] + constants.JSON_EXTENSION //replace .csv with .json
+		eventFileName := strings.TrimSuffix(file, filepath.Ext(file)) + constants.JSON_EXTENSION
 		eventFilePath := filepath.Join(tempDirectory, eventFileName)
 
 		err = os.WriteFile(eventFilePath, eventAsJson, 0644)
-
 		if err != nil {
 			tb.Fatalf("%s %s: %v", constants.FILE_WRITE_ERROR, eventFileName, err)
 		}
@@ -116,14 +115,11 @@ func setupTest(tb testing.TB) func(tb testing.TB) {
 		err := os.RemoveAll(tempDirectory)
 		if err != nil {
 			tb.Errorf("%s %s: %v", constants.DIRECTORY_REMOVE_ERROR, tempDirectory, err)
-
 		}
 	}
-
 }
 
 func TestMain(m *testing.M) {
-
 	teardownTest := setupTest(nil)
 	executeTestCases := m.Run()
 
@@ -134,96 +130,108 @@ func TestMain(m *testing.M) {
 }
 
 func TestValidateUTF8EncodedCSVFile(t *testing.T) {
-	source := "dex-csv-file-validation-test-temp/UTF8Encoding.json"
-	validationResult := expectedValidationResult{}
-	validationResult.delimiter = constants.CSV
-	validationResult.encoding = string(constants.UTF8)
-	validationResult.jurisdiction = constants.CSV_JURISDICTION
-
-	metadata := MetadataValidationResult{}
-	metadata.DataProducerID = constants.CSV_DATA_PRODUCER_ID
-	metadata.DataStreamID = constants.CSV_DATA_STREAM_ID
-	metadata.DataStreamRoute = constants.CSV_DATA_STREAM_ROUTE
-	metadata.SenderID = constants.CSV_SENDER_ID
-
-	validationResult.metadata = &metadata
-
-	verifyValidationResult(t, source, validationResult)
-
+	validationResult := ExpectedValidationResult{
+		Delimiter:    constants.CSV,
+		Encoding:     string(constants.UTF8),
+		Jurisdiction: constants.CSV_JURISDICTION,
+		Metadata: &MetadataValidationResult{
+			DataProducerID:  constants.CSV_DATA_PRODUCER_ID,
+			DataStreamID:    constants.CSV_DATA_STREAM_ID,
+			DataStreamRoute: constants.CSV_DATA_STREAM_ROUTE,
+			SenderID:        constants.CSV_SENDER_ID,
+			Version:         constants.VERSION,
+		},
+	}
+	verifyValidationResult(t, "dex-csv-file-validation-test-temp/UTF8Encoding.json", validationResult)
 }
+
 func TestValidateUTF8BomEncodedCSVFile(t *testing.T) {
-	source := "dex-csv-file-validation-test-temp/UTF8BomEncoding.json"
-	validationResult := expectedValidationResult{}
-	validationResult.delimiter = constants.CSV
-	validationResult.encoding = string(constants.UTF8_BOM)
-	validationResult.jurisdiction = constants.CSV_JURISDICTION
-
-	metadata := MetadataValidationResult{}
-	metadata.DataProducerID = constants.CSV_DATA_PRODUCER_ID
-	metadata.DataStreamID = constants.CSV_DATA_STREAM_ID
-	metadata.DataStreamRoute = constants.CSV_DATA_STREAM_ROUTE
-	metadata.SenderID = constants.CSV_SENDER_ID
-
-	validationResult.metadata = &metadata
-	verifyValidationResult(t, source, validationResult)
+	validationResult := ExpectedValidationResult{
+		Delimiter:    constants.CSV,
+		Encoding:     string(constants.UTF8_BOM),
+		Jurisdiction: constants.CSV_JURISDICTION,
+		Metadata: &MetadataValidationResult{
+			DataProducerID:  constants.CSV_DATA_PRODUCER_ID,
+			DataStreamID:    constants.CSV_DATA_STREAM_ID,
+			DataStreamRoute: constants.CSV_DATA_STREAM_ROUTE,
+			SenderID:        constants.CSV_SENDER_ID,
+			Version:         constants.VERSION,
+		},
+	}
+	verifyValidationResult(t, "dex-csv-file-validation-test-temp/UTF8BomEncoding.json", validationResult)
 }
+
 func TestValidateUSASCIIEncodedCSVFile(t *testing.T) {
-	source := "dex-csv-file-validation-test-temp/USASCIIEncoding.json"
-	validationResult := expectedValidationResult{}
-
-	validationResult.delimiter = constants.CSV
-	validationResult.encoding = string(constants.UTF8)
-	validationResult.jurisdiction = constants.CSV_JURISDICTION
-
-	metadata := MetadataValidationResult{}
-	metadata.DataProducerID = constants.CSV_DATA_PRODUCER_ID
-	metadata.DataStreamID = constants.CSV_DATA_STREAM_ID
-	metadata.DataStreamRoute = constants.CSV_DATA_STREAM_ROUTE
-	metadata.SenderID = constants.CSV_SENDER_ID
-
-	validationResult.metadata = &metadata
-	verifyValidationResult(t, source, validationResult)
-
+	validationResult := ExpectedValidationResult{
+		Delimiter:    constants.CSV,
+		Encoding:     string(constants.UTF8),
+		Jurisdiction: constants.CSV_JURISDICTION,
+		Metadata: &MetadataValidationResult{
+			DataProducerID:  constants.CSV_DATA_PRODUCER_ID,
+			DataStreamID:    constants.CSV_DATA_STREAM_ID,
+			DataStreamRoute: constants.CSV_DATA_STREAM_ROUTE,
+			SenderID:        constants.CSV_SENDER_ID,
+			Version:         constants.VERSION,
+		},
+	}
+	verifyValidationResult(t, "dex-csv-file-validation-test-temp/USASCIIEncoding.json", validationResult)
 }
+
 func TestValidateWindows1252EncodedCSVFile(t *testing.T) {
-	source := "dex-csv-file-validation-test-temp/Windows1252Encoding.json"
-	validationResult := expectedValidationResult{}
-	validationResult.delimiter = constants.CSV
-	validationResult.encoding = string(constants.WINDOWS1252)
-	validationResult.jurisdiction = constants.CSV_JURISDICTION
-
-	metadata := MetadataValidationResult{}
-	metadata.DataProducerID = constants.CSV_DATA_PRODUCER_ID
-	metadata.DataStreamID = constants.CSV_DATA_STREAM_ID
-	metadata.DataStreamRoute = constants.CSV_DATA_STREAM_ROUTE
-	metadata.SenderID = constants.CSV_SENDER_ID
-
-	validationResult.metadata = &metadata
-
-	verifyValidationResult(t, source, validationResult)
+	validationResult := ExpectedValidationResult{
+		Delimiter:    constants.CSV,
+		Encoding:     string(constants.WINDOWS1252),
+		Jurisdiction: constants.CSV_JURISDICTION,
+		Metadata: &MetadataValidationResult{
+			DataProducerID:  constants.CSV_DATA_PRODUCER_ID,
+			DataStreamID:    constants.CSV_DATA_STREAM_ID,
+			DataStreamRoute: constants.CSV_DATA_STREAM_ROUTE,
+			SenderID:        constants.CSV_SENDER_ID,
+			Version:         constants.VERSION,
+		},
+	}
+	verifyValidationResult(t, "dex-csv-file-validation-test-temp/Windows1252Encoding.json", validationResult)
 }
+
 func TestValidateISO8859_1EncodedCSVFile(t *testing.T) {
-	source := "dex-csv-file-validation-test-temp/ISO8859_1Encoding.json"
-	validationResult := expectedValidationResult{}
-	validationResult.delimiter = constants.CSV
-	validationResult.encoding = string(constants.ISO8859_1)
-	validationResult.jurisdiction = constants.JURISDICTION
-
-	validationResult.jurisdiction = constants.CSV_JURISDICTION
-
-	metadata := MetadataValidationResult{}
-	metadata.DataProducerID = constants.CSV_DATA_PRODUCER_ID
-	metadata.DataStreamID = constants.CSV_DATA_STREAM_ID
-	metadata.DataStreamRoute = constants.CSV_DATA_STREAM_ROUTE
-	metadata.SenderID = constants.CSV_SENDER_ID
-
-	validationResult.metadata = &metadata
-
-	verifyValidationResult(t, source, validationResult)
-
+	validationResult := ExpectedValidationResult{
+		Delimiter:    constants.CSV,
+		Encoding:     string(constants.ISO8859_1),
+		Jurisdiction: constants.CSV_JURISDICTION,
+		Metadata: &MetadataValidationResult{
+			DataProducerID:  constants.CSV_DATA_PRODUCER_ID,
+			DataStreamID:    constants.CSV_DATA_STREAM_ID,
+			DataStreamRoute: constants.CSV_DATA_STREAM_ROUTE,
+			SenderID:        constants.CSV_SENDER_ID,
+			Version:         constants.VERSION,
+		},
+	}
+	verifyValidationResult(t, "dex-csv-file-validation-test-temp/ISO8859_1Encoding.json", validationResult)
 }
-func TestValidateCSVFileHeader(t *testing.T) {
-	//TO DO
-	_ = "dex-csv-file-validation-test-temp/TestCSVHeader.json"
 
+func TestValidateCSVFileHeader(t *testing.T) {
+	validationResult := ExpectedValidationResult{
+		Delimiter:    constants.CSV,
+		Encoding:     string(constants.ISO8859_1),
+		Jurisdiction: constants.CSV_JURISDICTION,
+		Metadata: &MetadataValidationResult{
+			DataProducerID:  constants.CSV_DATA_PRODUCER_ID,
+			DataStreamID:    constants.CSV_DATA_STREAM_ID,
+			DataStreamRoute: constants.CSV_DATA_STREAM_ROUTE,
+			SenderID:        constants.CSV_SENDER_ID,
+			Version:         constants.VERSION,
+		},
+		Config: &ConfigValidationResult{
+			Status: constants.STATUS_SUCCESS,
+			Header: HeaderValidationResult{
+				Expected: []string{"Index", "Name", "Description"},
+			},
+		},
+	}
+	verifyValidationResult(t, "dex-csv-file-validation-test-temp/TestCSVHeader.json", validationResult)
+}
+
+func TestValidateTSVFileHeader(t *testing.T) {
+	// TODO: Implement TestValidateTSVFileHeader
+	// source := "dex-csv-file-validation-test-temp/TestTSVHeader.json"
 }
