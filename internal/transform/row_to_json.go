@@ -31,13 +31,10 @@ func RowToJson(row []string, fileUUID uuid.UUID, rowUUID uuid.UUID, header []str
 	} else {
 		for index, field := range row {
 			/*
-				using strconv.Itoa() function here to ensure each index of the
-				row slice can be used as a string key. This is essential because
-				JsonRow map keys need to be strings.
-				Note that string() can not be used as it converts integer to a
-				Unicode code point(rune).
-				Example string()-> string(65)-> "A"
-				Example strconv.Itoa() ->strconv.Itoa(65) -> "65"
+				Use strconv.Itoa() to convert row slice indices to strings for use as keys in the map.
+				This is needed because JSON map keys must be strings.
+				Note: `string()` converts integers to Unicode code points (e.g., `string(65)` → "A"),
+				whereas `strconv.Itoa()` converts integers to their string representation (e.g., `strconv.Itoa(65)` → "65").
 			*/
 			parsedRow[strconv.Itoa(index)] = field
 		}
