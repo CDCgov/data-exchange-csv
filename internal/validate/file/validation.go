@@ -24,6 +24,7 @@ type Error struct {
 type fileConfig struct {
 	Header []string `json:"header"`
 }
+
 type MetadataValidationResult struct {
 	ReceivedFile    string `json:"received_filename"`
 	ConfigFile      string `json:"config_file"`
@@ -40,7 +41,7 @@ type ConfigValidationResult struct {
 	Error    *Error                 `json:"error"`
 	Status   string                 `json:"status"`
 	FileName string                 `json:"file_name"`
-	Header   HeaderValidationResult `json:"header_validation_esult"`
+	Header   HeaderValidationResult `json:"header_validation_result"`
 }
 type HeaderValidationResult struct {
 	Status   string   `json:"status"`
@@ -56,7 +57,7 @@ type fileValidationResult struct {
 	Size         int64                    `json:"size"`
 	Delimiter    string                   `json:"delimiter"`
 	Error        *Error                   `json:"error"`
-	Status       string                   `json:"status"` // or object?
+	Status       string                   `json:"status"`
 	Metadata     MetadataValidationResult `json:"metadata_validation_result"`
 	Config       ConfigValidationResult   `json:"config_validation_result"`
 }
@@ -64,23 +65,15 @@ type fileValidationResult struct {
 func Validate(eventMetadataFileURL string) fileValidationResult {
 	metadataValidationResult := validateMetadataFile(eventMetadataFileURL)
 
-	if metadataValidationResult.Status != constants.STATUS_SUCCESS {
-		CopyToDestination(metadataValidationResult, constants.DEAD_LETTER_QUEUE)
-	}
-
-	configValidationResult := validateConfigFile(metadataValidationResult.ConfigFile, metadataValidationResult.ReceivedFile)
-
-	if configValidationResult.Status != constants.STATUS_SUCCESS {
-		CopyToDestination(configValidationResult, constants.DEAD_LETTER_QUEUE)
-	}
-
 	fileValidationResult := validateFile(metadataValidationResult.ReceivedFile)
-
-	fileValidationResult.Config = configValidationResult
 	fileValidationResult.Metadata = metadataValidationResult
 
-	if fileValidationResult.Status != constants.STATUS_SUCCESS {
-		CopyToDestination(fileValidationResult, constants.DEAD_LETTER_QUEUE)
+	if metadataValidationResult.ConfigFile != "" {
+		configValidationResult := validateConfigFile(metadataValidationResult.ConfigFile, metadataValidationResult.ReceivedFile)
+		if configValidationResult.Status != constants.STATUS_SUCCESS {
+			CopyToDestination(configValidationResult, constants.DEAD_LETTER_QUEUE)
+		}
+		fileValidationResult.Config = configValidationResult
 	}
 
 	CopyToDestination(fileValidationResult, constants.FILE_REPORTS)
@@ -165,7 +158,7 @@ func validateConfigFile(configFile string, received_file string) ConfigValidatio
 
 	expectedHeader := config.Header
 
-	// open the file, read first row to compare to expected header
+	//open file to get actual header to compare with expected one
 	file, _ := os.Open(received_file)
 	defer func(file *os.File) {
 		err := file.Close()
@@ -174,7 +167,7 @@ func validateConfigFile(configFile string, received_file string) ConfigValidatio
 		}
 	}(file)
 
-	//
+	//if byte order mark is detected, move pointer 3 bytes to exclude it
 	hasBom, err := detector.DetectBOM(file)
 	if err != nil {
 		validationResult.Status = constants.BOM_NOT_DETECTED_ERROR
@@ -183,7 +176,7 @@ func validateConfigFile(configFile string, received_file string) ConfigValidatio
 		file.Seek(3, 0)
 	}
 
-	//get the actual header from the file, compare with expected and set status accordingly
+	//get the actual header from the file, compare with expected and update status
 	reader := csv.NewReader(file)
 	actualHeader, err := reader.Read()
 	if err != nil {
@@ -205,14 +198,14 @@ func validateConfigFile(configFile string, received_file string) ConfigValidatio
 	return validationResult
 }
 
-func validateFile(fileURI string) fileValidationResult {
+func validateFile(receivedFile string) fileValidationResult {
 	validationResult := fileValidationResult{}
 
 	fileUUID := uuid.New()
 	validationResult.FileUUID = fileUUID
-	validationResult.ReceivedFile = fileURI
+	validationResult.ReceivedFile = receivedFile
 
-	file, err := os.Open(fileURI)
+	file, err := os.Open(receivedFile)
 	if err != nil {
 		validationResult.Error = &Error{Message: err.Error(), Code: 13}
 		CopyToDestination(validationResult, constants.DEAD_LETTER_QUEUE)

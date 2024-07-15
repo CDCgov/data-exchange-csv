@@ -68,7 +68,7 @@ const (
 	DATA_PRODUCER_ID  = "data_producer_id"
 	DATA_STREAM_ROUTE = "data_stream_route"
 	JURISDICTION      = "jurisdiction"
-	VERSION           = "version"
+	VERSION           = "1.0.0"
 	HEADER            = "header"
 	CONFIG            = "config"
 
