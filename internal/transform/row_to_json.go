@@ -10,11 +10,11 @@ import (
 )
 
 type RowTransformationResult struct {
-	FileUUID uuid.UUID `json:"file_uuid"`
-	RowUUID  uuid.UUID `json:"row_uuid"`
-	JsonRow  string    `json:"json_row"`
-	Error    error     `json:"error"`
-	Status   string    `json:"status"`
+	FileUUID uuid.UUID       `json:"file_uuid"`
+	RowUUID  uuid.UUID       `json:"row_uuid"`
+	JsonRow  json.RawMessage `json:"json_row"`
+	Error    error           `json:"error"`
+	Status   string          `json:"status"`
 }
 
 func RowToJson(row []string, fileUUID uuid.UUID, rowUUID uuid.UUID, header []string) {
@@ -43,11 +43,14 @@ func RowToJson(row []string, fileUUID uuid.UUID, rowUUID uuid.UUID, header []str
 
 	if err != nil {
 		transformaionResult.Error = err
+		transformaionResult.Status = constants.STATUS_FAILED
 		file.CopyToDestination(transformaionResult, constants.DEAD_LETTER_QUEUE)
+		return
 	}
 
 	transformaionResult.Status = constants.STATUS_SUCCESS
-	transformaionResult.JsonRow = string(transformedRow)
+	transformaionResult.JsonRow = transformedRow
+
 	file.CopyToDestination(transformaionResult, constants.TRANSFORMED_ROW_REPORTS)
 
 }
