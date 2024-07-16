@@ -91,7 +91,7 @@ const (
 	InvalidStartISO88591  byte = 0x80 // as decimal 128
 	InvalidEndISO88591    byte = 0x9F // as decimal 159
 	ValidStartWindows1252 byte = 0x80 // as decimal 128
-	ValidEndWindows1252   byte = 0x9F // as decimal 159
+	ValidEndWindows1252   byte = 0xFF // as decimal 255
 
 )
 
