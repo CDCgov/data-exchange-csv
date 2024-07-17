@@ -2,7 +2,6 @@ import com.fasterxml.jackson.dataformat.csv.CsvMapper
 import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import com.opencsv.CSVParserBuilder
 import com.opencsv.CSVReaderBuilder
-import com.sun.jna.StringArray
 
 import com.univocity.parsers.csv.CsvParser
 import com.univocity.parsers.csv.CsvParserSettings
@@ -154,6 +153,7 @@ class CSVValidator {
     }
 
     fun  deepHavenCSVParser(filename: String) {
+        val resultWithColumns = mutableMapOf<String, MutableList<Any>>()
         try {
             val inputStream = object {}.javaClass.getResourceAsStream(filename)
             val specs = CsvSpecs.builder()
@@ -164,21 +164,31 @@ class CSVValidator {
                 .build()
 
             val result = DeephavenCSVReader.read(specs, inputStream, SinkFactory.arrays())
+
             for (col in result) {
-                if (col.data() is Array<*>) {
-                    for (element in col.data() as Array<*>) {
-                        val field = element
+                val colValues = mutableListOf<Any>()
+                when (val data = col.data()) {
+                    is Array<*> -> {
+                        for (element in data) {
+                            if (element != null) {
+                                colValues.add(element)
+                            }
+                        }
                     }
-                } else if (col.data() is IntArray) {
-                    for (element in col.data() as IntArray) {
-                        val field = element
+                    is IntArray -> {
+                        for (element in data) {
+                            colValues.add(element)
+                        }
                     }
-                } else if (col.data() is StringArray) {
-                    for (element in col.data() as String) {
-                        val field = element
+                    else -> {
+                        // Handle other data or throw an exception if unexpected type
+                        throw UnsupportedOperationException("Unsupported data type ${data::class.java.name}")
                     }
                 }
+                resultWithColumns[col.name()] = colValues
+
             }
+
         }catch(e: Exception){
             e.printStackTrace()
         }
@@ -266,7 +276,7 @@ fun main(){
     val numOfRuns = 60
         repeat(numOfRuns){
             val innerStartTime = LocalDateTime.now()
-            validate.validateWithKotlinCSV("file-with-headers-10000-rows.csv")
+            validate.validateWithOpenCSV("file-with-headers-10000-rows.csv")
             val innerEndTime = LocalDateTime.now()
             totalDuration += java.time.Duration.between(innerStartTime, innerEndTime).toMillis()
     }
