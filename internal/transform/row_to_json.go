@@ -17,15 +17,18 @@ type RowTransformationResult struct {
 	Status   string          `json:"status"`
 }
 
-func RowToJson(row []string, fileUUID uuid.UUID, rowUUID uuid.UUID, header []string) {
-	transformaionResult := RowTransformationResult{
-		FileUUID: fileUUID,
+func RowToJson(row []string, params file.FileValidationParams,
+	rowUUID uuid.UUID,
+	dlqCallback, routingCallback func(result interface{}, destination string)) {
+	transformationResult := RowTransformationResult{
+		FileUUID: params.FileUUID,
 		RowUUID:  rowUUID,
 	}
 
 	parsedRow := make(map[string]string)
-	if len(header) > 0 {
-		for index, column := range header {
+
+	if len(params.Header) > 0 {
+		for index, column := range params.Header {
 			parsedRow[column] = row[index]
 		}
 	} else {
@@ -42,15 +45,13 @@ func RowToJson(row []string, fileUUID uuid.UUID, rowUUID uuid.UUID, header []str
 	transformedRow, err := json.Marshal(parsedRow)
 
 	if err != nil {
-		transformaionResult.Error = err
-		transformaionResult.Status = constants.STATUS_FAILED
-		file.CopyToDestination(transformaionResult, constants.DEAD_LETTER_QUEUE)
+		transformationResult.Error = err
+		transformationResult.Status = constants.STATUS_FAILED
+		dlqCallback(transformationResult, constants.DEAD_LETTER_QUEUE)
 		return
 	}
 
-	transformaionResult.Status = constants.STATUS_SUCCESS
-	transformaionResult.JsonRow = transformedRow
-
-	file.CopyToDestination(transformaionResult, constants.TRANSFORMED_ROW_REPORTS)
-
+	transformationResult.Status = constants.STATUS_SUCCESS
+	transformationResult.JsonRow = transformedRow
+	routingCallback(transformationResult, constants.TRANSFORMED_ROW_REPORTS)
 }

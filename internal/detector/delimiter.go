@@ -1,8 +1,6 @@
 package detector
 
-import (
-	"github.com/CDCgov/data-exchange-csv/cmd/internal/constants"
-)
+import "github.com/CDCgov/data-exchange-csv/cmd/internal/constants"
 
 func DetectDelimiter(data []byte) byte {
 

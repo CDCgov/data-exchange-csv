@@ -1,6 +1,8 @@
 package constants
 
-import "time"
+import (
+	"time"
+)
 
 type EncodingType string
 
@@ -30,6 +32,7 @@ const (
 	DIRECTORY_CREATE_ERROR                           = "Failed to create temporary directory."
 	DIRECTORY_REMOVE_ERROR                           = "Failed to remove the test directory. Verify that the directory exists and you have the necessary permissions."
 	ERROR_CONVERTING_STRUCT_TO_JSON                  = "Error converting the struct to JSON. Check the struct definition for compatibility with JSON marshalling."
+	ERROR_UNMARSHALING_JSON                          = "Invalid JSON. Please check JSON format."
 	JSON_EXTENSION                                   = ".json"
 	CSV_FILENAME_WITH_BOM                            = "HasBOM.csv"
 	CSV_FILENAME_WITHOUT_BOM                         = "NoBOM.csv"
@@ -38,6 +41,7 @@ const (
 	BOM_NOT_DETECTED_ERROR                           = "Byte Order Mark was not detected."
 	INTERFACE_TO_SLICE_CONVERSION_ERROR              = "Error occurred while converting interface{} to slice."
 	FILE_MISSING_ERROR                               = "received_filename is a required metadata field."
+	INVALID_CONFIG_FILE                              = "Missing config_identifiers in config file."
 )
 
 type Severity string
@@ -62,15 +66,16 @@ const (
 )
 
 const (
-	DATA_STREAM_ID    = "data_producer_id"
-	SENDER_ID         = "sender_id"
-	RECEIVED_FILENAME = "received_filename"
-	DATA_PRODUCER_ID  = "data_producer_id"
-	DATA_STREAM_ROUTE = "data_stream_route"
-	JURISDICTION      = "jurisdiction"
-	VERSION           = "1.0.0"
-	HEADER            = "header"
-	CONFIG            = "config"
+	DATA_STREAM_ID     = "data_stream_id"
+	SENDER_ID          = "sender_id"
+	RECEIVED_FILENAME  = "received_filename"
+	DATA_PRODUCER_ID   = "data_producer_id"
+	DATA_STREAM_ROUTE  = "data_stream_route"
+	JURISDICTION       = "jurisdiction"
+	VERSION            = "version"
+	HEADER             = "header"
+	CONFIG             = "config"
+	CONFIG_IDENTIFIERS = "config_identifiers"
 
 	CSV_DATA_STREAM_ID    = "dex-csv"
 	CSV_DATA_PRODUCER_ID  = "dex-csv"
@@ -80,10 +85,11 @@ const (
 )
 
 const (
-	DEAD_LETTER_QUEUE       = "results/DLQ"
-	FILE_REPORTS            = "results/filereports"
-	ROW_REPORTS             = "results/rowreports"
-	TRANSFORMED_ROW_REPORTS = "results/transformedrows"
+	DEAD_LETTER_QUEUE       = "storage/dead-letter-queue"
+	FILE_REPORTS            = "storage/filereports"
+	ROW_REPORTS             = "storage/rowreports"
+	TRANSFORMED_ROW_REPORTS = "storage/transformedrows"
+	CONFIG_FILE             = "internal/config/config.json"
 )
 
 const (
