@@ -1,5 +1,8 @@
 package processor
 
+/*
+This is temporary and will be re-written for processing events to DLQ and routing service
+*/
 import (
 	"encoding/json"
 	"log/slog"
@@ -7,11 +10,10 @@ import (
 	"path/filepath"
 
 	"github.com/CDCgov/data-exchange-csv/cmd/internal/constants"
-	"github.com/CDCgov/data-exchange-csv/cmd/internal/validate/file"
+	"github.com/CDCgov/data-exchange-csv/cmd/internal/models"
 )
 
-func ProcessFileValidationResult(validationResult file.FileValidationResult) {
-	//if file is unreadable send it to DLQ
+func ProcessFileValidationResult(validationResult models.FileValidationResult) {
 	if validationResult.Status == constants.STATUS_SUCCESS {
 		SendEventsToRouting(validationResult, constants.FILE_REPORTS)
 	} else {
@@ -21,7 +23,7 @@ func ProcessFileValidationResult(validationResult file.FileValidationResult) {
 }
 
 func SendEventsToDLQ(result interface{}, destination string) {
-	//This is temporary function that copies result  into destination
+	//This is temporary function that copies event  into destination
 	jsonContent, err := json.Marshal(result)
 	if err != nil {
 		slog.Error(constants.ERROR_CONVERTING_STRUCT_TO_JSON)

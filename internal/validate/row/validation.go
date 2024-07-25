@@ -7,33 +7,17 @@ import (
 	"os"
 
 	"github.com/CDCgov/data-exchange-csv/cmd/internal/constants"
+	"github.com/CDCgov/data-exchange-csv/cmd/internal/models"
 	"github.com/CDCgov/data-exchange-csv/cmd/internal/transform"
-	"github.com/CDCgov/data-exchange-csv/cmd/internal/validate/file"
 	"github.com/google/uuid"
 	"golang.org/x/text/encoding/charmap"
 )
 
-type RowValidationResult struct {
-	FileUUID  uuid.UUID `json:"file_uuid"`
-	RowNumber int       `json:"row_number"`
-	RowUUID   uuid.UUID `json:"row_uuid"`
-	Hash      string    `json:"row_hash"`
-	Error     *Error    `json:"error"`
-	Status    string    `json:"status"`
-}
-
-type Error struct {
-	Message  string             `json:"message"`
-	Line     int                `json:"line"`
-	Column   int                `json:"column"`
-	Severity constants.Severity `json:"severity"`
-}
-
-func Validate(params file.FileValidationParams,
+func Validate(params models.FileValidationParams,
 	dlqCallback, routingCallback func(result interface{}, destination string)) {
 
 	file, _ := os.Open(params.ReceivedFile)
-	//handle error
+
 	defer func(file *os.File) {
 		err := file.Close()
 		if err != nil {
@@ -57,28 +41,30 @@ func Validate(params file.FileValidationParams,
 		reader = csv.NewReader(decoder.Reader(file))
 	}
 
-	// if detected delimiter is TSV, change the seperator for a csv.Reader to a tab rune
+	//we need to change separator to a tab rune, if detected delimiter is TSV
 	if params.Delimiter == constants.TSV {
 		reader.Comma = constants.TAB
 	}
 
 	//initialize row validation result
-	validationResult := RowValidationResult{
+	validationResult := models.RowValidationResult{
 		FileUUID: params.FileUUID,
 	}
 
-	//if header  is present or failed skip the first row
+	//we need to skip the first row if header is present
 	if len(params.Header) != 0 {
 		reader.Read()
 	}
 
 	rowCount := 1
+
 	for {
 		row, err := reader.Read()
 
 		if err == io.EOF {
 			break
 		}
+
 		validationResult.RowUUID = uuid.New()
 		validationResult.Hash = ComputeHash(row, params.Delimiter)
 		validationResult.RowNumber = rowCount
@@ -101,8 +87,8 @@ func Validate(params file.FileValidationParams,
 
 }
 
-func processRowError(err error) *Error {
-	rowError := &Error{}
+func processRowError(err error) *models.Error {
+	rowError := &models.Error{}
 
 	if parseErr, ok := err.(*csv.ParseError); ok {
 		rowError.Line = parseErr.Line
@@ -127,9 +113,7 @@ func processRowError(err error) *Error {
 		}
 
 		rowError.Message = err.Error()
-
 	}
 
 	return rowError
-
 }

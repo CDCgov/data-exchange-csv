@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/CDCgov/data-exchange-csv/cmd/internal/constants"
+	"github.com/CDCgov/data-exchange-csv/cmd/internal/models"
 	"github.com/CDCgov/data-exchange-csv/cmd/internal/processor"
 	"github.com/CDCgov/data-exchange-csv/cmd/internal/validate/file"
 	"github.com/CDCgov/data-exchange-csv/cmd/internal/validate/row"
@@ -15,8 +16,8 @@ func main() {
 
 	if fileValidationResult.Status == constants.STATUS_SUCCESS {
 
-		//proceed with row validation
-		params := file.FileValidationParams{
+		//valid file, proceed with row validation
+		params := models.FileValidationParams{
 			FileUUID:     fileValidationResult.FileUUID,
 			ReceivedFile: fileValidationResult.ReceivedFile,
 			Encoding:     fileValidationResult.Encoding,

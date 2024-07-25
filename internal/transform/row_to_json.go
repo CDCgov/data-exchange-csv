@@ -5,22 +5,14 @@ import (
 	"strconv"
 
 	"github.com/CDCgov/data-exchange-csv/cmd/internal/constants"
-	"github.com/CDCgov/data-exchange-csv/cmd/internal/validate/file"
+	"github.com/CDCgov/data-exchange-csv/cmd/internal/models"
 	"github.com/google/uuid"
 )
 
-type RowTransformationResult struct {
-	FileUUID uuid.UUID       `json:"file_uuid"`
-	RowUUID  uuid.UUID       `json:"row_uuid"`
-	JsonRow  json.RawMessage `json:"json_row"`
-	Error    error           `json:"error"`
-	Status   string          `json:"status"`
-}
-
-func RowToJson(row []string, params file.FileValidationParams,
+func RowToJson(row []string, params models.FileValidationParams,
 	rowUUID uuid.UUID,
 	dlqCallback, routingCallback func(result interface{}, destination string)) {
-	transformationResult := RowTransformationResult{
+	transformationResult := models.RowTransformationResult{
 		FileUUID: params.FileUUID,
 		RowUUID:  rowUUID,
 	}
@@ -35,7 +27,7 @@ func RowToJson(row []string, params file.FileValidationParams,
 		for index, field := range row {
 			/*
 				Use strconv.Itoa() to convert row slice indices to strings for use as keys in the map.
-				This is needed because JSON map keys must be strings.
+				This is needed because map keys must be strings.
 				Note: `string()` converts integers to Unicode code points (e.g., `string(65)` → "A"),
 				whereas `strconv.Itoa()` converts integers to their string representation (e.g., `strconv.Itoa(65)` → "65").
 			*/
