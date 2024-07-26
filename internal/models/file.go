@@ -29,9 +29,9 @@ type MetadataValidationResult struct {
 }
 
 type ConfigValidationResult struct {
-	Error  *FileError             `json:"error"`
-	Status string                 `json:"status"`
-	Header HeaderValidationResult `json:"header_validation_result"`
+	Error                  *FileError             `json:"error"`
+	Status                 string                 `json:"status"`
+	HeaderValidationResult HeaderValidationResult `json:"header_validation_result"`
 }
 
 type HeaderValidationResult struct {

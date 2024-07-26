@@ -147,7 +147,7 @@ func validateConfigFile(dataStreamId string, received_file string) models.Config
 		validationResult.Error = &models.FileError{Message: constants.ERR_HEADER_VALIDATION, Code: 13}
 	}
 
-	validationResult.Header = headerValidationResult
+	validationResult.HeaderValidationResult = headerValidationResult
 
 	return validationResult
 }

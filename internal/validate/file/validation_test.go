@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/CDCgov/data-exchange-csv/cmd/internal/constants"
+	"github.com/CDCgov/data-exchange-csv/cmd/internal/models"
 )
 
 type EventMetadata struct {
@@ -26,8 +27,8 @@ type ExpectedValidationResult struct {
 	Version      string
 	Delimiter    string
 	Encoding     string
-	Metadata     *MetadataValidationResult
-	Config       *ConfigValidationResult
+	Metadata     *models.MetadataValidationResult
+	Config       *models.ConfigValidationResult
 }
 
 func verifyValidationResult(t *testing.T, source string, expectedResult ExpectedValidationResult) {
@@ -119,7 +120,7 @@ func TestValidateUTF8EncodedCSVFile(t *testing.T) {
 		Delimiter:    constants.CSV,
 		Encoding:     string(constants.UTF8),
 		Jurisdiction: constants.CSV_JURISDICTION,
-		Metadata: &MetadataValidationResult{
+		Metadata: &models.MetadataValidationResult{
 			DataProducerID:  constants.CSV_DATA_PRODUCER_ID,
 			DataStreamID:    constants.CSV_DATA_STREAM_ID,
 			DataStreamRoute: constants.CSV_DATA_STREAM_ROUTE,
@@ -135,7 +136,7 @@ func TestValidateUTF8BomEncodedCSVFile(t *testing.T) {
 		Delimiter:    constants.CSV,
 		Encoding:     string(constants.UTF8_BOM),
 		Jurisdiction: constants.CSV_JURISDICTION,
-		Metadata: &MetadataValidationResult{
+		Metadata: &models.MetadataValidationResult{
 			DataProducerID:  constants.CSV_DATA_PRODUCER_ID,
 			DataStreamID:    constants.CSV_DATA_STREAM_ID,
 			DataStreamRoute: constants.CSV_DATA_STREAM_ROUTE,
@@ -151,7 +152,7 @@ func TestValidateUSASCIIEncodedCSVFile(t *testing.T) {
 		Delimiter:    constants.CSV,
 		Encoding:     string(constants.UTF8),
 		Jurisdiction: constants.CSV_JURISDICTION,
-		Metadata: &MetadataValidationResult{
+		Metadata: &models.MetadataValidationResult{
 			DataProducerID:  constants.CSV_DATA_PRODUCER_ID,
 			DataStreamID:    constants.CSV_DATA_STREAM_ID,
 			DataStreamRoute: constants.CSV_DATA_STREAM_ROUTE,
@@ -167,7 +168,7 @@ func TestValidateWindows1252EncodedCSVFile(t *testing.T) {
 		Delimiter:    constants.CSV,
 		Encoding:     string(constants.WINDOWS1252),
 		Jurisdiction: constants.CSV_JURISDICTION,
-		Metadata: &MetadataValidationResult{
+		Metadata: &models.MetadataValidationResult{
 			DataProducerID:  constants.CSV_DATA_PRODUCER_ID,
 			DataStreamID:    constants.CSV_DATA_STREAM_ID,
 			DataStreamRoute: constants.CSV_DATA_STREAM_ROUTE,
@@ -183,7 +184,7 @@ func TestValidateISO8859_1EncodedCSVFile(t *testing.T) {
 		Delimiter:    constants.CSV,
 		Encoding:     string(constants.ISO8859_1),
 		Jurisdiction: constants.CSV_JURISDICTION,
-		Metadata: &MetadataValidationResult{
+		Metadata: &models.MetadataValidationResult{
 			DataProducerID:  constants.CSV_DATA_PRODUCER_ID,
 			DataStreamID:    constants.CSV_DATA_STREAM_ID,
 			DataStreamRoute: constants.CSV_DATA_STREAM_ROUTE,
