@@ -12,7 +12,7 @@ type RowValidationResult struct {
 	RowNumber int       `json:"row_number"`
 	RowUUID   uuid.UUID `json:"row_uuid"`
 	Hash      string    `json:"row_hash"`
-	Error     *Error    `json:"error"`
+	Error     *RowError `json:"error"`
 	Status    string    `json:"status"`
 }
 
@@ -24,7 +24,7 @@ type RowTransformationResult struct {
 	Status   string          `json:"status"`
 }
 
-type Error struct {
+type RowError struct {
 	Message  string             `json:"message"`
 	Line     int                `json:"line"`
 	Column   int                `json:"column"`

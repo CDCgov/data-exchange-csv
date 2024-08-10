@@ -9,6 +9,7 @@ type EncodingType string
 const (
 	MAX_READ_THRESHOLD                               = 1024
 	MAX_EXECUTION_TIME                               = 500 * time.Millisecond
+	BOM_LENGTH                                       = 3
 	UTF8                                EncodingType = "UTF-8"
 	UTF8_BOM                            EncodingType = "UTF-8 WITH BOM"
 	USASCII                             EncodingType = "US-ASCII"
@@ -93,11 +94,9 @@ const (
 )
 
 const (
-	MSBMask               byte = 0x80 // most significant bit, binary:10000000 decimal: 128
-	InvalidStartISO88591  byte = 0x80 // as decimal 128
-	InvalidEndISO88591    byte = 0x9F // as decimal 159
-	ValidStartWindows1252 byte = 0x80 // as decimal 128
-	ValidEndWindows1252   byte = 0xFF // as decimal 255
+	MSBMask                 rune = 0x80 // most significant bit, binary:10000000 decimal: 128
+	Windows1252RunThreshold rune = 0x9F // as decimal 159
+	SingleByteSequenceEnd   rune = 0xFF // as decimal 255
 
 )
 
@@ -109,7 +108,7 @@ const (
 	ERR_HEADER_VALIDATION                    = "Expected header and actual header do not match."
 )
 
-var DelimiterCharacters = map[byte]string{
+var DelimiterCharacters = map[rune]string{
 	0:  UNSUPPORTED,
 	9:  TSV,
 	44: CSV,
@@ -119,7 +118,3 @@ var (
 	UTF8Bom   = []byte{0xEF, 0xBB, 0xBF}
 	UTF8NoBom = []byte("Name, Role, Age")
 )
-
-type RowValidationResult struct{}
-
-type JSONTransformerResult struct{}

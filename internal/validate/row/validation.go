@@ -13,6 +13,33 @@ import (
 	"golang.org/x/text/encoding/charmap"
 )
 
+func createReader(file *os.File, encoding constants.EncodingType, delimiter string) (*csv.Reader, error) {
+	var reader *csv.Reader
+
+	switch encoding {
+	case constants.WINDOWS1252:
+		decoder := charmap.Windows1252.NewDecoder()
+		reader = csv.NewReader(decoder.Reader(file))
+	case constants.ISO8859_1:
+		decoder := charmap.ISO8859_1.NewDecoder()
+		reader = csv.NewReader(decoder.Reader(file))
+	default:
+		if encoding == constants.UTF8_BOM {
+			if _, err := file.Seek(constants.BOM_LENGTH, 0); err != nil {
+				return nil, err
+			}
+		}
+		reader = csv.NewReader(file)
+	}
+	//If the file is tab-separated (TSV), update the reader's separator to TAB.
+	//This ensures that the reader correctly parses each field based on the tab delimiter.
+	if delimiter == constants.TSV {
+		reader.Comma = constants.TAB
+	}
+
+	return reader, nil
+}
+
 func Validate(params models.FileValidationParams,
 	dlqCallback, routingCallback func(result interface{}, destination string)) {
 
@@ -24,34 +51,18 @@ func Validate(params models.FileValidationParams,
 			log.Fatal(err)
 		}
 	}(file)
-	detectedEncoding := params.Encoding
 
-	var reader *csv.Reader
-
-	if detectedEncoding == constants.UTF8 {
-		reader = csv.NewReader(file)
-	} else if detectedEncoding == constants.UTF8_BOM {
-		file.Seek(3, 0)
-		reader = csv.NewReader(file)
-	} else if detectedEncoding == constants.ISO8859_1 {
-		decoder := charmap.ISO8859_1.NewDecoder()
-		reader = csv.NewReader(decoder.Reader(file))
-	} else {
-		decoder := charmap.Windows1252.NewDecoder()
-		reader = csv.NewReader(decoder.Reader(file))
-	}
-
-	//we need to change separator to a tab rune, if detected delimiter is TSV
-	if params.Delimiter == constants.TSV {
-		reader.Comma = constants.TAB
-	}
-
-	//initialize row validation result
 	validationResult := models.RowValidationResult{
 		FileUUID: params.FileUUID,
 	}
 
-	//we need to skip the first row if header is present
+	reader, err := createReader(file, params.Encoding, params.Delimiter)
+	if err != nil {
+		validationResult.Error = &models.RowError{Message: constants.CSV_READER_ERROR, Severity: constants.Failure}
+		dlqCallback(validationResult, constants.DEAD_LETTER_QUEUE)
+	}
+
+	//If header is present, skip the header to ensure header row is not validated or transformed.
 	if len(params.Header) != 0 {
 		reader.Read()
 	}
@@ -87,8 +98,8 @@ func Validate(params models.FileValidationParams,
 
 }
 
-func processRowError(err error) *models.Error {
-	rowError := &models.Error{}
+func processRowError(err error) *models.RowError {
+	rowError := &models.RowError{}
 
 	if parseErr, ok := err.(*csv.ParseError); ok {
 		rowError.Line = parseErr.Line
