@@ -40,8 +40,7 @@ func createReader(file *os.File, encoding constants.EncodingType, delimiter stri
 	return reader, nil
 }
 
-func Validate(params models.FileValidationParams,
-	dlqCallback, routingCallback func(result interface{}, destination string)) {
+func Validate(params models.FileValidationParams, sendEventsToDestination func(result interface{}, destination string)) {
 
 	file, _ := os.Open(params.ReceivedFile)
 
@@ -59,7 +58,7 @@ func Validate(params models.FileValidationParams,
 	reader, err := createReader(file, params.Encoding, params.Delimiter)
 	if err != nil {
 		validationResult.Error = &models.RowError{Message: constants.CSV_READER_ERROR, Severity: constants.Failure}
-		dlqCallback(validationResult, constants.DEAD_LETTER_QUEUE)
+		sendEventsToDestination(validationResult, constants.DEAD_LETTER_QUEUE)
 	}
 
 	//If header is present, skip the header to ensure header row is not validated or transformed.
@@ -85,14 +84,14 @@ func Validate(params models.FileValidationParams,
 		if err != nil {
 			validationResult.Error = processRowError(err)
 			validationResult.Status = constants.STATUS_FAILED
-			dlqCallback(validationResult, constants.DEAD_LETTER_QUEUE)
+			sendEventsToDestination(validationResult, constants.DEAD_LETTER_QUEUE)
 			continue
 		}
 
 		validationResult.Status = constants.STATUS_SUCCESS
-		routingCallback(validationResult, constants.ROW_REPORTS)
+		sendEventsToDestination(validationResult, constants.ROW_REPORTS)
 		// valid row, ready to transform to json
-		transform.RowToJson(row, params, validationResult.RowUUID, dlqCallback, routingCallback)
+		transform.RowToJson(row, params, validationResult.RowUUID, sendEventsToDestination)
 
 	}
 

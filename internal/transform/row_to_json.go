@@ -10,8 +10,8 @@ import (
 )
 
 func RowToJson(row []string, params models.FileValidationParams,
-	rowUUID uuid.UUID,
-	dlqCallback, routingCallback func(result interface{}, destination string)) {
+	rowUUID uuid.UUID, sendEventsToDestination func(result interface{}, destination string)) {
+
 	transformationResult := models.RowTransformationResult{
 		FileUUID: params.FileUUID,
 		RowUUID:  rowUUID,
@@ -39,11 +39,11 @@ func RowToJson(row []string, params models.FileValidationParams,
 	if err != nil {
 		transformationResult.Error = err
 		transformationResult.Status = constants.STATUS_FAILED
-		dlqCallback(transformationResult, constants.DEAD_LETTER_QUEUE)
+		sendEventsToDestination(transformationResult, constants.DEAD_LETTER_QUEUE)
 		return
 	}
 
 	transformationResult.Status = constants.STATUS_SUCCESS
 	transformationResult.JsonRow = transformedRow
-	routingCallback(transformationResult, constants.TRANSFORMED_ROW_REPORTS)
+	sendEventsToDestination(transformationResult, constants.TRANSFORMED_ROW_REPORTS)
 }

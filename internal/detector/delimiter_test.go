@@ -8,7 +8,7 @@ import (
 
 func TestDelimiterComma(t *testing.T) {
 	csvData := "José Díaz,Software engineer, working on CSV & Golang."
-	csvDataAsBytes := []byte(csvData)
+	csvDataAsBytes := []rune(csvData)
 
 	expectedDelimiter := constants.CSV
 	actualDelimiter := constants.DelimiterCharacters[DetectDelimiter(csvDataAsBytes)]
@@ -20,7 +20,7 @@ func TestDelimiterComma(t *testing.T) {
 }
 func TestDelimiterTab(t *testing.T) {
 	tsvData := "Index\tName\tDescription\nJosé Díaz\tSoftware engineer\tworking on C++ & Python.\nFrançois Dupont\tProduct manager: oversees marketing & sales."
-	tsvDataAsBytes := []byte(tsvData)
+	tsvDataAsBytes := []rune(tsvData)
 
 	expectedDelimiter := constants.TSV
 	actualDelimiter := constants.DelimiterCharacters[DetectDelimiter(tsvDataAsBytes)]
@@ -31,7 +31,7 @@ func TestDelimiterTab(t *testing.T) {
 }
 func TestUnsupportedDelimiter(t *testing.T) {
 	invalidData := "name|age\nOlya|64\nBobby|68"
-	invalidDataAsBytes := []byte(invalidData)
+	invalidDataAsBytes := []rune(invalidData)
 
 	expectedDelimiter := constants.UNSUPPORTED
 	actualDelimiter := constants.DelimiterCharacters[DetectDelimiter(invalidDataAsBytes)]

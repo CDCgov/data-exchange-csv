@@ -53,17 +53,15 @@ const (
 )
 
 const (
-	EMPTY_INPUT                  = "Empty input test"
-	VALID_SINGLE_BYTE_SEQUENCE   = "Valid single byte sequence"
-	INVALID_SINGLE_BYTE_SEQUENCE = "Invalid single byte sequence"
-	MIXED_BYTE_SEQUENCES         = "Multi-Byte and single-byte mix"
-	ALL_VALID_BYTES              = "All valid bytes"
-	ALL_INVALID_BYTES            = "All invalid bytes"
-	VALID_FIRST_BYTE_SEQUENCE    = "Valid initial byte with invalid trailing Bytes"
-	INVALID_FIRST_BYTE_SEQUENCE  = "Invalid initial byte with valid trailing Bytes"
-	BYTE_ABOVE_UPPER_RANGE       = "Byte above upper range"
-	BYTE_BELOW_LOWER_RANGE       = "Byte below lower range"
-	EMPTY_FIELD                  = ""
+	EMPTY_INPUT          = "Empty Input Test"
+	VALID_US_ASCII       = "US-ASCII Valid Input"
+	INVALID_US_ASCII     = "US-ASCII Invalid Input"
+	VALID_WINDOWS_1252   = "Windows 1252 Valid Input"
+	INVALID_WINDOWS_1252 = "Windows 1252 Invalid Input"
+	VALID_ISO_8859_1     = "ISO 8859-1 Valid Input"
+	INVALID_ISO_8859_1   = "ISO 8859-1 Invalid Input"
+	VALID_UTF_8          = "UTF-8 Valid Input"
+	INVALID_UTF_8        = "UTF-8 Invalid Input"
 )
 
 const (

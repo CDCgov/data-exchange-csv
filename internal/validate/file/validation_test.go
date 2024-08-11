@@ -22,9 +22,7 @@ type EventMetadata struct {
 }
 
 type ExpectedValidationResult struct {
-	SenderID     string
 	Jurisdiction string
-	Version      string
 	Delimiter    string
 	Encoding     string
 	Metadata     *models.MetadataValidationResult
@@ -35,13 +33,12 @@ func verifyValidationResult(t *testing.T, source string, expectedResult Expected
 	t.Helper()
 
 	validationResult := Validate(source)
-
 	assertEqual(t, "encoding", expectedResult.Encoding, string(validationResult.Encoding))
 	assertEqual(t, "data_stream_id", expectedResult.Metadata.DataStreamID, validationResult.Metadata.DataStreamID)
-	assertEqual(t, "sender_id", expectedResult.SenderID, validationResult.Metadata.SenderID)
+	assertEqual(t, "sender_id", expectedResult.Metadata.SenderID, validationResult.Metadata.SenderID)
 	assertEqual(t, "data_producer_id", expectedResult.Metadata.DataProducerID, validationResult.Metadata.DataProducerID)
 	assertEqual(t, "jurisdiction", expectedResult.Jurisdiction, validationResult.Metadata.Jurisdiction)
-	assertEqual(t, "version", expectedResult.Version, validationResult.Metadata.Version)
+	assertEqual(t, "version", expectedResult.Metadata.Version, validationResult.Metadata.Version)
 }
 
 func assertEqual(t *testing.T, field string, expected, actual string) {
@@ -61,13 +58,12 @@ func setupTest(tb testing.TB) func(tb testing.TB) {
 		"UTF8Encoding.csv":        "Hello, World! This is US-ASCII.\nLine 2: More text.",
 		"UTF8BomEncoding.csv":     "\xEF\xBB\xBFName,Email\nJane Doe,johndoe@example.com\nJane Smith,janesmith@example.com\nChris Mallok,cmallok@example.com",
 		"USASCIIEncoding.csv":     "Chris~Wilson,DevOps engineer, ensures CI/CD pipelines and *NIX server maintenance.",
-		"Windows1252Encoding.csv": "L'éƒté en France,München Äpfel,José DíažŸ,François Dupont",
+		"Windows1252Encoding.csv": "L'éƒté en France,München Äpfel\nJosé DíažŸ,François Dupont",
 		"ISO8859_1Encoding.csv":   "José Dí^az,Software engineer, working on CSV & Golang.",
 	}
 
 	for file, content := range testFilesWithContent {
 		tempFile := filepath.Join(tempDirectory, file)
-
 		err := os.WriteFile(tempFile, []byte(content), 0644)
 		if err != nil {
 			tb.Fatalf("%s %s: %v", constants.FILE_WRITE_ERROR, file, err)

@@ -22,10 +22,10 @@ func main() {
 			ReceivedFile: fileValidationResult.ReceivedFile,
 			Encoding:     fileValidationResult.Encoding,
 			Delimiter:    fileValidationResult.Delimiter,
-			Header:       fileValidationResult.Config.Header.Header,
+			Header:       fileValidationResult.Config.HeaderValidationResult.Header,
 		}
 
-		row.Validate(params, processor.SendEventsToDLQ, processor.SendEventsToRouting)
+		row.Validate(params, processor.SendEventsToDestination)
 	}
 
 }
