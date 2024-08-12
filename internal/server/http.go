@@ -1,0 +1,128 @@
+package server
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"github.com/CDCgov/data-exchange-csv/cmd/internal/validate/file"
+	"log/slog"
+	"net/http"
+)
+
+const port = "8080" // TODO: Replace with env variable
+const endpoint = ":" + port
+
+// TODO: Do we need to authenticate sender? Likely no because this API is just for testing purposes
+
+// HTTPServer is a wrapper around http.Server to extend its functionality
+type HTTPServer struct {
+	server *http.Server
+}
+
+// New creates a new HTTP server that serves as REST API
+// TODO: Design decision: Do we want this program to run multiple HTTP servers? (pass in port # as argument to constructor)
+func New() *HTTPServer {
+	mux := http.NewServeMux()
+
+	mux.HandleFunc("/", defaultHandler)
+	mux.HandleFunc("/v1/api/health", healthCheckHandler) // TODO: Not hard code API version
+	mux.HandleFunc("/v1/api/validate/csv", validateCSVHandler)
+
+	svr := &HTTPServer{
+		server: &http.Server{
+			Addr:    endpoint,
+			Handler: mux,
+		},
+	}
+
+	return svr
+}
+
+// Run starts the server
+func (svr *HTTPServer) Run() error {
+	slog.Info(fmt.Sprintf("Server listening on port %s...", port))
+	// TODO: Certs can probably go into an env variable
+	// TODO: Use HTTPS in prod?
+	// Certs are handled on Kubernetes-level
+	// log.Error("server.New(): %s", "error", svr.ListenAndServeTLS("server.crt", "server.key"))
+	err := svr.server.ListenAndServe()
+	if err != nil {
+		slog.Error("HTTPServer.Run():", "error", err) // TODO: Should this be a slog.Warn? Because a Shutdown() would probably give and error message.
+	}
+	return err
+}
+
+// Shutdown gracefully shuts down the server
+func (svr *HTTPServer) Shutdown(ctx context.Context) error {
+	// TODO: Implement and test this
+	slog.Info(fmt.Sprint("Server gracefully shutting down..."))
+	err := svr.server.Shutdown(ctx)
+	if err != nil {
+		slog.Error("HTTPServer.Shutdown(ctx),", "error", err)
+	}
+	return err
+}
+
+// defaultHandler is the default handler that writes 404 HTTP status to response header
+func defaultHandler(w http.ResponseWriter, r *http.Request) {
+	slog.Warn("Connected to default handler. Upstream error?", "method", r.Method, "protocol", r.Proto, "agent", r.UserAgent())
+	w.WriteHeader(http.StatusNotFound)
+}
+
+// validateCSVHandler processes a URL to CSV file in payload and validates it
+func validateCSVHandler(w http.ResponseWriter, r *http.Request) {
+	slog.Info(fmt.Sprintf("Connected to %s", endpoint), "method", r.Method, "protocol", r.Proto, "agent", r.UserAgent())
+
+	switch r.Method {
+
+	case http.MethodPost:
+		if !hasValidContentType(r.Header) {
+			slog.Warn("Sender sent a non-CSV or non-TSV file")
+			http.Error(w, "Invalid Content-Type for validation", http.StatusBadRequest)
+			break
+		}
+
+		if hasEmptyBody(r) {
+			slog.Warn("Sender sent request with empty body")
+			http.Error(w, "Expect a non-empty body", http.StatusBadRequest)
+			break
+		}
+
+		w.WriteHeader(http.StatusAccepted)
+
+		slog.Info("Calling validation function")
+		validationResult := file.Validate("")
+		serializedResult, _ := json.Marshal(validationResult)
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write(serializedResult)
+
+	default:
+		slog.Warn("Sender used an unsupported HTTP method")
+		http.Error(w, "Unsupported method", http.StatusMethodNotAllowed)
+	}
+}
+
+// hasValidContentType determines if an HTTP header has valid Content-Type
+func hasValidContentType(header http.Header) bool {
+	contentType := header.Get("Content-Type")
+	return contentType == "text/csv" || contentType == "text/tab-separated-values"
+}
+
+// hasEmptyBody determines if HTTP request has empty body
+func hasEmptyBody(r *http.Request) bool {
+	// Note that Content-Length header may be absent so don't get value from r.Header
+	return r.ContentLength == 0
+}
+
+// healthCheckHandler writes 200 HTTP status to response header
+func healthCheckHandler(w http.ResponseWriter, r *http.Request) {
+	slog.Info("Connected to health check handler.", "method", r.Method, "protocol", r.Proto, "agent", r.UserAgent())
+	switch r.Method {
+
+	case http.MethodGet:
+		w.WriteHeader(http.StatusOK)
+
+	default:
+		http.Error(w, "Unsupported method", http.StatusMethodNotAllowed)
+	}
+}

@@ -1,5 +1,3 @@
-# Default ignored files
-/shelf/
-/workspace.xml
-/fns-csv-pipeline//csv-structure-validation/target
+# Default ignored filereports
 /spikes/csv-structure-validation-function-app/target
+.vscode/
