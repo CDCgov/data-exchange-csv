@@ -44,9 +44,16 @@ func isValidISO_8859_1(data []rune) bool {
 	}
 
 	for _, runeVal := range data {
-		if (runeVal >= constants.MSBMask && runeVal <= constants.Windows1252RunThreshold) || runeVal > constants.SingleByteSequenceEnd {
+		if runeVal <= constants.MSBMask {
+			continue
+		}
+		if _, exists := constants.Windows1252Map[runeVal]; exists {
 			return false
 		}
+		if _, exists := constants.ExtendedASCIIMap[runeVal]; !exists {
+			return false
+		}
+
 	}
 	return true
 }
@@ -56,9 +63,16 @@ func isValidWindows1252(data []rune) bool {
 	}
 
 	for _, runeVal := range data {
-		if runeVal > constants.SingleByteSequenceEnd {
+		if runeVal <= constants.MSBMask {
+			continue
+		}
+		if _, exists := constants.Windows1252Map[runeVal]; exists {
+			continue
+		}
+		if _, exists := constants.ExtendedASCIIMap[runeVal]; !exists {
 			return false
 		}
+
 	}
 	return true
 }
