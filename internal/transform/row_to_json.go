@@ -5,34 +5,29 @@ import (
 	"strconv"
 
 	"github.com/CDCgov/data-exchange-csv/cmd/internal/constants"
-	"github.com/CDCgov/data-exchange-csv/cmd/internal/validate/file"
+	"github.com/CDCgov/data-exchange-csv/cmd/internal/models"
 	"github.com/google/uuid"
 )
 
-type RowTransformationResult struct {
-	FileUUID uuid.UUID       `json:"file_uuid"`
-	RowUUID  uuid.UUID       `json:"row_uuid"`
-	JsonRow  json.RawMessage `json:"json_row"`
-	Error    error           `json:"error"`
-	Status   string          `json:"status"`
-}
+func RowToJson(row []string, params models.FileValidationParams,
+	rowUUID uuid.UUID, sendEventsToDestination func(result interface{}, destination string)) {
 
-func RowToJson(row []string, fileUUID uuid.UUID, rowUUID uuid.UUID, header []string) {
-	transformaionResult := RowTransformationResult{
-		FileUUID: fileUUID,
+	transformationResult := models.RowTransformationResult{
+		FileUUID: params.FileUUID,
 		RowUUID:  rowUUID,
 	}
 
 	parsedRow := make(map[string]string)
-	if len(header) > 0 {
-		for index, column := range header {
+
+	if len(params.Header) > 0 {
+		for index, column := range params.Header {
 			parsedRow[column] = row[index]
 		}
 	} else {
 		for index, field := range row {
 			/*
 				Use strconv.Itoa() to convert row slice indices to strings for use as keys in the map.
-				This is needed because JSON map keys must be strings.
+				This is needed because map keys must be strings.
 				Note: `string()` converts integers to Unicode code points (e.g., `string(65)` → "A"),
 				whereas `strconv.Itoa()` converts integers to their string representation (e.g., `strconv.Itoa(65)` → "65").
 			*/
@@ -42,15 +37,13 @@ func RowToJson(row []string, fileUUID uuid.UUID, rowUUID uuid.UUID, header []str
 	transformedRow, err := json.Marshal(parsedRow)
 
 	if err != nil {
-		transformaionResult.Error = err
-		transformaionResult.Status = constants.STATUS_FAILED
-		file.CopyToDestination(transformaionResult, constants.DEAD_LETTER_QUEUE)
+		transformationResult.Error = err
+		transformationResult.Status = constants.STATUS_FAILED
+		sendEventsToDestination(transformationResult, constants.DEAD_LETTER_QUEUE)
 		return
 	}
 
-	transformaionResult.Status = constants.STATUS_SUCCESS
-	transformaionResult.JsonRow = transformedRow
-
-	file.CopyToDestination(transformaionResult, constants.TRANSFORMED_ROW_REPORTS)
-
+	transformationResult.Status = constants.STATUS_SUCCESS
+	transformationResult.JsonRow = transformedRow
+	sendEventsToDestination(transformationResult, constants.TRANSFORMED_ROW_REPORTS)
 }

@@ -6,7 +6,7 @@ import (
 	"github.com/CDCgov/data-exchange-csv/cmd/internal/constants"
 )
 
-func DetectEncoding(data []byte) constants.EncodingType {
+func DetectEncoding(data []rune) constants.EncodingType {
 
 	if isValidUSASCII(data) {
 		return constants.UTF8
@@ -20,47 +20,59 @@ func DetectEncoding(data []byte) constants.EncodingType {
 		return constants.WINDOWS1252
 	}
 
-	if utf8.Valid(data) {
+	if utf8.Valid([]byte(string(data))) {
 		return constants.UTF8
 	}
 	return constants.UNDEF
 
 }
 
-func isValidUSASCII(data []byte) bool {
+func isValidUSASCII(data []rune) bool {
 	if len(data) == 0 {
 		return false
 	}
-	for _, byteVal := range data {
-		if byteVal&constants.MSBMask != 0 {
+	for _, runeVal := range data {
+		if runeVal >= constants.MSBMask {
 			return false
 		}
 	}
 	return true
 }
-
-func isValidISO_8859_1(data []byte) bool {
+func isValidISO_8859_1(data []rune) bool {
 	if len(data) == 0 {
 		return false
 	}
 
-	for _, byteVal := range data {
-		if byteVal >= constants.InvalidStartISO88591 && byteVal <= constants.InvalidEndISO88591 {
+	for _, runeVal := range data {
+		if runeVal <= constants.MSBMask {
+			continue
+		}
+		if _, exists := constants.Windows1252Map[runeVal]; exists {
 			return false
 		}
+		if _, exists := constants.ExtendedASCIIMap[runeVal]; !exists {
+			return false
+		}
+
 	}
 	return true
 }
-
-func isValidWindows1252(data []byte) bool {
+func isValidWindows1252(data []rune) bool {
 	if len(data) == 0 {
 		return false
 	}
 
-	for _, byteVal := range data {
-		if byteVal < constants.ValidStartWindows1252 || byteVal > constants.ValidEndWindows1252 {
+	for _, runeVal := range data {
+		if runeVal <= constants.MSBMask {
+			continue
+		}
+		if _, exists := constants.Windows1252Map[runeVal]; exists {
+			continue
+		}
+		if _, exists := constants.ExtendedASCIIMap[runeVal]; !exists {
 			return false
 		}
+
 	}
 	return true
 }

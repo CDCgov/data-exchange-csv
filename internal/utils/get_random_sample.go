@@ -9,7 +9,7 @@ import (
 	"github.com/CDCgov/data-exchange-csv/cmd/internal/constants"
 )
 
-func ReadFileRandomly(file *os.File) ([]byte, error) {
+func ReadFileRandomly(file *os.File) ([]rune, error) {
 
 	fileInfo, err := file.Stat()
 	if err != nil {
@@ -24,10 +24,12 @@ func ReadFileRandomly(file *os.File) ([]byte, error) {
 		if err != nil {
 			return nil, err
 		}
-		return buffer, nil
+
+		//We need to convert []byte to []rune and return
+		return []rune(string(buffer)), nil
 	}
 
-	randomBytes := make([]byte, 0, constants.MAX_READ_THRESHOLD)
+	randomRunes := make([]rune, 0, constants.MAX_READ_THRESHOLD)
 
 	randomNumber := rand.New(rand.NewSource(time.Now().UnixNano()))
 
@@ -35,7 +37,7 @@ func ReadFileRandomly(file *os.File) ([]byte, error) {
 
 	startTime := time.Now()
 
-	for len(randomBytes) < constants.MAX_READ_THRESHOLD && time.Since(startTime) < constants.MAX_EXECUTION_TIME {
+	for len(randomRunes) < constants.MAX_READ_THRESHOLD && time.Since(startTime) < constants.MAX_EXECUTION_TIME {
 		offset := randomNumber.Int63n(fileSize)
 		_, err := file.Seek(offset, 0)
 
@@ -43,19 +45,22 @@ func ReadFileRandomly(file *os.File) ([]byte, error) {
 			return nil, err
 		}
 
-		buffer := make([]byte, constants.MAX_READ_THRESHOLD-len(randomBytes))
-		n, err := reader.Read(buffer)
+		r, _, err := reader.ReadRune()
 
 		if err != nil {
 			return nil, err
 		}
-		randomBytes = append(randomBytes, buffer[:n]...)
+
+		randomRunes = append(randomRunes, r)
 	}
-	// reset the pointer in the begining of the file
+
+	// Reset the file pointer to the beginning of the file so that next operation
+	// starts reading from the begining.
 	_, err = file.Seek(0, 0)
 	if err != nil {
 		return nil, err
 	}
-	return randomBytes, nil
+
+	return randomRunes, nil
 
 }
