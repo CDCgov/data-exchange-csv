@@ -34,6 +34,7 @@ func verifyValidationResult(t *testing.T, source string, expectedResult Expected
 
 	validationResult := Validate(source)
 	assertEqual(t, "encoding", expectedResult.Encoding, string(validationResult.Encoding))
+	assertEqual(t, "delimiter", expectedResult.Delimiter, validationResult.Delimiter)
 	assertEqual(t, "data_stream_id", expectedResult.Metadata.DataStreamID, validationResult.Metadata.DataStreamID)
 	assertEqual(t, "sender_id", expectedResult.Metadata.SenderID, validationResult.Metadata.SenderID)
 	assertEqual(t, "data_producer_id", expectedResult.Metadata.DataProducerID, validationResult.Metadata.DataProducerID)
@@ -113,7 +114,7 @@ func TestMain(m *testing.M) {
 
 func TestValidateUTF8EncodedCSVFile(t *testing.T) {
 	validationResult := ExpectedValidationResult{
-		Delimiter:    constants.CSV,
+		Delimiter:    string(constants.COMMA),
 		Encoding:     string(constants.UTF8),
 		Jurisdiction: constants.CSV_JURISDICTION,
 		Metadata: &models.MetadataValidationResult{
@@ -129,7 +130,7 @@ func TestValidateUTF8EncodedCSVFile(t *testing.T) {
 
 func TestValidateUTF8BomEncodedCSVFile(t *testing.T) {
 	validationResult := ExpectedValidationResult{
-		Delimiter:    constants.CSV,
+		Delimiter:    string(constants.COMMA),
 		Encoding:     string(constants.UTF8_BOM),
 		Jurisdiction: constants.CSV_JURISDICTION,
 		Metadata: &models.MetadataValidationResult{
@@ -145,7 +146,7 @@ func TestValidateUTF8BomEncodedCSVFile(t *testing.T) {
 
 func TestValidateUSASCIIEncodedCSVFile(t *testing.T) {
 	validationResult := ExpectedValidationResult{
-		Delimiter:    constants.CSV,
+		Delimiter:    string(constants.COMMA),
 		Encoding:     string(constants.UTF8),
 		Jurisdiction: constants.CSV_JURISDICTION,
 		Metadata: &models.MetadataValidationResult{
@@ -161,7 +162,7 @@ func TestValidateUSASCIIEncodedCSVFile(t *testing.T) {
 
 func TestValidateWindows1252EncodedCSVFile(t *testing.T) {
 	validationResult := ExpectedValidationResult{
-		Delimiter:    constants.CSV,
+		Delimiter:    string(constants.COMMA),
 		Encoding:     string(constants.WINDOWS1252),
 		Jurisdiction: constants.CSV_JURISDICTION,
 		Metadata: &models.MetadataValidationResult{
@@ -177,7 +178,7 @@ func TestValidateWindows1252EncodedCSVFile(t *testing.T) {
 
 func TestValidateISO8859_1EncodedCSVFile(t *testing.T) {
 	validationResult := ExpectedValidationResult{
-		Delimiter:    constants.CSV,
+		Delimiter:    string(constants.COMMA),
 		Encoding:     string(constants.ISO8859_1),
 		Jurisdiction: constants.CSV_JURISDICTION,
 		Metadata: &models.MetadataValidationResult{

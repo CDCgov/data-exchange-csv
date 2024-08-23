@@ -18,7 +18,7 @@ const (
 	UNDEF                               EncodingType = "UNDEFINED"
 	CSV                                              = "CSV"
 	TSV                                              = "TSV"
-	UNSUPPORTED                                      = "UNSUPPORTED"
+	UNSUPPORTED                         rune         = 0
 	TAB                                              = '\t'
 	COMMA                                            = ','
 	STATUS_SUCCESS                                   = "success"
@@ -106,10 +106,10 @@ const (
 	ERR_HEADER_VALIDATION                    = "Expected header and actual header do not match."
 )
 
-var DelimiterCharacters = map[rune]string{
+var DelimiterCharacters = map[rune]rune{
 	0:  UNSUPPORTED,
-	9:  TSV,
-	44: CSV,
+	9:  TAB,
+	44: COMMA,
 }
 
 var (
