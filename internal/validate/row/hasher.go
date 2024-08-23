@@ -9,12 +9,12 @@ import (
 )
 
 func ComputeHash(row []string, delimiter string) string {
-	separator := string(constants.COMMA)
+	separator := constants.COMMA
 
-	if delimiter == constants.TSV {
-		separator = string(constants.TAB)
+	if delimiter == string(constants.TAB) {
+		separator = constants.TAB
 	}
-	concatenatedRow := strings.Join(row, separator)
+	concatenatedRow := strings.Join(row, string(separator))
 	hash := sha256.Sum256([]byte(concatenatedRow))
 
 	//we need to convert [32]byte to []byte before using base64.StdEncoding.EncodeToString()

@@ -188,9 +188,9 @@ func validateFile(receivedFile string) models.FileValidationResult {
 	}
 
 	detectedDelimiter := detector.DetectDelimiter(data)
-	validationResult.Delimiter = constants.DelimiterCharacters[detectedDelimiter]
+	validationResult.Delimiter = string(constants.DelimiterCharacters[detectedDelimiter])
 
-	if validationResult.Delimiter == constants.DelimiterCharacters[0] {
+	if validationResult.Delimiter == string(constants.DelimiterCharacters[0]) {
 		validationResult.Error = &models.FileError{Message: constants.UNSUPPORTED_DELIMITER_ERROR, Code: 13}
 		validationResult.Status = constants.STATUS_FAILED
 		return validationResult

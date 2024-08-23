@@ -33,7 +33,7 @@ func createReader(file *os.File, encoding constants.EncodingType, delimiter stri
 	}
 	//If the file is tab-separated (TSV), update the reader's separator to TAB.
 	//This ensures that the reader correctly parses each field based on the tab delimiter.
-	if delimiter == constants.TSV {
+	if delimiter == string(constants.TAB) {
 		reader.Comma = constants.TAB
 	}
 
