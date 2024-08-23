@@ -8,6 +8,7 @@ internal class Program
         string filePath = "data/file-with-headers-100-rows.csv";
 
         Stopwatch totalTimeStopwatch = Stopwatch.StartNew();
+        
         //change the number of iteration as per needs
         for (int i = 0; i < 100; i++)
         {
@@ -26,16 +27,20 @@ internal class Program
             using TextFieldParser parser = new TextFieldParser(filePath);
             parser.TextFieldType = FieldType.Delimited;
             parser.SetDelimiters(",");
+            
             while (!parser.EndOfData)
             {
                 string[] fields = parser.ReadFields();
-                if (fields !=null){
+                if (fields !=null)
+                {
                     data.Add(fields);
-                }else{
+                }
+                else
+                {
                     errors.Add($"Error was found in row {parser.LineNumber}");
                 }
 
-                //you can add custom error handling here testing against RFC4180 compliance
+                // you can add custom error handling here testing against RFC4180 compliance
             }
             return data;
         }
