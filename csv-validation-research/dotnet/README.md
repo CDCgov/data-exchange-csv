@@ -10,7 +10,8 @@
 ## How to run the code
 1. `git clone` to clone the repository.
 2. `cd csv_validation-research/dotnet`
-3. `dotnet build` to compile the Rust code and its dependencies
+3. `dotnet build` to compile the .NET code and its dependencies
 4. `dotnet run` to run the application
- **Note:** Make sure .NET SDK is installed on your machine, as well as C# extension if using `Visual Studio Code`
+ 
+ > Ensure the [.NET SDK 8.0](https://dotnet.microsoft.com/en-us/download/dotnet/8.0) is installed on your machine. The [C# Dev Kit](https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csdevkit) extension for Visual Studio Code is also recommended.
 
