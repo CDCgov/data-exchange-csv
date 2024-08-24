@@ -10,12 +10,17 @@ import (
 	"github.com/CDCgov/data-exchange-csv/cmd/internal/constants"
 	"github.com/CDCgov/data-exchange-csv/cmd/internal/detector"
 	"github.com/CDCgov/data-exchange-csv/cmd/internal/models"
+	"github.com/CDCgov/data-exchange-csv/cmd/pkg/sloger"
 
 	"github.com/CDCgov/data-exchange-csv/cmd/internal/utils"
 	"github.com/google/uuid"
 )
 
 func Validate(eventMetadataFileURL string) models.FileValidationResult {
+	//initialize logger from sloger package
+	logger := sloger.With(constants.PACKAGE, constants.FILE)
+	logger.Info(constants.MSG_FILE_VALIDATION_BEGIN)
+
 	metadataValidationResult := validateMetadataFile(eventMetadataFileURL)
 
 	fileValidationResult := validateFile(metadataValidationResult.ReceivedFile)
@@ -26,6 +31,7 @@ func Validate(eventMetadataFileURL string) models.FileValidationResult {
 
 	if metadataValidationResult.Status != constants.STATUS_SUCCESS {
 		fileValidationResult.Status = constants.STATUS_FAILED
+		logger.Error(constants.MSG_FILE_VALIDATION_FAIL)
 		return fileValidationResult
 	}
 	fileValidationResult.Status = constants.STATUS_SUCCESS
