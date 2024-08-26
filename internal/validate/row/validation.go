@@ -98,7 +98,7 @@ func Validate(params models.FileValidationParams, sendEventsToDestination func(r
 		}
 
 		validationResult.Status = constants.STATUS_SUCCESS
-		logger.Info(constants.MSG_ROW_VALIDATION_SUCCESS)
+		logger.Debug(constants.MSG_ROW_VALIDATION_SUCCESS)
 		sendEventsToDestination(validationResult, constants.ROW_REPORTS)
 		// valid row, ready to transform to json
 		transform.RowToJson(row, params, validationResult.RowUUID, sendEventsToDestination)

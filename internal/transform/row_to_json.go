@@ -52,6 +52,6 @@ func RowToJson(row []string, params models.FileValidationParams,
 
 	transformationResult.Status = constants.STATUS_SUCCESS
 	transformationResult.JsonRow = transformedRow
-	logger.Info(constants.MSG_ROW_TRANSFORM_SUCCESS)
+	logger.Debug(constants.MSG_ROW_TRANSFORM_SUCCESS)
 	sendEventsToDestination(transformationResult, constants.TRANSFORMED_ROW_REPORTS)
 }
