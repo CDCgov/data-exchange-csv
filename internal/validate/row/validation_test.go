@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"github.com/CDCgov/data-exchange-csv/cmd/internal/constants"
 	"github.com/CDCgov/data-exchange-csv/cmd/internal/models"
-	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
 	"os"
 	"path/filepath"
@@ -14,6 +13,7 @@ import (
 
 const tempDirectory = "dex-csv-row-validation-test-temp"
 
+// TODO: Should EventMetadata be a constant type? If so move definition to /models
 type EventMetadata struct {
 	ReceivedFilename string `json:"received_filename"`
 	DataStreamID     string `json:"data_stream_id"`
@@ -35,13 +35,17 @@ func (m *MockSendEventsToDestination) callback(result interface{}, destination s
 }
 
 func assertEqual(t *testing.T, expected interface{}, actual interface{}) {
-	if !cmp.Equal(expected, actual) {
-		t.Errorf("Expected: %s, but got: %s", expected, actual)
+	if expected != actual {
+		expectedJson, _ := json.MarshalIndent(expected, "", "    ")
+		actualJson, _ := json.MarshalIndent(actual, "", "    ")
+		t.Errorf("Expected: %s, but got: %s", string(expectedJson), string(actualJson))
 	}
 }
 
 func setupTest(tb testing.TB) func(tb testing.TB) {
+	_ = os.RemoveAll(tempDirectory) // removing directory created from previously failed runs
 	err := os.Mkdir(tempDirectory, 0755)
+
 	if err != nil {
 		tb.Fatalf("%s: %v", constants.DIRECTORY_CREATE_ERROR, err)
 	}
@@ -52,7 +56,8 @@ func setupTest(tb testing.TB) func(tb testing.TB) {
 		//"USASCIIEncoding.csv":     "Chris~Wilson,DevOps engineer, ensures CI/CD pipelines and *NIX server maintenance.",
 		//"Windows1252Encoding.csv": "L'éƒté en France,München Äpfel\nJosé DíažŸ,François Dupont",
 		//"ISO8859_1Encoding.csv":   "José Dí^az,Software engineer, working on CSV & Golang.",
-		"SemicolonDelimiter.csv": "CSV; with; semicolons; as; delimiter",
+		"SemicolonDelimiter.csv": "CSV;with;semicolons;as;delimiter",
+		"TabDelimiter.csv":       "CSV\twith\ttabs\tas\tdelimiter",
 		"NoDelimiter.csv":        "Lorem ipsum dolor sit amet",
 	}
 
@@ -63,6 +68,7 @@ func setupTest(tb testing.TB) func(tb testing.TB) {
 			tb.Fatalf("%s %s: %v", constants.FILE_WRITE_ERROR, file, err)
 		}
 
+		// TODO: Remove data stream content as per pivot to standalone Go package
 		event := EventMetadata{
 			ReceivedFilename: filepath.Join(tempDirectory, file),
 			DataStreamID:     constants.CSV_DATA_STREAM_ID,
@@ -123,6 +129,7 @@ func TestValidate_Success(t *testing.T) {
 	}
 
 	expectedResults := []models.RowValidationResult{
+		// Testing row validation on 1st row of first file
 		models.RowValidationResult{
 			FileUUID:  params[0].FileUUID, // TODO: There is a probably a better way to set up a 2D matrix of structs for creating input and output data; otherwise you deal with this odd hard-coding indices
 			Status:    constants.STATUS_SUCCESS,
@@ -131,13 +138,23 @@ func TestValidate_Success(t *testing.T) {
 			Hash:      "hash1",
 			RowNumber: 1,
 		},
+		// Testing row validation on 2nd row of first file
 		models.RowValidationResult{
-			FileUUID:  params[1].FileUUID,
+			FileUUID:  params[0].FileUUID,
 			Status:    constants.STATUS_SUCCESS,
 			Error:     nil,
 			RowUUID:   uuid.New(),
 			Hash:      "hash2",
 			RowNumber: 2,
+		},
+		// Testing row validation on 1st row of second file
+		models.RowValidationResult{
+			FileUUID:  params[1].FileUUID,
+			Status:    constants.STATUS_SUCCESS,
+			Error:     nil,
+			RowUUID:   uuid.New(),
+			Hash:      "hash3",
+			RowNumber: 1,
 		},
 		// ... add more expected results if needed
 	}
@@ -146,6 +163,7 @@ func TestValidate_Success(t *testing.T) {
 
 	for i, param := range params {
 		Validate(param, sendEventsToDestination.callback)
+		// var actualResult models.FileValidationResult = sendEventsToDestination.result.(models.FileValidationResult)
 		assertEqual(t, expectedResults[i], sendEventsToDestination.result)
 		sendEventsToDestination = MockSendEventsToDestination{} // reset struct contents
 	}
