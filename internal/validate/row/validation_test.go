@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"testing"
 )
@@ -42,11 +43,34 @@ func (m *MockSendEventsToDestination) callback(result interface{}, destination s
 	m.destination = destination
 }
 
-func assertEqual(t *testing.T, expected interface{}, actual interface{}) {
-	if expected != actual {
-		expectedJson, _ := json.MarshalIndent(expected, "", "    ")
-		actualJson, _ := json.MarshalIndent(actual, "", "    ")
-		t.Errorf("Expected: %s, but got: %s", string(expectedJson), string(actualJson))
+func verifyValidationResult(t *testing.T, expected ExpectedRowValidationResult, actual models.RowValidationResult) {
+	// We want to compare only a subset of the RowValidationResult fields
+	// TODO: Do we want to explicitly downcast RowValidationResult to a ExpectedRowValidationResult? And if so should this be done
+	// in this function or before this function call? It feels off that expected and actual args are not the same type.
+	t.Helper()
+
+	expectedFields := reflect.TypeOf(expected)
+	expectedValues := reflect.ValueOf(expected)
+
+	actualValues := reflect.ValueOf(actual)
+
+	// Looping over each struct field and comparing field values programmatically instead of hard-coding asserts
+	for i := 0; i < expectedFields.NumField(); i++ {
+		field := expectedFields.Field(i).Name
+		expectedValue := expectedValues.Field(i)
+
+		actualValue := actualValues.Field(i)
+
+		assertEqual(t, field, expectedValue, actualValue)
+	}
+}
+
+func assertEqual(t *testing.T, field string, expected interface{}, actual interface{}) {
+	// Need to ensure both types are equal before comparison
+	isEqual := reflect.TypeOf(expected) == reflect.TypeOf(actual) && expected == actual
+
+	if !isEqual {
+		t.Errorf("Expected %s: %s, but got: %s", field, expected, actual)
 	}
 }
 
@@ -159,8 +183,11 @@ func TestValidate_Success(t *testing.T) {
 
 	for i, param := range params {
 		Validate(param, sendEventsToDestination.callback)
-		// var actualResult models.FileValidationResult = sendEventsToDestination.result.(models.FileValidationResult)
-		assertEqual(t, expectedResults[i], sendEventsToDestination.result)
+		// TODO: panic: interface conversion failed. interface{} is models.RowTransformationResult, not models.RowValidationResult
+		// This means on a row validation success, result struct is a RowTransformationResult (meaning row is transformed into json format on success)
+		// Is RowValidationResult not an emitted/returned?
+		actualResult := sendEventsToDestination.result.(models.RowValidationResult)
+		verifyValidationResult(t, expectedResults[i], actualResult)
 		sendEventsToDestination = MockSendEventsToDestination{} // reset struct contents
 	}
 }
