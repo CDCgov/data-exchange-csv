@@ -14,8 +14,8 @@ import (
 
 const tempDirectory = "dex-csv-row-validation-test-temp"
 
-// TODO: Should EventMetadata be a constant type? If so move definition to /models
-type EventMetadata struct {
+// TODO: Should eventMetadata be a constant type? If so move definition to /models
+type eventMetadata struct {
 	ReceivedFilename string `json:"received_filename"`
 	DataStreamID     string `json:"data_stream_id"`
 	SenderID         string `json:"sender_id"`
@@ -25,27 +25,33 @@ type EventMetadata struct {
 	Version          string `json:"version"`
 }
 
-// ExpectedRowValidationResult contains a subset of the fields of models.RowValidationResult that we want to test against
+type rowValidationTest struct {
+	name     string // Test name
+	input    models.FileValidationParams
+	expected []expectedRowValidationResult // A file can have multiple rows, thus one to many row validation results
+}
+
+// expectedRowValidationResult contains a subset of the fields of models.RowValidationResult that we want to test against
 // (ignoring fields with randomized values like FileUUID and RowUUID)
-type ExpectedRowValidationResult struct {
+type expectedRowValidationResult struct {
 	RowNumber int
 	Error     *models.RowError
 	Status    string
 }
 
-type MockSendEventsToDestination struct {
+type mockSendEventsToDestination struct {
 	result      interface{}
 	destination string // a path where result is routed to
 }
 
-func (m *MockSendEventsToDestination) callback(result interface{}, destination string) {
+func (m *mockSendEventsToDestination) callback(result interface{}, destination string) {
 	m.result = result
 	m.destination = destination
 }
 
-func verifyValidationResult(t *testing.T, expected ExpectedRowValidationResult, actual models.RowValidationResult) {
+func verifyValidationResult(t *testing.T, expected expectedRowValidationResult, actual models.RowValidationResult) {
 	// We want to compare only a subset of the RowValidationResult fields
-	// TODO: Do we want to explicitly downcast RowValidationResult to a ExpectedRowValidationResult? And if so should this be done
+	// TODO: Do we want to explicitly downcast RowValidationResult to a expectedRowValidationResult? And if so should this be done
 	// in this function or before this function call? It feels off that expected and actual args are not the same type.
 	t.Helper()
 
@@ -75,6 +81,7 @@ func assertEqual(t *testing.T, field string, expected interface{}, actual interf
 }
 
 func setupTest(tb testing.TB) func(tb testing.TB) {
+	// TODO: Use T.TempDir?
 	_ = os.RemoveAll(tempDirectory) // removing directory created from previously failed runs
 	err := os.Mkdir(tempDirectory, 0755)
 
@@ -88,6 +95,7 @@ func setupTest(tb testing.TB) func(tb testing.TB) {
 		"SemicolonDelimiter.csv": "CSV;with;semicolons;as;delimiter",
 		"TabDelimiter.csv":       "CSV\twith\ttabs\tas\tdelimiter",
 		"NoDelimiter.csv":        "Lorem ipsum dolor sit amet",
+		"EmptyFile.csv":          "",
 	}
 
 	for file, content := range testFilesWithContent {
@@ -98,7 +106,7 @@ func setupTest(tb testing.TB) func(tb testing.TB) {
 		}
 
 		// TODO: Remove data stream content as per pivot to standalone Go package
-		event := EventMetadata{
+		event := eventMetadata{
 			ReceivedFilename: filepath.Join(tempDirectory, file),
 			DataStreamID:     constants.CSV_DATA_STREAM_ID,
 			SenderID:         constants.CSV_SENDER_ID,
@@ -142,58 +150,66 @@ func TestMain(m *testing.M) {
 
 // TestValidate_Success	tests positive path in Validate().
 func TestValidate_Success(t *testing.T) {
-	params := []models.FileValidationParams{
+	tests := []rowValidationTest{
 		{
-			ReceivedFile: tempDirectory + "/UTF8Encoding.csv",
-			Encoding:     constants.UTF8_BOM,
-			Delimiter:    ",", // TODO: Should this Delimiter field be a rune type?
-			FileUUID:     uuid.New(),
+			name: "Valid UTF8 Encoded CSV Test - 2 Rows",
+			input: models.FileValidationParams{
+				ReceivedFile: tempDirectory + "/UTF8Encoding.csv",
+				Encoding:     constants.UTF8_BOM,
+				Delimiter:    ",", // TODO: Should this Delimiter field be a rune type?
+				FileUUID:     uuid.New(),
+			},
+			expected: []expectedRowValidationResult{
+				{
+					Status:    constants.STATUS_SUCCESS,
+					Error:     nil,
+					RowNumber: 1,
+				},
+				{
+					Status:    constants.STATUS_SUCCESS,
+					Error:     nil,
+					RowNumber: 2,
+				},
+			},
 		},
 		{
-			ReceivedFile: tempDirectory + "/UTF8BomEncoding.csv",
-			Encoding:     constants.UTF8_BOM,
-			Delimiter:    ",",
-			FileUUID:     uuid.New(),
+			name: "Valid UTF8 Bom Encoded CSV Test - 1 Row",
+			input: models.FileValidationParams{
+				ReceivedFile: tempDirectory + "/UTF8BomEncoding.csv",
+				Encoding:     constants.UTF8_BOM,
+				Delimiter:    ",",
+				FileUUID:     uuid.New(),
+			},
+			expected: []expectedRowValidationResult{
+				{
+					Status:    constants.STATUS_SUCCESS,
+					Error:     nil,
+					RowNumber: 1,
+				},
+			},
 		},
 	}
 
-	expectedResults := []ExpectedRowValidationResult{
-		// Testing row validation on 1st row of first file
-		{
-			Status:    constants.STATUS_SUCCESS,
-			Error:     nil,
-			RowNumber: 1,
-		},
-		// Testing row validation on 2nd row of first file
-		{
-			Status:    constants.STATUS_SUCCESS,
-			Error:     nil,
-			RowNumber: 2,
-		},
-		// Testing row validation on 1st row of second file
-		{
-			Status:    constants.STATUS_SUCCESS,
-			Error:     nil,
-			RowNumber: 1,
-		},
-		// ... add more expected results if needed
-	}
+	sendEventsToDestination := mockSendEventsToDestination{}
 
-	sendEventsToDestination := MockSendEventsToDestination{}
-
-	for i, param := range params {
-		Validate(param, sendEventsToDestination.callback)
+	for _, test := range tests {
+		Validate(test.input, sendEventsToDestination.callback)
 		// TODO: panic: interface conversion failed. interface{} is models.RowTransformationResult, not models.RowValidationResult
 		// This means on a row validation success, result struct is a RowTransformationResult (meaning row is transformed into json format on success)
 		// Is RowValidationResult not an emitted/returned?
 		actualResult := sendEventsToDestination.result.(models.RowValidationResult)
-		verifyValidationResult(t, expectedResults[i], actualResult)
-		sendEventsToDestination = MockSendEventsToDestination{} // reset struct contents
+		t.Run(test.name, func(t *testing.T) {
+			for _, expectedResult := range test.expected {
+				verifyValidationResult(t, expectedResult, actualResult)
+			}
+		})
+		sendEventsToDestination = mockSendEventsToDestination{} // reset struct contents
 	}
 }
 
 // TestValidate_ErrorCreatingReader tests when Validate() fails to create a CSV file reader.
 func TestValidate_ErrorCreatingReader(t *testing.T) {
+	// TODO: Update to table-driven test design
 	param := models.FileValidationParams{
 		ReceivedFile: tempDirectory + "/NonExistent.csv", // non-existent file
 		Encoding:     constants.UTF8_BOM,
@@ -201,7 +217,7 @@ func TestValidate_ErrorCreatingReader(t *testing.T) {
 		FileUUID:     uuid.New(),
 	}
 
-	expectedResult := ExpectedRowValidationResult{
+	expectedResult := expectedRowValidationResult{
 		Status: constants.STATUS_FAILED,
 		Error: &models.RowError{
 			Message:  "CSV reader error",
@@ -212,7 +228,7 @@ func TestValidate_ErrorCreatingReader(t *testing.T) {
 		RowNumber: 1,
 	}
 
-	sendEventsToDestination := MockSendEventsToDestination{}
+	sendEventsToDestination := mockSendEventsToDestination{}
 	Validate(param, sendEventsToDestination.callback)
 	actualResult := sendEventsToDestination.result.(models.RowValidationResult)
 	verifyValidationResult(t, expectedResult, actualResult)
@@ -220,7 +236,7 @@ func TestValidate_ErrorCreatingReader(t *testing.T) {
 
 // TestValidate_ErrorReadingRow tests when Validate() encounters a read error.
 func TestValidate_ErrorReadingRow(t *testing.T) {
-
+	// TODO: Update to table-driven test design
 	params := []models.FileValidationParams{
 		{
 			ReceivedFile: tempDirectory + "/SemicolonDelimiter.csv",
@@ -236,7 +252,7 @@ func TestValidate_ErrorReadingRow(t *testing.T) {
 		},
 	}
 
-	expectedResults := []ExpectedRowValidationResult{
+	expectedResults := []expectedRowValidationResult{
 		{
 			Status:    constants.STATUS_SUCCESS,
 			Error:     nil,
@@ -254,12 +270,12 @@ func TestValidate_ErrorReadingRow(t *testing.T) {
 		},
 	}
 
-	sendEventsToDestination := MockSendEventsToDestination{}
+	sendEventsToDestination := mockSendEventsToDestination{}
 
 	for i, param := range params {
 		Validate(param, sendEventsToDestination.callback)
 		actualResult := sendEventsToDestination.result.(models.RowValidationResult)
 		verifyValidationResult(t, expectedResults[i], actualResult)
-		sendEventsToDestination = MockSendEventsToDestination{}
+		sendEventsToDestination = mockSendEventsToDestination{}
 	}
 }
