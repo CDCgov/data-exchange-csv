@@ -28,7 +28,6 @@ func Validate(eventMetadataFileURL string) models.FileValidationResult {
 		fileValidationResult.Status = constants.STATUS_FAILED
 		return fileValidationResult
 	}
-	fileValidationResult.Status = constants.STATUS_SUCCESS
 
 	return fileValidationResult
 }

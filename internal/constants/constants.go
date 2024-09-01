@@ -23,6 +23,8 @@ const (
 	COMMA                                            = ','
 	STATUS_SUCCESS                                   = "success"
 	STATUS_FAILED                                    = "failed"
+	STATUS_VALID                                     = "valid"
+	STATUS_INVALID                                   = "invalid"
 	NO_DELIMITERS_DETECTED                           = "No delimiters were detected in the file. Please ensure the file has the correct format."
 	FILE_READ_ERROR                                  = "Error reading the file. Check if the file is accessible and not corrupted."
 	FILE_OPEN_ERROR                                  = "Error opening the file. Verify the file path and permissions."
@@ -84,11 +86,12 @@ const (
 )
 
 const (
-	DEAD_LETTER_QUEUE       = "storage/dead-letter-queue"
-	FILE_REPORTS            = "storage/filereports"
-	ROW_REPORTS             = "storage/rowreports"
-	TRANSFORMED_ROW_REPORTS = "storage/transformedrows"
-	CONFIG_FILE             = "internal/config/config.json"
+	DEAD_LETTER_QUEUE           = "storage/dead-letter-queue"
+	FILE_REPORTS                = "storage/file"
+	ROW_REPORTS                 = "storage/rowreports"
+	TRANSFORMED_ROW_REPORTS     = "storage/transformedrows"
+	CONFIG_FILE                 = "internal/config/config.json"
+	FILE_VALIDATION_REPORT_NAME = "%s_%s%s"
 )
 
 const (
