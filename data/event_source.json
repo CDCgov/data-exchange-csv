@@ -1,0 +1,9 @@
+{
+  "received_filename": "data/file-with-headers-100-rows-tsv.tsv",
+  "data_stream_id": "rsv-prevention",
+  "sender_id": "nrss-csv",
+  "data_producer_id": "dex-csv-producer",
+  "jurisdiction": "NJ",
+  "data_stream_route": "dex-csv",
+  "version": "1.0.0"
+}

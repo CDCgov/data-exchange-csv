@@ -6,17 +6,19 @@ import (
 	"github.com/CDCgov/data-exchange-csv/cmd/internal/processor"
 	"github.com/CDCgov/data-exchange-csv/cmd/internal/validate/file"
 	"github.com/CDCgov/data-exchange-csv/cmd/internal/validate/row"
+	"github.com/CDCgov/data-exchange-csv/cmd/pkg/sloger"
 )
 
 func main() {
+	logger := sloger.With(constants.PACKAGE, constants.MAIN)
+	logger.Info(constants.APPLICATION_STARTED)
+
 	event := "data/event_source.json"
 
 	fileValidationResult := file.Validate(event)
 	processor.ProcessFileValidationResult(fileValidationResult)
 
 	if fileValidationResult.Status == constants.STATUS_SUCCESS {
-
-		//valid file, proceed with row validation
 		params := models.FileValidationParams{
 			FileUUID:     fileValidationResult.FileUUID,
 			ReceivedFile: fileValidationResult.ReceivedFile,
@@ -25,6 +27,7 @@ func main() {
 			Header:       fileValidationResult.Config.HeaderValidationResult.Header,
 		}
 
+		logger.Info(constants.MSG_FILE_VALIDATION_SUCCESS)
 		row.Validate(params, processor.SendEventsToDestination)
 	}
 

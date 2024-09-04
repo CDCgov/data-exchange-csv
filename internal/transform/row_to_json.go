@@ -2,15 +2,21 @@ package transform
 
 import (
 	"encoding/json"
+	"fmt"
 	"strconv"
 
 	"github.com/CDCgov/data-exchange-csv/cmd/internal/constants"
 	"github.com/CDCgov/data-exchange-csv/cmd/internal/models"
+	"github.com/CDCgov/data-exchange-csv/cmd/pkg/sloger"
 	"github.com/google/uuid"
 )
 
 func RowToJson(row []string, params models.FileValidationParams,
 	rowUUID uuid.UUID, sendEventsToDestination func(result interface{}, destination string)) {
+
+	//initialize logger using sloger package
+	logger := sloger.With(constants.PACKAGE, constants.TRANSFORM)
+	logger.Info(fmt.Sprintf(constants.MSG_ROW_TRANSFORMATION_BEGIN, rowUUID))
 
 	transformationResult := models.RowTransformationResult{
 		FileUUID: params.FileUUID,
@@ -39,11 +45,13 @@ func RowToJson(row []string, params models.FileValidationParams,
 	if err != nil {
 		transformationResult.Error = err
 		transformationResult.Status = constants.STATUS_FAILED
+		logger.Error(fmt.Sprintf(constants.MSG_ROW_TRANSFORM_ERROR, err.Error()))
 		sendEventsToDestination(transformationResult, constants.DEAD_LETTER_QUEUE)
 		return
 	}
 
 	transformationResult.Status = constants.STATUS_SUCCESS
 	transformationResult.JsonRow = transformedRow
+	logger.Debug(constants.MSG_ROW_TRANSFORM_SUCCESS)
 	sendEventsToDestination(transformationResult, constants.TRANSFORMED_ROW_REPORTS)
 }

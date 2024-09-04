@@ -1,0 +1,17 @@
+Name,Age,City,Occupation
+John~ Doe,30,New York,Software Engineer
+Jane Smith,25,San Francisco,Data Analyst
+Jos Garc?a,35,Madrid,Graphic Designer
+M?ller Schmidt,40,Berlin,Project Manager
+?lodie Dubois,28,Paris,Marketing Specialist
+Ren?e L?vesque,33,Montr?al,Art Director
+Andrzej Nowak,45,Warszawa,Financial Analyst
+J?rgen M?ller,38,K?benhavn,HR Manager
+Fr?d?rique Lef?vre,31,Bruxelles,Public Relations Officer
+G?nther M?ller,42,Frankfurt,Operations Manager
+Alice #,29,London,Accountant
+Bob %,34,Chicago,Product Manager
+Charlie ',37,Tokyo,Software Developer
+David !,26,Sydney,Data Scientist
+Emily ~,39,Los Angeles,UX Designer
+Jos\u001f Garc?a,35,Madrid,Graphic Designer
