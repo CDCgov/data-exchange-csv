@@ -197,6 +197,8 @@ func TestValidate_Success(t *testing.T) {
 		// TODO: panic: interface conversion failed. interface{} is models.RowTransformationResult, not models.RowValidationResult
 		// This means on a row validation success, result struct is a RowTransformationResult (meaning row is transformed into json format on success)
 		// Is RowValidationResult not an emitted/returned?
+		// TODO: I think this logic in comparing expected to actual output is wrong because the struct that stores the row errors has a one-to-many relationship
+		// with the RowValidationResult. That means we have to loop both the array of expected results and I guess an array that stores the actual RowValidationResults no?
 		actualResult := sendEventsToDestination.result.(models.RowValidationResult)
 		t.Run(test.name, func(t *testing.T) {
 			for _, expectedResult := range test.expected {
@@ -209,73 +211,102 @@ func TestValidate_Success(t *testing.T) {
 
 // TestValidate_ErrorCreatingReader tests when Validate() fails to create a CSV file reader.
 func TestValidate_ErrorCreatingReader(t *testing.T) {
-	// TODO: Update to table-driven test design
-	param := models.FileValidationParams{
-		ReceivedFile: tempDirectory + "/NonExistent.csv", // non-existent file
-		Encoding:     constants.UTF8_BOM,
-		Delimiter:    ",",
-		FileUUID:     uuid.New(),
-	}
-
-	expectedResult := expectedRowValidationResult{
-		Status: constants.STATUS_FAILED,
-		Error: &models.RowError{
-			Message:  "CSV reader error",
-			Severity: "Failure",
-			Line:     -1,
-			Column:   -1,
+	tests := []rowValidationTest{
+		{
+			name: "Non-Existent File",
+			input: models.FileValidationParams{
+				ReceivedFile: tempDirectory + "/NonExistent.csv", // non-existent file
+				Encoding:     constants.UTF8_BOM,
+				Delimiter:    ",",
+				FileUUID:     uuid.New(),
+			},
+			expected: []expectedRowValidationResult{
+				{
+					Status: constants.STATUS_FAILED,
+					Error: &models.RowError{
+						Message:  constants.CSV_READER_ERROR,
+						Severity: constants.Failure,
+						Line:     -1,
+						Column:   -1,
+					},
+					RowNumber: 1,
+				},
+			},
 		},
-		RowNumber: 1,
 	}
 
 	sendEventsToDestination := mockSendEventsToDestination{}
-	Validate(param, sendEventsToDestination.callback)
-	actualResult := sendEventsToDestination.result.(models.RowValidationResult)
-	verifyValidationResult(t, expectedResult, actualResult)
+
+	for _, test := range tests {
+		Validate(test.input, sendEventsToDestination.callback)
+		// TODO: panic: interface conversion failed. interface{} is models.RowTransformationResult, not models.RowValidationResult
+		// This means on a row validation success, result struct is a RowTransformationResult (meaning row is transformed into json format on success)
+		// Is RowValidationResult not an emitted/returned?
+		actualResult := sendEventsToDestination.result.(models.RowValidationResult)
+		t.Run(test.name, func(t *testing.T) {
+			for _, expectedResult := range test.expected {
+				verifyValidationResult(t, expectedResult, actualResult)
+			}
+		})
+		sendEventsToDestination = mockSendEventsToDestination{} // reset struct contents
+	}
 }
 
 // TestValidate_ErrorReadingRow tests when Validate() encounters a read error.
 func TestValidate_ErrorReadingRow(t *testing.T) {
-	// TODO: Update to table-driven test design
-	params := []models.FileValidationParams{
+	tests := []rowValidationTest{
 		{
-			ReceivedFile: tempDirectory + "/SemicolonDelimiter.csv",
-			Encoding:     constants.UTF8_BOM,
-			Delimiter:    ",",
-			FileUUID:     uuid.New(),
-		},
-		{
-			ReceivedFile: tempDirectory + "/NoDelimiter.csv",
-			Encoding:     constants.UTF8_BOM,
-			Delimiter:    ",",
-			FileUUID:     uuid.New(),
-		},
-	}
-
-	expectedResults := []expectedRowValidationResult{
-		{
-			Status:    constants.STATUS_SUCCESS,
-			Error:     nil,
-			RowNumber: 1,
-		},
-		{
-			Status: constants.STATUS_FAILED,
-			Error: &models.RowError{
-				Message:  "Mismatched field counts",
-				Severity: "Failure",
-				Line:     -1,
-				Column:   -1,
+			name: "Wrong Delimiter - File With Semicolon Delimiter",
+			input: models.FileValidationParams{
+				ReceivedFile: tempDirectory + "/SemicolonDelimiter.csv",
+				Encoding:     constants.UTF8_BOM,
+				Delimiter:    ",",
+				FileUUID:     uuid.New(),
 			},
-			RowNumber: 1,
+			expected: []expectedRowValidationResult{
+				{
+					Status:    constants.STATUS_SUCCESS,
+					Error:     nil,
+					RowNumber: 1,
+				},
+			},
+		},
+		{
+			name: "Wrong Delimiter - File With No Delimiter",
+			input: models.FileValidationParams{
+				ReceivedFile: tempDirectory + "/NoDelimiter.csv",
+				Encoding:     constants.UTF8_BOM,
+				Delimiter:    ",",
+				FileUUID:     uuid.New(),
+			},
+			expected: []expectedRowValidationResult{
+				{
+					Status:    constants.STATUS_SUCCESS,
+					Error:     nil,
+					RowNumber: 1,
+				},
+				{
+					Status: constants.STATUS_FAILED,
+					Error: &models.RowError{
+						Message:  "Mismatched field counts",
+						Severity: "Failure",
+						Line:     -1,
+						Column:   -1,
+					},
+					RowNumber: 1,
+				},
+			},
 		},
 	}
 
 	sendEventsToDestination := mockSendEventsToDestination{}
 
-	for i, param := range params {
-		Validate(param, sendEventsToDestination.callback)
+	for _, test := range tests {
+		Validate(test.input, sendEventsToDestination.callback)
 		actualResult := sendEventsToDestination.result.(models.RowValidationResult)
-		verifyValidationResult(t, expectedResults[i], actualResult)
+		for _, expectedResult := range test.expected {
+			verifyValidationResult(t, expectedResult, actualResult)
+		}
 		sendEventsToDestination = mockSendEventsToDestination{}
 	}
 }
