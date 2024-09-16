@@ -10,6 +10,15 @@ type FileError struct {
 	Code    int    `json:"code"`
 }
 
+type FileValidateInputParams struct {
+	FileURL            string                 `json:"file_url"`
+	Encoding           constants.EncodingType `json:"encoding"`
+	Separator          rune                   `json:"separator"`
+	HasHeader          bool                   `json:"has_header"`
+	ValidationCallback func(FileValidationResult)
+	Destination        string `json:"destination"`
+}
+
 type ConfigIdentifier struct {
 	DataStreamID    string   `json:"data_stream_id"`
 	DataStreamRoute string   `json:"data_stream_route"`
@@ -44,18 +53,18 @@ type FileValidationParams struct {
 	FileUUID     uuid.UUID              `json:"file_uuid"`
 	ReceivedFile string                 `json:"received_filename"`
 	Encoding     constants.EncodingType `json:"detected_encoding"`
-	Delimiter    string                 `json:"detected_delimiter"`
+	Delimiter    rune                   `json:"detected_delimiter"`
 	Header       []string               `json:"header"`
 }
 
 type FileValidationResult struct {
-	ReceivedFile string                   `json:"received_filename"`
-	Encoding     constants.EncodingType   `json:"encoding"`
-	FileUUID     uuid.UUID                `json:"uuid"`
-	Size         int64                    `json:"size"`
-	Delimiter    string                   `json:"delimiter"`
-	Error        *FileError               `json:"error"`
-	Status       string                   `json:"status"`
-	Metadata     MetadataValidationResult `json:"metadata_validation_result"`
-	Config       ConfigValidationResult   `json:"config_validation_result"`
+	ReceivedFile string                 `json:"received_filename"`
+	Encoding     constants.EncodingType `json:"encoding"`
+	FileUUID     uuid.UUID              `json:"uuid"`
+	Size         int64                  `json:"size"`
+	Delimiter    rune                   `json:"delimiter"`
+	Error        *FileError             `json:"error"`
+	Status       string                 `json:"status"`
+	HasHeader    bool                   `json:"has_header"`
+	Destination  string                 `json:"dest_folder"`
 }

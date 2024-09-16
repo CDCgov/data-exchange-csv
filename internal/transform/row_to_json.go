@@ -1,6 +1,7 @@
 package transform
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
 	"strconv"
@@ -11,8 +12,8 @@ import (
 	"github.com/google/uuid"
 )
 
-func RowToJson(row []string, params models.FileValidationParams,
-	rowUUID uuid.UUID, sendEventsToDestination func(result interface{}, destination string)) {
+func RowToJson(row []string, params models.FileValidationResult,
+	rowUUID uuid.UUID, writer *bufio.Writer) {
 
 	//initialize logger using sloger package
 	logger := sloger.With(constants.PACKAGE, constants.TRANSFORM)
@@ -25,10 +26,8 @@ func RowToJson(row []string, params models.FileValidationParams,
 
 	parsedRow := make(map[string]string)
 
-	if len(params.Header) > 0 {
-		for index, column := range params.Header {
-			parsedRow[column] = row[index]
-		}
+	if params.HasHeader {
+		fmt.Println("TO READ FIRST ROW")
 	} else {
 		for index, field := range row {
 			/*
@@ -46,12 +45,23 @@ func RowToJson(row []string, params models.FileValidationParams,
 		transformationResult.Error = err
 		transformationResult.Status = constants.STATUS_FAILED
 		logger.Error(fmt.Sprintf(constants.MSG_ROW_TRANSFORM_ERROR, err.Error()))
-		sendEventsToDestination(transformationResult, constants.DEAD_LETTER_QUEUE)
+		jsonContent, err := json.Marshal(transformationResult)
+		if err != nil {
+			logger.Error(constants.ERROR_CONVERTING_STRUCT_TO_JSON)
+		}
+		writer.Write(jsonContent)
+		writer.WriteString(",")
 		return
 	}
 
 	transformationResult.Status = constants.STATUS_SUCCESS
 	transformationResult.JsonRow = transformedRow
 	logger.Debug(constants.MSG_ROW_TRANSFORM_SUCCESS)
-	sendEventsToDestination(transformationResult, constants.TRANSFORMED_ROW_REPORTS)
+	jsonContent, err := json.Marshal(transformationResult)
+	if err != nil {
+		logger.Error(constants.ERROR_CONVERTING_STRUCT_TO_JSON)
+	}
+	writer.Write(jsonContent)
+	writer.WriteString(",")
+
 }

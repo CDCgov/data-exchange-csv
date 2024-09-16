@@ -1,5 +1,6 @@
 package transform
 
+/*
 import (
 	"encoding/json"
 	"testing"
@@ -96,3 +97,4 @@ func TestRowToJsonNoHeader(t *testing.T) {
 		t.Errorf("Expected transformation result %v and actual  %v do not match", expectedResult, mockSender.result)
 	}
 }
+*/

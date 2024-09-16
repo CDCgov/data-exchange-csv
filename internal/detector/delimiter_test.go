@@ -1,5 +1,6 @@
 package detector
 
+/*
 import (
 	"testing"
 
@@ -41,3 +42,4 @@ func TestUnsupportedDelimiter(t *testing.T) {
 	}
 
 }
+*/

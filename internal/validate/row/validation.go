@@ -1,7 +1,9 @@
 package row
 
 import (
+	"bufio"
 	"encoding/csv"
+	"encoding/json"
 	"fmt"
 	"io"
 	"os"
@@ -14,7 +16,7 @@ import (
 	"golang.org/x/text/encoding/charmap"
 )
 
-func createReader(file *os.File, encoding constants.EncodingType, delimiter string) (*csv.Reader, error) {
+func createReader(file *os.File, encoding constants.EncodingType, delimiter rune) (*csv.Reader, error) {
 	var reader *csv.Reader
 
 	switch encoding {
@@ -34,17 +36,24 @@ func createReader(file *os.File, encoding constants.EncodingType, delimiter stri
 	}
 	//If the file is tab-separated (TSV), update the reader's separator to TAB.
 	//This ensures that the reader correctly parses each field based on the tab delimiter.
-	if delimiter == string(constants.TAB) {
+	if delimiter == constants.TAB {
 		reader.Comma = constants.TAB
 	}
 
 	return reader, nil
 }
 
-func Validate(params models.FileValidationParams, sendEventsToDestination func(result interface{}, destination string)) {
+func Validate(params models.FileValidationResult) {
 	//initialize logger from sloger package
 	logger := sloger.With(constants.PACKAGE, constants.ROW)
 	logger.Info(fmt.Sprintf(constants.MSG_ROW_VALIDATION_BEGIN, params.FileUUID))
+
+	validationWriter, transformationWriter, closeWriters, err := setupWritersWithCleanup(params.Destination)
+	if err != nil {
+		logger.Error("Not able to initialize writers")
+	}
+	validationWriter.WriteString("[")
+	transformationWriter.WriteString("[")
 
 	file, _ := os.Open(params.ReceivedFile)
 
@@ -63,11 +72,11 @@ func Validate(params models.FileValidationParams, sendEventsToDestination func(r
 	if err != nil {
 		validationResult.Error = &models.RowError{Message: constants.CSV_READER_ERROR, Severity: constants.Failure}
 		logger.Error(fmt.Sprintf(constants.MSG_CSV_READER_FAILURE, err.Error()))
-		sendEventsToDestination(validationResult, constants.DEAD_LETTER_QUEUE)
+
 	}
 
 	//If header is present, skip the header to ensure header row is not validated or transformed.
-	if len(params.Header) != 0 {
+	if params.HasHeader {
 		logger.Info(constants.MSG_HEADER_PRESENT_SKIP_FIRST_ROW)
 		reader.Read()
 	}
@@ -78,6 +87,8 @@ func Validate(params models.FileValidationParams, sendEventsToDestination func(r
 		row, err := reader.Read()
 
 		if err == io.EOF {
+			validationWriter.WriteString("]")
+			transformationWriter.WriteString("]")
 			break
 		}
 
@@ -93,20 +104,57 @@ func Validate(params models.FileValidationParams, sendEventsToDestination func(r
 			validationResult.Error = processRowError(err)
 			validationResult.Status = constants.STATUS_FAILED
 			logger.Error(fmt.Sprintf(constants.MSG_ROW_VALIDATION_FAILURE, validationResult.Error.Message))
-			sendEventsToDestination(validationResult, constants.DEAD_LETTER_QUEUE)
+			jsonContent, err := json.Marshal(validationResult)
+			if err != nil {
+				logger.Error(constants.ERROR_CONVERTING_STRUCT_TO_JSON)
+			}
+			validationWriter.Write(jsonContent)
+			validationWriter.WriteString(",")
 			continue
 		}
 
 		validationResult.Status = constants.STATUS_SUCCESS
 		logger.Debug(constants.MSG_ROW_VALIDATION_SUCCESS)
-		sendEventsToDestination(validationResult, constants.ROW_REPORTS)
-		// valid row, ready to transform to json
-		transform.RowToJson(row, params, validationResult.RowUUID, sendEventsToDestination)
+		jsonContent, err := json.Marshal(validationResult)
+		if err != nil {
+			logger.Error(constants.ERROR_CONVERTING_STRUCT_TO_JSON)
+		}
+		validationWriter.Write(jsonContent)
+		validationWriter.WriteString(",")
+		transform.RowToJson(row, params, validationResult.RowUUID, transformationWriter)
 
 	}
+	closeWriters()
 
 }
 
+func setupWritersWithCleanup(destination string) (*bufio.Writer, *bufio.Writer, func(), error) {
+	rowDest := destination[:len(destination)-4]
+	validationPath := fmt.Sprintf("%s/row/validation_result.json", rowDest)
+
+	fileValidation, err := os.Create(validationPath)
+	if err != nil {
+		return nil, nil, nil, fmt.Errorf("failed to create file %s: %w", validationPath, err)
+	}
+	transformationPath := fmt.Sprintf("%s/row/transformation_result.json", rowDest)
+	fileTransformation, err := os.Create(transformationPath)
+
+	if err != nil {
+		return nil, nil, nil, fmt.Errorf("failed to create file %s: %w", transformationPath, err)
+	}
+
+	fileValidationWriter := bufio.NewWriter(fileValidation)
+	fileTransformationWriter := bufio.NewWriter(fileTransformation)
+
+	closeWriters := func() {
+		fileValidationWriter.Flush()
+		fileTransformationWriter.Flush()
+		fileValidation.Close()
+		fileTransformation.Close()
+	}
+	return fileValidationWriter, fileTransformationWriter, closeWriters, nil
+
+}
 func processRowError(err error) *models.RowError {
 	rowError := &models.RowError{}
 

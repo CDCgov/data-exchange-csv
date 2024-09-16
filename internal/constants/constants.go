@@ -7,64 +7,72 @@ import (
 type EncodingType string
 
 const (
-	MAX_READ_THRESHOLD                               = 1024
-	MAX_EXECUTION_TIME                               = 500 * time.Millisecond
-	BOM_LENGTH                                       = 3
-	UTF8                                EncodingType = "UTF-8"
-	UTF8_BOM                            EncodingType = "UTF-8 WITH BOM"
-	USASCII                             EncodingType = "US-ASCII"
-	ISO8859_1                           EncodingType = "ISO-8859-1"
-	WINDOWS1252                         EncodingType = "windows-1252"
-	UNDEF                               EncodingType = "UNDEFINED"
-	CSV                                              = "CSV"
-	TSV                                              = "TSV"
-	UNSUPPORTED                         rune         = 0
-	TAB                                              = '\t'
-	COMMA                                            = ','
-	STATUS_SUCCESS                                   = "success"
-	STATUS_FAILED                                    = "failed"
-	NO_DELIMITERS_DETECTED                           = "No delimiters were detected in the file. Please ensure the file has the correct format."
-	FILE_READ_ERROR                                  = "Error reading the file. Check if the file is accessible and not corrupted."
-	FILE_OPEN_ERROR                                  = "Error opening the file. Verify the file path and permissions."
-	FILE_WRITE_ERROR                                 = "Error writing to the file. Ensure you have the necessary write permissions and the file is not locked."
-	FILE_CLOSE_ERROR                                 = "Error closing the file. This may indicate an issue with file system resources."
-	FILE_CREATE_ERROR                                = "Error creating the temp file."
-	CSV_READER_ERROR                                 = "Error creating CSV reader. Please check the CSV format and ensure it is correctly formatted."
-	DIRECTORY_CREATE_ERROR                           = "Failed to create temporary directory."
-	DIRECTORY_REMOVE_ERROR                           = "Failed to remove the test directory. Verify that the directory exists and you have the necessary permissions."
-	ERROR_CONVERTING_STRUCT_TO_JSON                  = "Error converting the struct to JSON. Check the struct definition for compatibility with JSON marshalling."
-	ERROR_UNMARSHALING_JSON                          = "Invalid JSON. Please check JSON format."
-	JSON_EXTENSION                                   = ".json"
-	CSV_FILENAME_WITH_BOM                            = "HasBOM.csv"
-	CSV_FILENAME_WITHOUT_BOM                         = "NoBOM.csv"
-	UNSUPPORTED_DELIMITER_ERROR                      = "Unsupported delimiter found in the file. Please use a supported delimiter and try again."
-	UNSUPPORTED_ENCODING_ERROR                       = "Unsupported encoding detected. Ensure the file is encoded in a supported format."
-	BOM_NOT_DETECTED_ERROR                           = "Byte Order Mark was not detected."
-	INTERFACE_TO_SLICE_CONVERSION_ERROR              = "Error occurred while converting interface{} to slice."
-	FILE_MISSING_ERROR                               = "received_filename is a required metadata field."
-	INVALID_CONFIG_FILE                              = "Missing config_identifiers in config file."
-	APPLICATION_STARTED                              = "Application Started"
-	PACKAGE                                          = "package"
-	MAIN                                             = "main"
-	ROW                                              = "row"
-	FILE                                             = "file"
-	TRANSFORM                                        = "transform"
-	MSG_FILE_VALIDATION_BEGIN                        = "Initiating file validation"
-	MSG_FILE_METADATA_VALIDATION_STATUS              = "file.metadataValidationStatus"
-	MSG_FILE_CONFIG_VALIDATION_STATUS                = "file.configValidationStatus"
-	MSG_FILE_VALIDATION_FAIL                         = "File validation failed. Please refer to the validation report for further insights"
-	MSG_FILE_VALIDATION_SUCCESS                      = "File validation successful, proceed with row validation"
-	MSG_ROW_VALIDATION_BEGIN                         = "Row validation process initiated for the file with UUID: %s"
-	MSG_CSV_READER_FAILURE                           = "CSV reader failed with error: %s"
-	MSG_HEADER_PRESENT_SKIP_FIRST_ROW                = "Header is present, we will skip the first row"
-	MSG_ROW_UUID                                     = "Row with UUID: %s"
-	MSG_ROW_COMPUTED_HASH                            = "Computed Hash: %s"
-	MSG_ROW_NUMBER                                   = "Row number: %d"
-	MSG_ROW_VALIDATION_FAILURE                       = "The row failed validation due to following error: %s"
-	MSG_ROW_VALIDATION_SUCCESS                       = "The row was successfully validated. Proceed with JSON transformation"
-	MSG_ROW_TRANSFORMATION_BEGIN                     = "The row transformation initiated for the row with UUID: %s"
-	MSG_ROW_TRANSFORM_ERROR                          = "Failed to transform the row into a JSON format. Error: %s"
-	MSG_ROW_TRANSFORM_SUCCESS                        = "The row was successfully transformed to a JSON format"
+	UTF8        EncodingType = "UTF-8"
+	UTF8_BOM    EncodingType = "UTF-8 WITH BOM"
+	USASCII     EncodingType = "US-ASCII"
+	ISO8859_1   EncodingType = "ISO-8859-1"
+	WINDOWS1252 EncodingType = "windows-1252"
+	UNDEF       EncodingType = "UNDEFINED"
+)
+
+type Separator rune
+
+const (
+	MAX_READ_THRESHOLD = 1024
+	MAX_EXECUTION_TIME = 500 * time.Millisecond
+	BOM_LENGTH         = 3
+
+	CSV                                      = "CSV"
+	TSV                                      = "TSV"
+	UNSUPPORTED                         rune = 0
+	TAB                                 rune = '\t'
+	COMMA                               rune = ','
+	STATUS_SUCCESS                           = "success"
+	STATUS_FAILED                            = "failed"
+	STATUS_VALID                             = "valid"
+	STATUS_INVALID                           = "invalid"
+	NO_DELIMITERS_DETECTED                   = "No delimiters were detected in the file. Please ensure the file has the correct format."
+	FILE_READ_ERROR                          = "Error reading the file. Check if the file is accessible and not corrupted."
+	FILE_OPEN_ERROR                          = "Error opening the file. Verify the file path and permissions."
+	FILE_WRITE_ERROR                         = "Error writing to the file. Ensure you have the necessary write permissions and the file is not locked."
+	FILE_CLOSE_ERROR                         = "Error closing the file. This may indicate an issue with file system resources."
+	FILE_CREATE_ERROR                        = "Error creating the temp file."
+	CSV_READER_ERROR                         = "Error creating CSV reader. Please check the CSV format and ensure it is correctly formatted."
+	DIRECTORY_CREATE_ERROR                   = "Failed to create temporary directory."
+	DIRECTORY_REMOVE_ERROR                   = "Failed to remove the test directory. Verify that the directory exists and you have the necessary permissions."
+	ERROR_CONVERTING_STRUCT_TO_JSON          = "Error converting the struct to JSON. Check the struct definition for compatibility with JSON marshalling."
+	ERROR_UNMARSHALING_JSON                  = "Invalid JSON. Please check JSON format."
+	JSON_EXTENSION                           = ".json"
+	CSV_FILENAME_WITH_BOM                    = "HasBOM.csv"
+	CSV_FILENAME_WITHOUT_BOM                 = "NoBOM.csv"
+	UNSUPPORTED_DELIMITER_ERROR              = "Unsupported delimiter found in the file. Please use a supported delimiter and try again."
+	UNSUPPORTED_ENCODING_ERROR               = "Unsupported encoding detected. Ensure the file is encoded in a supported format."
+	BOM_NOT_DETECTED_ERROR                   = "Byte Order Mark was not detected."
+	INTERFACE_TO_SLICE_CONVERSION_ERROR      = "Error occurred while converting interface{} to slice."
+	FILE_MISSING_ERROR                       = "received_filename is a required metadata field."
+	INVALID_CONFIG_FILE                      = "Missing config_identifiers in config file."
+	APPLICATION_STARTED                      = "Application Started"
+	PACKAGE                                  = "package"
+	MAIN                                     = "main"
+	ROW                                      = "row"
+	FILE                                     = "file"
+	TRANSFORM                                = "transform"
+	MSG_FILE_VALIDATION_BEGIN                = "Initiating file validation"
+	MSG_FILE_METADATA_VALIDATION_STATUS      = "file.metadataValidationStatus"
+	MSG_FILE_CONFIG_VALIDATION_STATUS        = "file.configValidationStatus"
+	MSG_FILE_VALIDATION_FAIL                 = "File validation failed. Please refer to the validation report for further insights"
+	MSG_FILE_VALIDATION_SUCCESS              = "File validation successful, proceed with row validation"
+	MSG_ROW_VALIDATION_BEGIN                 = "Row validation process initiated for the file with UUID: %s"
+	MSG_CSV_READER_FAILURE                   = "CSV reader failed with error: %s"
+	MSG_HEADER_PRESENT_SKIP_FIRST_ROW        = "Header is present, we will skip the first row"
+	MSG_ROW_UUID                             = "Row with UUID: %s"
+	MSG_ROW_COMPUTED_HASH                    = "Computed Hash: %s"
+	MSG_ROW_NUMBER                           = "Row number: %d"
+	MSG_ROW_VALIDATION_FAILURE               = "The row failed validation due to following error: %s"
+	MSG_ROW_VALIDATION_SUCCESS               = "The row was successfully validated. Proceed with JSON transformation"
+	MSG_ROW_TRANSFORMATION_BEGIN             = "The row transformation initiated for the row with UUID: %s"
+	MSG_ROW_TRANSFORM_ERROR                  = "Failed to transform the row into a JSON format. Error: %s"
+	MSG_ROW_TRANSFORM_SUCCESS                = "The row was successfully transformed to a JSON format"
 )
 
 type Severity string
@@ -106,11 +114,12 @@ const (
 )
 
 const (
-	DEAD_LETTER_QUEUE       = "storage/dead-letter-queue"
-	FILE_REPORTS            = "storage/filereports"
-	ROW_REPORTS             = "storage/rowreports"
-	TRANSFORMED_ROW_REPORTS = "storage/transformedrows"
-	CONFIG_FILE             = "internal/config/config.json"
+	DEAD_LETTER_QUEUE           = "storage/dead-letter-queue"
+	FILE_REPORTS                = "/file"
+	ROW_REPORTS                 = "/row"
+	TRANSFORMED_ROW_REPORTS     = "storage/transformedrows"
+	CONFIG_FILE                 = "internal/config/config.json"
+	FILE_VALIDATION_REPORT_NAME = "%s_%s%s"
 )
 
 const (
