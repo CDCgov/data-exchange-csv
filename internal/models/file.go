@@ -11,30 +11,21 @@ type FileError struct {
 }
 
 type FileValidateInputParams struct {
-	FileURL            string                 `json:"file_url"`
+	ReceivedFile       string                 `json:"received_file"`
 	Encoding           constants.EncodingType `json:"encoding"`
 	Separator          rune                   `json:"separator"`
 	HasHeader          bool                   `json:"has_header"`
 	ValidationCallback func(FileValidationResult)
 	Destination        string `json:"destination"`
+	ConfigFile         string `json:"config_file"`
+	Debug              bool   `json:"debug"`
+	LogToFile          bool   `json:"log-file"`
 }
 
 type ConfigIdentifier struct {
 	DataStreamID    string   `json:"data_stream_id"`
 	DataStreamRoute string   `json:"data_stream_route"`
 	Header          []string `json:"header"`
-}
-
-type MetadataValidationResult struct {
-	ReceivedFile    string     `json:"received_filename"`
-	Error           *FileError `json:"error"`
-	Status          string     `json:"status"`
-	Jurisdiction    string     `json:"jurisdiction"`
-	DataStreamID    string     `json:"data_stream_id"`
-	DataStreamRoute string     `json:"data_stream_route"`
-	SenderID        string     `json:"sender_id"`
-	DataProducerID  string     `json:"data_producer_id"`
-	Version         string     `json:"version"`
 }
 
 type ConfigValidationResult struct {

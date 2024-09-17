@@ -37,7 +37,9 @@ func structToJson(result models.FileValidationResult) []byte {
 
 }
 func StoreResult(jsonString interface{}, destination, filename string) {
-	destinationPath := filepath.Join(destination, filename)
+
+	destinationPath := filepath.Join(destination+"/file/", filename)
+	fmt.Println(destinationPath)
 	destFile, err := os.OpenFile(destinationPath, os.O_WRONLY|os.O_APPEND|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
 		slog.Error(constants.FILE_OPEN_ERROR)

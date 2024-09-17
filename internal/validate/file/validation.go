@@ -1,7 +1,6 @@
 package file
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/CDCgov/data-exchange-csv/cmd/internal/constants"
@@ -20,7 +19,9 @@ func Validate(fileInputParams models.FileValidateInputParams) {
 	logger.Info(constants.MSG_FILE_VALIDATION_BEGIN)
 
 	fileValidationResult := validateFile(fileInputParams)
+	//Store file validation result
 	fileInputParams.ValidationCallback(fileValidationResult)
+
 	if fileValidationResult.Status == constants.STATUS_SUCCESS {
 		row.Validate(fileValidationResult)
 	}
@@ -29,14 +30,15 @@ func Validate(fileInputParams models.FileValidateInputParams) {
 func validateFile(params models.FileValidateInputParams) models.FileValidationResult {
 	validationResult := models.FileValidationResult{
 		FileUUID:     uuid.New(),
-		ReceivedFile: params.FileURL,
+		ReceivedFile: params.ReceivedFile,
 	}
 
 	//update destination where results will be stored
-	validationResult.Destination = fmt.Sprintf("%s%s", params.Destination, constants.FILE_REPORTS)
-	fmt.Println(validationResult.Destination)
+	//validationResult.Destination = fmt.Sprintf("%s%s", params.Destination, constants.FILE_REPORTS)
+	//fmt.Println(validationResult.Destination)
+	validationResult.Destination = params.Destination
 
-	file, err := os.Open(params.FileURL)
+	file, err := os.Open(params.ReceivedFile)
 	if err != nil {
 		validationResult.Error = &models.FileError{Message: constants.FILE_OPEN_ERROR, Code: 13}
 		validationResult.Status = constants.STATUS_FAILED
