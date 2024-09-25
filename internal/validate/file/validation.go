@@ -6,6 +6,7 @@ import (
 	"github.com/CDCgov/data-exchange-csv/cmd/internal/constants"
 	"github.com/CDCgov/data-exchange-csv/cmd/internal/detector"
 	"github.com/CDCgov/data-exchange-csv/cmd/internal/models"
+	"github.com/CDCgov/data-exchange-csv/cmd/internal/processor"
 	"github.com/CDCgov/data-exchange-csv/cmd/internal/validate/row"
 	"github.com/CDCgov/data-exchange-csv/cmd/pkg/sloger"
 
@@ -23,7 +24,7 @@ func Validate(fileInputParams models.FileValidateInputParams) {
 	fileInputParams.ValidationCallback(fileValidationResult)
 
 	if fileValidationResult.Status == constants.STATUS_SUCCESS {
-		row.Validate(fileValidationResult)
+		row.Validate(fileValidationResult, processor.OnValidateAndTransformRow)
 	}
 }
 

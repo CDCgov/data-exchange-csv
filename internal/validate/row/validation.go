@@ -1,7 +1,6 @@
 package row
 
 import (
-	"bufio"
 	"encoding/csv"
 	"encoding/json"
 	"fmt"
@@ -43,17 +42,14 @@ func createReader(file *os.File, encoding constants.EncodingType, delimiter rune
 	return reader, nil
 }
 
-func Validate(params models.FileValidationResult) {
+func Validate(params models.FileValidationResult, callback func(params models.RowCallbackParams) error) {
+
+	//initialize variables
+	isFirst := true
+	isLast := false
 	//initialize logger from sloger package
 	logger := sloger.With(constants.PACKAGE, constants.ROW)
 	logger.Info(fmt.Sprintf(constants.MSG_ROW_VALIDATION_BEGIN, params.FileUUID))
-
-	validationWriter, transformationWriter, closeWriters, err := setupWritersWithCleanup(params.Destination)
-	if err != nil {
-		logger.Error("Not able to initialize writers")
-	}
-	validationWriter.WriteString("[")
-	transformationWriter.WriteString("[")
 
 	file, _ := os.Open(params.ReceivedFile)
 
@@ -77,7 +73,7 @@ func Validate(params models.FileValidationResult) {
 
 	//If header is present, skip the header to ensure header row is not validated or transformed.
 	if params.HasHeader {
-		logger.Info(constants.MSG_HEADER_PRESENT_SKIP_FIRST_ROW)
+		logger.Debug(constants.MSG_HEADER_PRESENT_SKIP_FIRST_ROW)
 		reader.Read()
 	}
 
@@ -87,17 +83,18 @@ func Validate(params models.FileValidationResult) {
 		row, err := reader.Read()
 
 		if err == io.EOF {
-			validationWriter.WriteString("]")
-			transformationWriter.WriteString("]")
+			callback(models.RowCallbackParams{
+				IsLast: true,
+			})
 			break
 		}
-
+		//check if row is not empty and write comma
 		validationResult.RowUUID = uuid.New()
-		logger.Info(fmt.Sprintf(constants.MSG_ROW_UUID, validationResult.RowUUID))
+		logger.Debug(fmt.Sprintf(constants.MSG_ROW_UUID, validationResult.RowUUID))
 		validationResult.Hash = ComputeHash(row, params.Delimiter)
-		logger.Info(fmt.Sprintf(constants.MSG_ROW_COMPUTED_HASH, validationResult.Hash))
+		logger.Debug(fmt.Sprintf(constants.MSG_ROW_COMPUTED_HASH, validationResult.Hash))
 		validationResult.RowNumber = rowCount
-		logger.Info(fmt.Sprintf(constants.MSG_ROW_NUMBER, rowCount))
+		logger.Debug(fmt.Sprintf(constants.MSG_ROW_NUMBER, rowCount))
 		rowCount++
 
 		if err != nil {
@@ -107,9 +104,14 @@ func Validate(params models.FileValidationResult) {
 			jsonContent, err := json.Marshal(validationResult)
 			if err != nil {
 				logger.Error(constants.ERROR_CONVERTING_STRUCT_TO_JSON)
+				return
 			}
-			validationWriter.Write(jsonContent)
-			validationWriter.WriteString(",")
+			callback(models.RowCallbackParams{
+				IsFirst:          isFirst,
+				IsLast:           isLast,
+				ValidationResult: string(jsonContent),
+				Destination:      params.Destination,
+			})
 			continue
 		}
 
@@ -119,42 +121,24 @@ func Validate(params models.FileValidationResult) {
 		if err != nil {
 			logger.Error(constants.ERROR_CONVERTING_STRUCT_TO_JSON)
 		}
-		validationWriter.Write(jsonContent)
-		validationWriter.WriteString(",")
-		transform.RowToJson(row, params, validationResult.RowUUID, transformationWriter)
 
+		callback(models.RowCallbackParams{
+			IsFirst:          isFirst,
+			IsLast:           isLast,
+			ValidationResult: string(jsonContent),
+			Destination:      params.Destination,
+		})
+
+		transform.RowToJson(row, params, validationResult.RowUUID, isFirst, callback)
+		isFirst = false
 	}
-	closeWriters()
 
+	callback(models.RowCallbackParams{
+		IsLast:      true,
+		Destination: params.Destination,
+	})
 }
 
-func setupWritersWithCleanup(destination string) (*bufio.Writer, *bufio.Writer, func(), error) {
-	rowDest := destination[:len(destination)-4]
-	validationPath := fmt.Sprintf("%s/row/validation_result.json", rowDest)
-
-	fileValidation, err := os.Create(validationPath)
-	if err != nil {
-		return nil, nil, nil, fmt.Errorf("failed to create file %s: %w", validationPath, err)
-	}
-	transformationPath := fmt.Sprintf("%s/row/transformation_result.json", rowDest)
-	fileTransformation, err := os.Create(transformationPath)
-
-	if err != nil {
-		return nil, nil, nil, fmt.Errorf("failed to create file %s: %w", transformationPath, err)
-	}
-
-	fileValidationWriter := bufio.NewWriter(fileValidation)
-	fileTransformationWriter := bufio.NewWriter(fileTransformation)
-
-	closeWriters := func() {
-		fileValidationWriter.Flush()
-		fileTransformationWriter.Flush()
-		fileValidation.Close()
-		fileTransformation.Close()
-	}
-	return fileValidationWriter, fileTransformationWriter, closeWriters, nil
-
-}
 func processRowError(err error) *models.RowError {
 	rowError := &models.RowError{}
 

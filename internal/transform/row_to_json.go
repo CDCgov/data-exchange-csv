@@ -1,7 +1,6 @@
 package transform
 
 import (
-	"bufio"
 	"encoding/json"
 	"fmt"
 	"strconv"
@@ -13,7 +12,7 @@ import (
 )
 
 func RowToJson(row []string, params models.FileValidationResult,
-	rowUUID uuid.UUID, writer *bufio.Writer) {
+	rowUUID uuid.UUID, isFirst bool, callback func(params models.RowCallbackParams) error) {
 
 	//initialize logger using sloger package
 	logger := sloger.With(constants.PACKAGE, constants.TRANSFORM)
@@ -27,7 +26,7 @@ func RowToJson(row []string, params models.FileValidationResult,
 	parsedRow := make(map[string]string)
 
 	if params.HasHeader {
-		fmt.Println("TO READ FIRST ROW")
+		fmt.Println("TO DO")
 	} else {
 		for index, field := range row {
 			/*
@@ -49,19 +48,27 @@ func RowToJson(row []string, params models.FileValidationResult,
 		if err != nil {
 			logger.Error(constants.ERROR_CONVERTING_STRUCT_TO_JSON)
 		}
-		writer.Write(jsonContent)
-		writer.WriteString(",")
+		callback(models.RowCallbackParams{
+			IsFirst:              isFirst,
+			TransformationResult: string(jsonContent),
+			Destination:          params.Destination,
+		})
 		return
 	}
 
 	transformationResult.Status = constants.STATUS_SUCCESS
 	transformationResult.JsonRow = transformedRow
+
 	logger.Debug(constants.MSG_ROW_TRANSFORM_SUCCESS)
+
 	jsonContent, err := json.Marshal(transformationResult)
 	if err != nil {
 		logger.Error(constants.ERROR_CONVERTING_STRUCT_TO_JSON)
 	}
-	writer.Write(jsonContent)
-	writer.WriteString(",")
 
+	callback(models.RowCallbackParams{
+		IsFirst:              isFirst,
+		TransformationResult: string(jsonContent),
+		Destination:          params.Destination,
+	})
 }

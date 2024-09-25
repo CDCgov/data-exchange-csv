@@ -1,10 +1,7 @@
 package processor
 
-/*
-This is temporary and will be re-written for processing events to DLQ and routing service
-*/
-
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
 	"log/slog"
@@ -39,7 +36,6 @@ func structToJson(result models.FileValidationResult) []byte {
 func StoreResult(jsonString interface{}, destination, filename string) {
 
 	destinationPath := filepath.Join(destination+"/file/", filename)
-	fmt.Println(destinationPath)
 	destFile, err := os.OpenFile(destinationPath, os.O_WRONLY|os.O_APPEND|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
 		slog.Error(constants.FILE_OPEN_ERROR)
@@ -57,4 +53,65 @@ func StoreResult(jsonString interface{}, destination, filename string) {
 			slog.Error(constants.FILE_WRITE_ERROR)
 		}
 	}
+}
+
+func OnValidateAndTransformRow(params models.RowCallbackParams) error {
+
+	validationPath := fmt.Sprintf("%s/row/validation_result.json", params.Destination)
+	transformationPath := fmt.Sprintf("%s/row/transformation_result.json", params.Destination)
+
+	// Open `validation_result.json` file in append mode to write row validation results
+	fileValidation, err := os.OpenFile(validationPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return fmt.Errorf("failed to open or create validation_result.json %s: %w", validationPath, err)
+	}
+
+	// Open `transformation_result.json` file in append mode to write row transformation results
+	fileTransformation, err := os.OpenFile(transformationPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return fmt.Errorf("failed to open or create transformation_result.json %s: %w", transformationPath, err)
+	}
+
+	validationWriter := bufio.NewWriter(fileValidation)
+	transformationWriter := bufio.NewWriter(fileTransformation)
+
+	// Write opening bracket if it's the first row
+	if params.IsFirst {
+		validationWriter.WriteString("[")
+		transformationWriter.WriteString("[")
+	}
+
+	// Append the validation result if not nil
+	if params.ValidationResult != nil {
+		if !params.IsFirst {
+			validationWriter.WriteString(",")
+		}
+		validationWriter.WriteString(params.ValidationResult.(string))
+	}
+
+	// Append the transformation result if available
+	if params.TransformationResult != nil {
+		if !params.IsFirst {
+			transformationWriter.WriteString(",")
+		}
+		transformationWriter.WriteString(params.TransformationResult.(string))
+	}
+
+	// Write closing bracket and flush the buffers if it's the last row
+	if params.IsLast {
+		fmt.Println("We are here")
+		validationWriter.WriteString("]")
+		transformationWriter.WriteString("]")
+		validationWriter.Flush()
+		transformationWriter.Flush()
+
+		fileValidation.Close()
+		fileTransformation.Close()
+		return nil
+	}
+	// Flush buffers to ensure the data is written
+	validationWriter.Flush()
+	transformationWriter.Flush()
+
+	return nil
 }
