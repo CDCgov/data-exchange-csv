@@ -76,8 +76,11 @@ func OnValidateAndTransformRow(params models.RowCallbackParams) error {
 	transformationWriter := bufio.NewWriter(fileTransformation)
 
 	// Write opening bracket if it's the first row
-	if params.IsFirst {
+	if params.IsFirst && params.ValidationResult != nil {
 		validationWriter.WriteString("[")
+	}
+
+	if params.IsFirst && params.TransformationResult != nil {
 		transformationWriter.WriteString("[")
 	}
 

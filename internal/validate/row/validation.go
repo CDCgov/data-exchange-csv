@@ -136,7 +136,9 @@ func Validate(params models.FileValidationResult, callback func(params models.Ro
 		})
 
 		transform.RowToJson(row, params, validationResult.RowUUID, isFirst, callback)
-		isFirst = false
+		if isFirst {
+			isFirst = false
+		}
 	}
 
 	callback(models.RowCallbackParams{
