@@ -84,7 +84,8 @@ func Validate(params models.FileValidationResult, callback func(params models.Ro
 
 		if err == io.EOF {
 			callback(models.RowCallbackParams{
-				IsLast: true,
+				IsLast:   true,
+				FileUUID: params.FileUUID,
 			})
 			break
 		}
@@ -102,13 +103,16 @@ func Validate(params models.FileValidationResult, callback func(params models.Ro
 			validationResult.Status = constants.STATUS_FAILED
 			logger.Error(fmt.Sprintf(constants.MSG_ROW_VALIDATION_FAILURE, validationResult.Error.Message))
 			jsonContent, err := json.Marshal(validationResult)
+
 			if err != nil {
 				logger.Error(constants.ERROR_CONVERTING_STRUCT_TO_JSON)
 				return
 			}
+
 			callback(models.RowCallbackParams{
 				IsFirst:          isFirst,
 				IsLast:           isLast,
+				FileUUID:         params.FileUUID,
 				ValidationResult: string(jsonContent),
 				Destination:      params.Destination,
 			})
@@ -117,6 +121,7 @@ func Validate(params models.FileValidationResult, callback func(params models.Ro
 
 		validationResult.Status = constants.STATUS_SUCCESS
 		logger.Debug(constants.MSG_ROW_VALIDATION_SUCCESS)
+
 		jsonContent, err := json.Marshal(validationResult)
 		if err != nil {
 			logger.Error(constants.ERROR_CONVERTING_STRUCT_TO_JSON)
@@ -125,6 +130,7 @@ func Validate(params models.FileValidationResult, callback func(params models.Ro
 		callback(models.RowCallbackParams{
 			IsFirst:          isFirst,
 			IsLast:           isLast,
+			FileUUID:         params.FileUUID,
 			ValidationResult: string(jsonContent),
 			Destination:      params.Destination,
 		})
@@ -136,6 +142,7 @@ func Validate(params models.FileValidationResult, callback func(params models.Ro
 	callback(models.RowCallbackParams{
 		IsLast:      true,
 		Destination: params.Destination,
+		FileUUID:    params.FileUUID,
 	})
 }
 

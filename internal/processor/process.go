@@ -57,8 +57,8 @@ func StoreResult(jsonString interface{}, destination, filename string) {
 
 func OnValidateAndTransformRow(params models.RowCallbackParams) error {
 
-	validationPath := fmt.Sprintf("%s/row/validation_result.json", params.Destination)
-	transformationPath := fmt.Sprintf("%s/row/transformation_result.json", params.Destination)
+	validationPath := fmt.Sprintf("%s/row/validation_result_%s.json", params.Destination, params.FileUUID)
+	transformationPath := fmt.Sprintf("%s/row/transformation_result_%s.json", params.Destination, params.FileUUID)
 
 	// Open `validation_result.json` file in append mode to write row validation results
 	fileValidation, err := os.OpenFile(validationPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
@@ -99,7 +99,6 @@ func OnValidateAndTransformRow(params models.RowCallbackParams) error {
 
 	// Write closing bracket and flush the buffers if it's the last row
 	if params.IsLast {
-		fmt.Println("We are here")
 		validationWriter.WriteString("]")
 		transformationWriter.WriteString("]")
 		validationWriter.Flush()

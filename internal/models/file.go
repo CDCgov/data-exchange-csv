@@ -59,11 +59,3 @@ type FileValidationResult struct {
 	HasHeader    bool                   `json:"has_header"`
 	Destination  string                 `json:"dest_folder"`
 }
-
-type RowCallbackParams struct {
-	Destination          string      `json:"destination"`
-	ValidationResult     interface{} `json:"validation_result"`
-	TransformationResult interface{} `json:"transformation_result"`
-	IsFirst              bool        `json:"is_first"`
-	IsLast               bool        `json:"is_last"`
-}

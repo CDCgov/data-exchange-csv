@@ -50,6 +50,7 @@ func RowToJson(row []string, params models.FileValidationResult,
 		}
 		callback(models.RowCallbackParams{
 			IsFirst:              isFirst,
+			FileUUID:             params.FileUUID,
 			TransformationResult: string(jsonContent),
 			Destination:          params.Destination,
 		})
@@ -68,6 +69,7 @@ func RowToJson(row []string, params models.FileValidationResult,
 
 	callback(models.RowCallbackParams{
 		IsFirst:              isFirst,
+		FileUUID:             params.FileUUID,
 		TransformationResult: string(jsonContent),
 		Destination:          params.Destination,
 	})

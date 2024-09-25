@@ -14,6 +14,7 @@ func main() {
 
 	validationInputParams := cli.ParseFlags()
 	rootDir := validationInputParams.Destination
+
 	err := utils.SetupEnvToStoreResults(rootDir)
 
 	if err == nil {
@@ -22,5 +23,4 @@ func main() {
 		logger.Error("Unable to setup environment to store validation results")
 		return
 	}
-
 }
