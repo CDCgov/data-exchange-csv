@@ -47,6 +47,8 @@ func Validate(params models.FileValidationResult, callback func(params models.Ro
 	//initialize variables
 	isFirst := true
 	isLast := false
+	var rowHeader []string
+
 	//initialize logger from sloger package
 	logger := sloger.With(constants.PACKAGE, constants.ROW)
 	logger.Info(fmt.Sprintf(constants.MSG_ROW_VALIDATION_BEGIN, params.FileUUID))
@@ -73,8 +75,10 @@ func Validate(params models.FileValidationResult, callback func(params models.Ro
 
 	//If header is present, skip the header to ensure header row is not validated or transformed.
 	if params.HasHeader {
+		rowHeader, _ = reader.Read()
 		logger.Debug(constants.MSG_HEADER_PRESENT_SKIP_FIRST_ROW)
-		reader.Read()
+
+		//reader.Read()
 	}
 
 	rowCount := 1
@@ -135,7 +139,7 @@ func Validate(params models.FileValidationResult, callback func(params models.Ro
 			Destination:      params.Destination,
 		})
 
-		transform.RowToJson(row, params, validationResult.RowUUID, isFirst, callback)
+		transform.RowToJson(row, params, validationResult.RowUUID, isFirst, rowHeader, callback)
 		if isFirst {
 			isFirst = false
 		}

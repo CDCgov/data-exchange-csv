@@ -13,13 +13,14 @@ func ParseFlags() models.FileValidateInputParams {
 	debug := flag.Bool("debug", false, "[Optional] enable debug mode to generate debug-level logs")
 	logToTheFile := flag.Bool("log-file", false, "[Optional] If true, logs will be written to logs/validation.json, default is stdout")
 	destination := flag.String("destination", "", "[Required] The URL to the folder where validation/transformation results will be stored")
-	configFile := flag.String("config", "", "[Optional] If provided overrides auto-detection of encoding, and separator")
+	configFile := flag.String("config", "", "[Optional] The URL to the config.json. If provided overrides auto-detection of encoding, and separator")
 	flag.Parse()
 
 	if *inputFile == "" || *destination == "" {
 		flag.Usage()
 		os.Exit(1)
 	}
+	//add logic for config.json file
 
 	return models.FileValidateInputParams{
 		ReceivedFile:       *inputFile,

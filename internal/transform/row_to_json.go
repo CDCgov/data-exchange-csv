@@ -12,7 +12,7 @@ import (
 )
 
 func RowToJson(row []string, params models.FileValidationResult,
-	rowUUID uuid.UUID, isFirst bool, callback func(params models.RowCallbackParams) error) {
+	rowUUID uuid.UUID, isFirst bool, header []string, callback func(params models.RowCallbackParams) error) {
 
 	//initialize logger using sloger package
 	logger := sloger.With(constants.PACKAGE, constants.TRANSFORM)
@@ -26,7 +26,9 @@ func RowToJson(row []string, params models.FileValidationResult,
 	parsedRow := make(map[string]string)
 
 	if params.HasHeader {
-		fmt.Println("TO DO")
+		for index, column := range header {
+			parsedRow[column] = row[index]
+		}
 	} else {
 		for index, field := range row {
 			/*
@@ -44,16 +46,19 @@ func RowToJson(row []string, params models.FileValidationResult,
 		transformationResult.Error = err
 		transformationResult.Status = constants.STATUS_FAILED
 		logger.Error(fmt.Sprintf(constants.MSG_ROW_TRANSFORM_ERROR, err.Error()))
+
 		jsonContent, err := json.Marshal(transformationResult)
 		if err != nil {
 			logger.Error(constants.ERROR_CONVERTING_STRUCT_TO_JSON)
 		}
+
 		callback(models.RowCallbackParams{
 			IsFirst:              isFirst,
 			FileUUID:             params.FileUUID,
 			TransformationResult: string(jsonContent),
 			Destination:          params.Destination,
 		})
+
 		return
 	}
 

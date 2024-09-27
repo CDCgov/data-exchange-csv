@@ -35,8 +35,6 @@ func validateFile(params models.FileValidateInputParams) models.FileValidationRe
 	}
 
 	//update destination where results will be stored
-	//validationResult.Destination = fmt.Sprintf("%s%s", params.Destination, constants.FILE_REPORTS)
-	//fmt.Println(validationResult.Destination)
 	validationResult.Destination = params.Destination
 
 	file, err := os.Open(params.ReceivedFile)
@@ -111,5 +109,6 @@ func validateFile(params models.FileValidateInputParams) models.FileValidationRe
 	validationResult.Size = fileSize
 
 	validationResult.Status = constants.STATUS_SUCCESS
+
 	return validationResult
 }
