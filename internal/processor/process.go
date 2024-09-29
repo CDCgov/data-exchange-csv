@@ -13,7 +13,7 @@ import (
 	"github.com/CDCgov/data-exchange-csv/cmd/internal/models"
 )
 
-func ProcessFileValidationResult(validationResult models.FileValidationResult) {
+func StoreFileValidationResult(validationResult models.FileValidationResult) {
 	jsonData := structToJson(validationResult)
 	var filename string
 

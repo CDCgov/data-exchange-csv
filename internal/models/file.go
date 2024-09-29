@@ -22,22 +22,10 @@ type FileValidateInputParams struct {
 	LogToFile          bool   `json:"log-file"`
 }
 
-type ConfigIdentifier struct {
-	DataStreamID    string   `json:"data_stream_id"`
-	DataStreamRoute string   `json:"data_stream_route"`
-	Header          []string `json:"header"`
-}
-
-type ConfigValidationResult struct {
-	Error                  *FileError             `json:"error"`
-	Status                 string                 `json:"status"`
-	HeaderValidationResult HeaderValidationResult `json:"header_validation_result"`
-}
-
-type HeaderValidationResult struct {
-	Status string     `json:"status"`
-	Error  *FileError `json:"error"`
-	Header []string   `json:"header"`
+type ConfigFields struct {
+	HasHeader bool                   `json:"has_header"`
+	Separator string                 `json:"separator"`
+	Encoding  constants.EncodingType `json:"encoding"`
 }
 
 type FileValidationParams struct {

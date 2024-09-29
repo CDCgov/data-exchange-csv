@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/CDCgov/data-exchange-csv/cmd/internal/cli"
 	"github.com/CDCgov/data-exchange-csv/cmd/internal/constants"
+	"github.com/CDCgov/data-exchange-csv/cmd/internal/processor"
 	"github.com/CDCgov/data-exchange-csv/cmd/internal/utils"
 	"github.com/CDCgov/data-exchange-csv/cmd/internal/validate/file"
 	"github.com/CDCgov/data-exchange-csv/cmd/pkg/sloger"
@@ -14,11 +15,13 @@ func main() {
 
 	validationInputParams := cli.ParseFlags()
 	rootDir := validationInputParams.Destination
-
-	err := utils.SetupEnvToStoreResults(rootDir)
+	err := utils.SetupEnvironment(rootDir)
 
 	if err == nil {
-		file.Validate(validationInputParams)
+		fileValidationResult := file.Validate(validationInputParams)
+		if fileValidationResult.Status == constants.STATUS_SUCCESS {
+			processor.StoreFileValidationResult(fileValidationResult)
+		}
 	} else {
 		logger.Error("Unable to setup environment to store validation results")
 		return

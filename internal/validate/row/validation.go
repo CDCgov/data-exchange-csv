@@ -51,7 +51,7 @@ func Validate(params models.FileValidationResult, callback func(params models.Ro
 
 	//initialize logger from sloger package
 	logger := sloger.With(constants.PACKAGE, constants.ROW)
-	logger.Info(fmt.Sprintf(constants.MSG_ROW_VALIDATION_BEGIN, params.FileUUID))
+	logger.Debug(fmt.Sprintf(constants.MSG_ROW_VALIDATION_BEGIN, params.FileUUID))
 
 	file, _ := os.Open(params.ReceivedFile)
 
@@ -77,8 +77,6 @@ func Validate(params models.FileValidationResult, callback func(params models.Ro
 	if params.HasHeader {
 		rowHeader, _ = reader.Read()
 		logger.Debug(constants.MSG_HEADER_PRESENT_SKIP_FIRST_ROW)
-
-		//reader.Read()
 	}
 
 	rowCount := 1

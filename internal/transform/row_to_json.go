@@ -16,7 +16,7 @@ func RowToJson(row []string, params models.FileValidationResult,
 
 	//initialize logger using sloger package
 	logger := sloger.With(constants.PACKAGE, constants.TRANSFORM)
-	logger.Info(fmt.Sprintf(constants.MSG_ROW_TRANSFORMATION_BEGIN, rowUUID))
+	logger.Debug(fmt.Sprintf(constants.MSG_ROW_TRANSFORMATION_BEGIN, rowUUID))
 
 	transformationResult := models.RowTransformationResult{
 		FileUUID: params.FileUUID,

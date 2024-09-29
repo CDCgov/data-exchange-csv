@@ -8,7 +8,7 @@ import (
 	"github.com/CDCgov/data-exchange-csv/cmd/internal/constants"
 )
 
-func SetupEnvToStoreResults(root string) (err error) {
+func SetupEnvironment(root string) (err error) {
 	//create file folder
 	fileDir := filepath.Join(root, constants.FILE)
 	err = os.MkdirAll(fileDir, os.ModeNamedPipe)

@@ -14,18 +14,18 @@ import (
 	"github.com/google/uuid"
 )
 
-func Validate(fileInputParams models.FileValidateInputParams) {
+func Validate(fileInputParams models.FileValidateInputParams) models.FileValidationResult {
 	//initialize logger from sloger package
 	logger := sloger.With(constants.PACKAGE, constants.FILE)
 	logger.Info(constants.MSG_FILE_VALIDATION_BEGIN)
 
 	fileValidationResult := validateFile(fileInputParams)
-	//Store file validation result
-	fileInputParams.ValidationCallback(fileValidationResult)
 
 	if fileValidationResult.Status == constants.STATUS_SUCCESS {
 		row.Validate(fileValidationResult, processor.OnValidateAndTransformRow)
 	}
+
+	return fileValidationResult
 }
 
 func validateFile(params models.FileValidateInputParams) models.FileValidationResult {

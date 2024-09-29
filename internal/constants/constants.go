@@ -15,8 +15,6 @@ const (
 	UNDEF       EncodingType = "UNDEFINED"
 )
 
-type Separator rune
-
 const (
 	MAX_READ_THRESHOLD = 1024
 	MAX_EXECUTION_TIME = 500 * time.Millisecond
