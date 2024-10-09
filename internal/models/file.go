@@ -11,15 +11,14 @@ type FileError struct {
 }
 
 type FileValidateInputParams struct {
-	ReceivedFile       string                 `json:"received_file"`
-	Encoding           constants.EncodingType `json:"encoding"`
-	Separator          rune                   `json:"separator"`
-	HasHeader          bool                   `json:"has_header"`
-	ValidationCallback func(FileValidationResult)
-	Destination        string `json:"destination"`
-	ConfigFile         string `json:"config_file"`
-	Debug              bool   `json:"debug"`
-	LogToFile          bool   `json:"log-file"`
+	ReceivedFile string                 `json:"received_file"`
+	Encoding     constants.EncodingType `json:"encoding"`
+	Separator    rune                   `json:"separator"`
+	HasHeader    bool                   `json:"has_header"`
+	Destination  string                 `json:"destination"`
+	ConfigFile   string                 `json:"config_file"`
+	Debug        bool                   `json:"debug"`
+	LogToFile    bool                   `json:"log-file"`
 }
 
 type ConfigFields struct {

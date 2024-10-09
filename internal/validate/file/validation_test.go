@@ -16,13 +16,14 @@ func verifyValidationResult(t *testing.T, fileValidationInputParams models.FileV
 	t.Helper()
 
 	validationResult := Validate(fileValidationInputParams)
-	fmt.Println("RESULT ", validationResult)
 	assertEqual(t, "encoding", string(expectedResult.Encoding), string(validationResult.Encoding))
 	assertEqual(t, "delimiter", string(expectedResult.Delimiter), string(validationResult.Delimiter))
+	assertEqual(t, "size", expectedResult.SizeInBytes, validationResult.SizeInBytes)
+	assertEqual(t, "header", expectedResult.HasHeader, validationResult.HasHeader)
 
 }
 
-func assertEqual(t *testing.T, field string, expected, actual string) {
+func assertEqual(t *testing.T, field string, expected interface{}, actual interface{}) {
 	if expected != actual {
 		t.Errorf("Expected %s: %s, but got: %s", field, expected, actual)
 	}
@@ -35,7 +36,7 @@ func setupTest(tb testing.TB) func(tb testing.TB) {
 	}
 
 	testFilesWithContent := map[string]string{
-		"UTF8Encoding.csv":        "Hello, World! This is US-ASCII.\nLine 2: More text.",
+		"UTF8Encoding.csv":        "Hello, World! This is US-ASCII.\nLine 2, More text.",
 		"UTF8BomEncoding.csv":     "\xEF\xBB\xBFName,Email\nJane Doe,johndoe@example.com\nJane Smith,janesmith@example.com\nChris Mallok,cmallok@example.com",
 		"USASCIIEncoding.csv":     "Chris~Wilson,DevOps engineer, ensures CI/CD pipelines and *NIX server maintenance.",
 		"Windows1252Encoding.csv": "L'éƒté en France,München Äpfel\nJosé DíažŸ,François Dupont",
@@ -71,11 +72,16 @@ func TestMain(m *testing.M) {
 
 func TestValidateUTF8EncodedCSVFile(t *testing.T) {
 	validationResult := models.FileValidationResult{
-		Delimiter: constants.COMMA,
-		Encoding:  constants.UTF8,
+		Delimiter:   constants.COMMA,
+		Encoding:    constants.UTF8,
+		SizeInBytes: 50,
+		HasHeader:   false,
 	}
 	fileValidationInputParams := models.FileValidateInputParams{
 		ReceivedFile: filepath.Join(tempDirectory, "UTF8Encoding.csv"),
+		Encoding:     constants.UTF8,
+		Separator:    constants.COMMA,
+		HasHeader:    false,
 	}
 	verifyValidationResult(t, fileValidationInputParams, validationResult)
 }
