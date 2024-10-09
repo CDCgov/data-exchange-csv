@@ -79,7 +79,6 @@ func TestValidateUTF8EncodedCSVFile(t *testing.T) {
 	}
 	fileValidationInputParams := models.FileValidateInputParams{
 		ReceivedFile: filepath.Join(tempDirectory, "UTF8Encoding.csv"),
-		Encoding:     constants.UTF8,
 		Separator:    constants.COMMA,
 		HasHeader:    false,
 	}
@@ -96,7 +95,6 @@ func TestValidateUTF8BomEncodedCSVFile(t *testing.T) {
 	fileValidationInputParams := models.FileValidateInputParams{
 		ReceivedFile: filepath.Join(tempDirectory, "UTF8BomEncoding.csv"),
 		Encoding:     constants.UTF8_BOM,
-		Separator:    constants.COMMA,
 		HasHeader:    false,
 	}
 	verifyValidationResult(t, fileValidationInputParams, expectedValidationResult)
@@ -111,7 +109,6 @@ func TestValidateUSASCIIEncodedCSVFile(t *testing.T) {
 	}
 	fileValidationInputParams := models.FileValidateInputParams{
 		ReceivedFile: filepath.Join(tempDirectory, "USASCIIEncoding.csv"),
-		Encoding:     constants.UTF8,
 		Separator:    constants.COMMA,
 		HasHeader:    false,
 	}
@@ -127,7 +124,6 @@ func TestValidateWindows1252EncodedCSVFile(t *testing.T) {
 	}
 	fileValidationInputParams := models.FileValidateInputParams{
 		ReceivedFile: filepath.Join(tempDirectory, "Windows1252Encoding.csv"),
-		Encoding:     constants.WINDOWS1252,
 		Separator:    constants.COMMA,
 		HasHeader:    false,
 	}
@@ -143,7 +139,6 @@ func TestValidateISO8859_1EncodedCSVFile(t *testing.T) {
 	}
 	fileValidationInputParams := models.FileValidateInputParams{
 		ReceivedFile: filepath.Join(tempDirectory, "ISO8859_1Encoding.csv"),
-		Encoding:     constants.ISO8859_1,
 		Separator:    constants.COMMA,
 		HasHeader:    false,
 	}
