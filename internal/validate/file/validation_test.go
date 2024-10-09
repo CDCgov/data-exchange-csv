@@ -40,6 +40,7 @@ func setupTest(tb testing.TB) func(tb testing.TB) {
 		"USASCIIEncoding.csv":     "Chris~Wilson,DevOps engineer, ensures CI/CD pipelines and *NIX server maintenance.",
 		"Windows1252Encoding.csv": "L'éƒté en France,München Äpfel\nJosé DíažŸ,François Dupont",
 		"ISO8859_1Encoding.csv":   "José Dí^az,Software engineer, working on CSV & Golang.",
+		"UTF8BomEncoding.tsv":     "\xEF\xBB\xBFName\tEmail\nJane Doe\tjohndoe@example.com\nJane Smith\tjanesmith@example.com\nChris Mallok\tcmallok@example.com",
 	}
 
 	for file, content := range testFilesWithContent {
@@ -70,7 +71,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestValidateUTF8EncodedCSVFile(t *testing.T) {
-	validationResult := models.FileValidationResult{
+	expectedValidationResult := models.FileValidationResult{
 		Delimiter:   constants.COMMA,
 		Encoding:    constants.UTF8,
 		SizeInBytes: 50,
@@ -82,7 +83,7 @@ func TestValidateUTF8EncodedCSVFile(t *testing.T) {
 		Separator:    constants.COMMA,
 		HasHeader:    false,
 	}
-	verifyValidationResult(t, fileValidationInputParams, validationResult)
+	verifyValidationResult(t, fileValidationInputParams, expectedValidationResult)
 }
 
 func TestValidateUTF8BomEncodedCSVFile(t *testing.T) {
@@ -148,4 +149,18 @@ func TestValidateISO8859_1EncodedCSVFile(t *testing.T) {
 	}
 
 	verifyValidationResult(t, fileValidationInputParams, validationResult)
+}
+
+func TestValidateUTF8BomEncodedTSVFile(t *testing.T) {
+	expectedValidationResult := models.FileValidationResult{
+		Delimiter:   constants.TAB,
+		Encoding:    constants.UTF8_BOM,
+		SizeInBytes: 108,
+		HasHeader:   false,
+	}
+	fileValidationInputParams := models.FileValidateInputParams{
+		ReceivedFile: filepath.Join(tempDirectory, "UTF8BomEncoding.tsv"),
+		HasHeader:    false,
+	}
+	verifyValidationResult(t, fileValidationInputParams, expectedValidationResult)
 }

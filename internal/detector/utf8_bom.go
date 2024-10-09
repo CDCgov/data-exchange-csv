@@ -9,6 +9,9 @@ import (
 )
 
 func DetectBOM(file *os.File) (bool, error) {
+
+	file.Seek(0, 0) //reset pointer to the begining of the file
+
 	bom := make([]byte, 3)
 
 	_, err := file.Read(bom)
