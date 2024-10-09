@@ -31,6 +31,7 @@ func Validate(fileInputParams models.FileValidateInputParams) models.FileValidat
 func validateFile(params models.FileValidateInputParams) models.FileValidationResult {
 	//initialize local constant variables
 	const ERROR_COMPUTING_FILE_SIZE = "An error ocurred while computing the size of the file"
+	const EMPTY_FILE_ERROR = "File is empty and can not be validated"
 
 	validationResult := models.FileValidationResult{
 		FileUUID:     uuid.New(),
@@ -54,6 +55,20 @@ func validateFile(params models.FileValidateInputParams) models.FileValidationRe
 			return
 		}
 	}(file)
+
+	//Compute the file size
+	fileInfo, err := file.Stat()
+	if err != nil {
+		validationResult.Status = ERROR_COMPUTING_FILE_SIZE
+	}
+
+	fileSize := fileInfo.Size()
+	if fileSize == 0 {
+		validationResult.Error = &models.FileError{Message: EMPTY_FILE_ERROR, Code: 13}
+		validationResult.Status = constants.STATUS_FAILED
+		return validationResult
+	}
+	validationResult.SizeInBytes = fileSize
 
 	data, err := utils.ReadFileRandomly(file)
 	if err != nil {
@@ -101,15 +116,6 @@ func validateFile(params models.FileValidateInputParams) models.FileValidationRe
 	if params.HasHeader {
 		validationResult.HasHeader = true
 	}
-
-	//Compute the file size
-	fileInfo, err := file.Stat()
-	if err != nil {
-		validationResult.Status = ERROR_COMPUTING_FILE_SIZE
-	}
-
-	fileSize := fileInfo.Size()
-	validationResult.SizeInBytes = fileSize
 
 	validationResult.Status = constants.STATUS_SUCCESS
 

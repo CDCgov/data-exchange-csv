@@ -19,9 +19,7 @@ func main() {
 
 	if err == nil {
 		fileValidationResult := file.Validate(validationInputParams)
-		if fileValidationResult.Status == constants.STATUS_SUCCESS {
-			processor.StoreFileValidationResult(fileValidationResult)
-		}
+		processor.StoreFileValidationResult(fileValidationResult)
 	} else {
 		logger.Error("Unable to setup environment to store validation results")
 		return

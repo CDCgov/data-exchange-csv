@@ -19,6 +19,7 @@ func verifyValidationResult(t *testing.T, fileValidationInputParams models.FileV
 	assertEqual(t, "delimiter", string(expectedResult.Delimiter), string(validationResult.Delimiter))
 	assertEqual(t, "size", expectedResult.SizeInBytes, validationResult.SizeInBytes)
 	assertEqual(t, "header", expectedResult.HasHeader, validationResult.HasHeader)
+	assertEqual(t, "status", expectedResult.Status, validationResult.Status)
 
 }
 
@@ -41,6 +42,7 @@ func setupTest(tb testing.TB) func(tb testing.TB) {
 		"Windows1252Encoding.csv": "L'éƒté en France,München Äpfel\nJosé DíažŸ,François Dupont",
 		"ISO8859_1Encoding.csv":   "José Dí^az,Software engineer, working on CSV & Golang.",
 		"UTF8BomEncoding.tsv":     "\xEF\xBB\xBFName\tEmail\nJane Doe\tjohndoe@example.com\nJane Smith\tjanesmith@example.com\nChris Mallok\tcmallok@example.com",
+		"emptyFileTest.csv":       "",
 	}
 
 	for file, content := range testFilesWithContent {
@@ -155,6 +157,19 @@ func TestValidateUTF8BomEncodedTSVFile(t *testing.T) {
 	}
 	fileValidationInputParams := models.FileValidateInputParams{
 		ReceivedFile: filepath.Join(tempDirectory, "UTF8BomEncoding.tsv"),
+		HasHeader:    false,
+	}
+	verifyValidationResult(t, fileValidationInputParams, expectedValidationResult)
+}
+
+func TestEmptyFile(t *testing.T) {
+	expectedValidationResult := models.FileValidationResult{
+		SizeInBytes: 0,
+		HasHeader:   false,
+		Status:      constants.STATUS_FAILED,
+	}
+	fileValidationInputParams := models.FileValidateInputParams{
+		ReceivedFile: filepath.Join(tempDirectory, "emptyFileTest.csv"),
 		HasHeader:    false,
 	}
 	verifyValidationResult(t, fileValidationInputParams, expectedValidationResult)
