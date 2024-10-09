@@ -29,6 +29,9 @@ func Validate(fileInputParams models.FileValidateInputParams) models.FileValidat
 }
 
 func validateFile(params models.FileValidateInputParams) models.FileValidationResult {
+	//initialize local constant variables
+	const ERROR_COMPUTING_FILE_SIZE = "An error ocurred while computing the size of the file"
+
 	validationResult := models.FileValidationResult{
 		FileUUID:     uuid.New(),
 		ReceivedFile: params.ReceivedFile,
@@ -99,14 +102,14 @@ func validateFile(params models.FileValidateInputParams) models.FileValidationRe
 		validationResult.HasHeader = true
 	}
 
-	//get size of the file
+	//Compute the file size
 	fileInfo, err := file.Stat()
 	if err != nil {
-		validationResult.Status = "Error computing the size of the file"
+		validationResult.Status = ERROR_COMPUTING_FILE_SIZE
 	}
 
 	fileSize := fileInfo.Size()
-	validationResult.Size = fileSize
+	validationResult.SizeInBytes = fileSize
 
 	validationResult.Status = constants.STATUS_SUCCESS
 

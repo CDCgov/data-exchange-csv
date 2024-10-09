@@ -40,7 +40,7 @@ type FileValidationResult struct {
 	ReceivedFile string                 `json:"received_filename"`
 	Encoding     constants.EncodingType `json:"encoding"`
 	FileUUID     uuid.UUID              `json:"uuid"`
-	Size         int64                  `json:"size"`
+	SizeInBytes  int64                  `json:"size_bytes"`
 	Delimiter    rune                   `json:"delimiter"`
 	Error        *FileError             `json:"error"`
 	Status       string                 `json:"status"`
