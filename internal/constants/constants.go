@@ -13,8 +13,6 @@ const (
 
 const (
 	BOM_LENGTH                               = 3
-	CSV                                      = "CSV"
-	TSV                                      = "TSV"
 	UNSUPPORTED                         rune = 0
 	TAB                                 rune = '\t'
 	COMMA                               rune = ','
@@ -33,9 +31,6 @@ const (
 	DIRECTORY_REMOVE_ERROR                   = "Failed to remove the test directory. Verify that the directory exists and you have the necessary permissions."
 	ERROR_CONVERTING_STRUCT_TO_JSON          = "Error converting the struct to JSON. Check the struct definition for compatibility with JSON marshalling."
 	ERROR_UNMARSHALING_JSON                  = "Invalid JSON. Please check JSON format."
-	JSON_EXTENSION                           = ".json"
-	CSV_FILENAME_WITH_BOM                    = "HasBOM.csv"
-	CSV_FILENAME_WITHOUT_BOM                 = "NoBOM.csv"
 	UNSUPPORTED_DELIMITER_ERROR              = "Unsupported delimiter found in the file. Please use a supported delimiter and try again."
 	UNSUPPORTED_ENCODING_ERROR               = "Unsupported encoding detected. Ensure the file is encoded in a supported format."
 	BOM_NOT_DETECTED_ERROR                   = "Byte Order Mark was not detected."
@@ -71,46 +66,6 @@ type Severity string
 const (
 	Warning Severity = "warning"
 	Failure Severity = "failure"
-)
-
-const (
-	EMPTY_INPUT          = "Empty Input Test"
-	VALID_US_ASCII       = "US-ASCII Valid Input"
-	INVALID_US_ASCII     = "US-ASCII Invalid Input"
-	VALID_WINDOWS_1252   = "Windows 1252 Valid Input"
-	INVALID_WINDOWS_1252 = "Windows 1252 Invalid Input"
-	VALID_ISO_8859_1     = "ISO 8859-1 Valid Input"
-	INVALID_ISO_8859_1   = "ISO 8859-1 Invalid Input"
-	VALID_UTF_8          = "UTF-8 Valid Input"
-	INVALID_UTF_8        = "UTF-8 Invalid Input"
-)
-
-const (
-	DATA_STREAM_ID     = "data_stream_id"
-	SENDER_ID          = "sender_id"
-	RECEIVED_FILENAME  = "received_filename"
-	DATA_PRODUCER_ID   = "data_producer_id"
-	DATA_STREAM_ROUTE  = "data_stream_route"
-	JURISDICTION       = "jurisdiction"
-	VERSION            = "version"
-	HEADER             = "header"
-	CONFIG             = "config"
-	CONFIG_IDENTIFIERS = "config_identifiers"
-
-	CSV_DATA_STREAM_ID    = "dex-csv"
-	CSV_DATA_PRODUCER_ID  = "dex-csv"
-	CSV_DATA_STREAM_ROUTE = "dex-csv"
-	CSV_SENDER_ID         = "nrss-csv"
-	CSV_JURISDICTION      = "NJ"
-)
-
-const (
-	DEAD_LETTER_QUEUE           = "storage/dead-letter-queue"
-	FILE_REPORTS                = "/file"
-	ROW_REPORTS                 = "/row"
-	TRANSFORMED_ROW_REPORTS     = "storage/transformedrows"
-	CONFIG_FILE                 = "internal/config/config.json"
-	FILE_VALIDATION_REPORT_NAME = "%s_%s%s"
 )
 
 const (

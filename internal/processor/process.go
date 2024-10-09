@@ -13,14 +13,19 @@ import (
 	"github.com/CDCgov/data-exchange-csv/cmd/internal/models"
 )
 
+const (
+	JSON_EXTENSION              = ".json"
+	FILE_VALIDATION_REPORT_NAME = "%s_%s%s"
+)
+
 func StoreFileValidationResult(validationResult models.FileValidationResult) {
 	jsonData := structToJson(validationResult)
 	var filename string
 
 	if validationResult.Status == constants.STATUS_SUCCESS {
-		filename = fmt.Sprintf(constants.FILE_VALIDATION_REPORT_NAME, validationResult.FileUUID, constants.STATUS_VALID, constants.JSON_EXTENSION)
+		filename = fmt.Sprintf(FILE_VALIDATION_REPORT_NAME, validationResult.FileUUID, constants.STATUS_VALID, JSON_EXTENSION)
 	} else {
-		filename = fmt.Sprintf(constants.FILE_VALIDATION_REPORT_NAME, validationResult.FileUUID, constants.STATUS_INVALID, constants.JSON_EXTENSION)
+		filename = fmt.Sprintf(FILE_VALIDATION_REPORT_NAME, validationResult.FileUUID, constants.STATUS_INVALID, JSON_EXTENSION)
 	}
 	StoreResult(jsonData, validationResult.Destination, filename)
 }
