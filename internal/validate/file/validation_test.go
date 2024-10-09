@@ -1,7 +1,6 @@
 package file
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -88,45 +87,65 @@ func TestValidateUTF8EncodedCSVFile(t *testing.T) {
 
 func TestValidateUTF8BomEncodedCSVFile(t *testing.T) {
 	validationResult := models.FileValidationResult{
-		Delimiter: constants.COMMA,
-		Encoding:  constants.UTF8_BOM,
+		Delimiter:   constants.COMMA,
+		Encoding:    constants.UTF8_BOM,
+		SizeInBytes: 108,
+		HasHeader:   false,
 	}
 	fileValidationInputParams := models.FileValidateInputParams{
 		ReceivedFile: filepath.Join(tempDirectory, "UTF8BomEncoding.csv"),
+		Encoding:     constants.UTF8_BOM,
+		Separator:    constants.COMMA,
+		HasHeader:    false,
 	}
 	verifyValidationResult(t, fileValidationInputParams, validationResult)
 }
 
 func TestValidateUSASCIIEncodedCSVFile(t *testing.T) {
 	validationResult := models.FileValidationResult{
-		Delimiter: constants.COMMA,
-		Encoding:  constants.UTF8,
+		Delimiter:   constants.COMMA,
+		Encoding:    constants.UTF8,
+		SizeInBytes: 82,
+		HasHeader:   false,
 	}
 	fileValidationInputParams := models.FileValidateInputParams{
 		ReceivedFile: filepath.Join(tempDirectory, "USASCIIEncoding.csv"),
+		Encoding:     constants.UTF8,
+		Separator:    constants.COMMA,
+		HasHeader:    false,
 	}
 	verifyValidationResult(t, fileValidationInputParams, validationResult)
 }
 
 func TestValidateWindows1252EncodedCSVFile(t *testing.T) {
 	validationResult := models.FileValidationResult{
-		Delimiter: constants.COMMA,
-		Encoding:  constants.WINDOWS1252,
+		Delimiter:   constants.COMMA,
+		Encoding:    constants.WINDOWS1252,
+		SizeInBytes: 67,
+		HasHeader:   false,
 	}
 	fileValidationInputParams := models.FileValidateInputParams{
 		ReceivedFile: filepath.Join(tempDirectory, "Windows1252Encoding.csv"),
+		Encoding:     constants.WINDOWS1252,
+		Separator:    constants.COMMA,
+		HasHeader:    false,
 	}
 	verifyValidationResult(t, fileValidationInputParams, validationResult)
 }
 
 func TestValidateISO8859_1EncodedCSVFile(t *testing.T) {
 	validationResult := models.FileValidationResult{
-		Delimiter: constants.COMMA,
-		Encoding:  constants.ISO8859_1,
+		Delimiter:   constants.COMMA,
+		Encoding:    constants.ISO8859_1,
+		SizeInBytes: 56,
+		HasHeader:   false,
 	}
 	fileValidationInputParams := models.FileValidateInputParams{
 		ReceivedFile: filepath.Join(tempDirectory, "ISO8859_1Encoding.csv"),
+		Encoding:     constants.ISO8859_1,
+		Separator:    constants.COMMA,
+		HasHeader:    false,
 	}
-	fmt.Println(fileValidationInputParams)
+
 	verifyValidationResult(t, fileValidationInputParams, validationResult)
 }
