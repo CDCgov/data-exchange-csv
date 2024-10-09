@@ -1,46 +1,25 @@
 package file
 
-/*
 import (
-	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 	"testing"
 
 	"github.com/CDCgov/data-exchange-csv/cmd/internal/constants"
 	"github.com/CDCgov/data-exchange-csv/cmd/internal/models"
 )
 
-type EventMetadata struct {
-	ReceivedFilename string `json:"received_filename"`
-	DataStreamID     string `json:"data_stream_id"`
-	SenderID         string `json:"sender_id"`
-	DataProducerID   string `json:"data_producer_id"`
-	DataStreamRoute  string `json:"data_stream_route"`
-	Jurisdiction     string `json:"jurisdiction"`
-	Version          string `json:"version"`
-}
+const tempDirectory = "dex-csv-file-validation-test-temp"
 
-type ExpectedValidationResult struct {
-	Jurisdiction string
-	Delimiter    string
-	Encoding     string
-	Metadata     *models.MetadataValidationResult
-	Config       *models.ConfigValidationResult
-}
-
-func verifyValidationResult(t *testing.T, source string, expectedResult ExpectedValidationResult) {
+func verifyValidationResult(t *testing.T, fileValidationInputParams models.FileValidateInputParams, expectedResult models.FileValidationResult) {
 	t.Helper()
 
-	validationResult := Validate(source)
-	assertEqual(t, "encoding", expectedResult.Encoding, string(validationResult.Encoding))
-	assertEqual(t, "delimiter", expectedResult.Delimiter, validationResult.Delimiter)
-	assertEqual(t, "data_stream_id", expectedResult.Metadata.DataStreamID, validationResult.Metadata.DataStreamID)
-	assertEqual(t, "sender_id", expectedResult.Metadata.SenderID, validationResult.Metadata.SenderID)
-	assertEqual(t, "data_producer_id", expectedResult.Metadata.DataProducerID, validationResult.Metadata.DataProducerID)
-	assertEqual(t, "jurisdiction", expectedResult.Jurisdiction, validationResult.Metadata.Jurisdiction)
-	assertEqual(t, "version", expectedResult.Metadata.Version, validationResult.Metadata.Version)
+	validationResult := Validate(fileValidationInputParams)
+	fmt.Println("RESULT ", validationResult)
+	assertEqual(t, "encoding", string(expectedResult.Encoding), string(validationResult.Encoding))
+	assertEqual(t, "delimiter", string(expectedResult.Delimiter), string(validationResult.Delimiter))
+
 }
 
 func assertEqual(t *testing.T, field string, expected, actual string) {
@@ -50,7 +29,6 @@ func assertEqual(t *testing.T, field string, expected, actual string) {
 }
 
 func setupTest(tb testing.TB) func(tb testing.TB) {
-	tempDirectory := "dex-csv-file-validation-test-temp"
 	err := os.Mkdir(tempDirectory, 0755)
 	if err != nil {
 		tb.Fatalf("%s: %v", constants.DIRECTORY_CREATE_ERROR, err)
@@ -71,28 +49,6 @@ func setupTest(tb testing.TB) func(tb testing.TB) {
 			tb.Fatalf("%s %s: %v", constants.FILE_WRITE_ERROR, file, err)
 		}
 
-		event := EventMetadata{
-			ReceivedFilename: filepath.Join(tempDirectory, file),
-			DataStreamID:     constants.CSV_DATA_STREAM_ID,
-			SenderID:         constants.CSV_SENDER_ID,
-			DataStreamRoute:  constants.CSV_DATA_STREAM_ROUTE,
-			DataProducerID:   constants.CSV_DATA_PRODUCER_ID,
-			Jurisdiction:     constants.CSV_JURISDICTION,
-			Version:          constants.VERSION,
-		}
-
-		eventAsJson, err := json.MarshalIndent(event, "", "    ")
-		if err != nil {
-			tb.Fatalf("%s %s: %v", constants.ERROR_CONVERTING_STRUCT_TO_JSON, file, err)
-		}
-		//replace file extension from .csv to .json
-		eventFileName := strings.TrimSuffix(file, filepath.Ext(file)) + constants.JSON_EXTENSION
-		eventFilePath := filepath.Join(tempDirectory, eventFileName)
-
-		err = os.WriteFile(eventFilePath, eventAsJson, 0644)
-		if err != nil {
-			tb.Fatalf("%s %s: %v", constants.FILE_WRITE_ERROR, eventFileName, err)
-		}
 	}
 
 	return func(tb testing.TB) {
@@ -114,82 +70,57 @@ func TestMain(m *testing.M) {
 }
 
 func TestValidateUTF8EncodedCSVFile(t *testing.T) {
-	validationResult := ExpectedValidationResult{
-		Delimiter:    string(constants.COMMA),
-		Encoding:     string(constants.UTF8),
-		Jurisdiction: constants.CSV_JURISDICTION,
-		Metadata: &models.MetadataValidationResult{
-			DataProducerID:  constants.CSV_DATA_PRODUCER_ID,
-			DataStreamID:    constants.CSV_DATA_STREAM_ID,
-			DataStreamRoute: constants.CSV_DATA_STREAM_ROUTE,
-			SenderID:        constants.CSV_SENDER_ID,
-			Version:         constants.VERSION,
-		},
+	validationResult := models.FileValidationResult{
+		Delimiter: constants.COMMA,
+		Encoding:  constants.UTF8,
 	}
-	verifyValidationResult(t, "dex-csv-file-validation-test-temp/UTF8Encoding.json", validationResult)
+	fileValidationInputParams := models.FileValidateInputParams{
+		ReceivedFile: filepath.Join(tempDirectory, "UTF8Encoding.csv"),
+	}
+	verifyValidationResult(t, fileValidationInputParams, validationResult)
 }
 
 func TestValidateUTF8BomEncodedCSVFile(t *testing.T) {
-	validationResult := ExpectedValidationResult{
-		Delimiter:    string(constants.COMMA),
-		Encoding:     string(constants.UTF8_BOM),
-		Jurisdiction: constants.CSV_JURISDICTION,
-		Metadata: &models.MetadataValidationResult{
-			DataProducerID:  constants.CSV_DATA_PRODUCER_ID,
-			DataStreamID:    constants.CSV_DATA_STREAM_ID,
-			DataStreamRoute: constants.CSV_DATA_STREAM_ROUTE,
-			SenderID:        constants.CSV_SENDER_ID,
-			Version:         constants.VERSION,
-		},
+	validationResult := models.FileValidationResult{
+		Delimiter: constants.COMMA,
+		Encoding:  constants.UTF8_BOM,
 	}
-	verifyValidationResult(t, "dex-csv-file-validation-test-temp/UTF8BomEncoding.json", validationResult)
+	fileValidationInputParams := models.FileValidateInputParams{
+		ReceivedFile: filepath.Join(tempDirectory, "UTF8BomEncoding.csv"),
+	}
+	verifyValidationResult(t, fileValidationInputParams, validationResult)
 }
 
 func TestValidateUSASCIIEncodedCSVFile(t *testing.T) {
-	validationResult := ExpectedValidationResult{
-		Delimiter:    string(constants.COMMA),
-		Encoding:     string(constants.UTF8),
-		Jurisdiction: constants.CSV_JURISDICTION,
-		Metadata: &models.MetadataValidationResult{
-			DataProducerID:  constants.CSV_DATA_PRODUCER_ID,
-			DataStreamID:    constants.CSV_DATA_STREAM_ID,
-			DataStreamRoute: constants.CSV_DATA_STREAM_ROUTE,
-			SenderID:        constants.CSV_SENDER_ID,
-			Version:         constants.VERSION,
-		},
+	validationResult := models.FileValidationResult{
+		Delimiter: constants.COMMA,
+		Encoding:  constants.UTF8,
 	}
-	verifyValidationResult(t, "dex-csv-file-validation-test-temp/USASCIIEncoding.json", validationResult)
+	fileValidationInputParams := models.FileValidateInputParams{
+		ReceivedFile: filepath.Join(tempDirectory, "USASCIIEncoding.csv"),
+	}
+	verifyValidationResult(t, fileValidationInputParams, validationResult)
 }
 
 func TestValidateWindows1252EncodedCSVFile(t *testing.T) {
-	validationResult := ExpectedValidationResult{
-		Delimiter:    string(constants.COMMA),
-		Encoding:     string(constants.WINDOWS1252),
-		Jurisdiction: constants.CSV_JURISDICTION,
-		Metadata: &models.MetadataValidationResult{
-			DataProducerID:  constants.CSV_DATA_PRODUCER_ID,
-			DataStreamID:    constants.CSV_DATA_STREAM_ID,
-			DataStreamRoute: constants.CSV_DATA_STREAM_ROUTE,
-			SenderID:        constants.CSV_SENDER_ID,
-			Version:         constants.VERSION,
-		},
+	validationResult := models.FileValidationResult{
+		Delimiter: constants.COMMA,
+		Encoding:  constants.WINDOWS1252,
 	}
-	verifyValidationResult(t, "dex-csv-file-validation-test-temp/Windows1252Encoding.json", validationResult)
+	fileValidationInputParams := models.FileValidateInputParams{
+		ReceivedFile: filepath.Join(tempDirectory, "Windows1252Encoding.csv"),
+	}
+	verifyValidationResult(t, fileValidationInputParams, validationResult)
 }
 
 func TestValidateISO8859_1EncodedCSVFile(t *testing.T) {
-	validationResult := ExpectedValidationResult{
-		Delimiter:    string(constants.COMMA),
-		Encoding:     string(constants.ISO8859_1),
-		Jurisdiction: constants.CSV_JURISDICTION,
-		Metadata: &models.MetadataValidationResult{
-			DataProducerID:  constants.CSV_DATA_PRODUCER_ID,
-			DataStreamID:    constants.CSV_DATA_STREAM_ID,
-			DataStreamRoute: constants.CSV_DATA_STREAM_ROUTE,
-			SenderID:        constants.CSV_SENDER_ID,
-			Version:         constants.VERSION,
-		},
+	validationResult := models.FileValidationResult{
+		Delimiter: constants.COMMA,
+		Encoding:  constants.ISO8859_1,
 	}
-	verifyValidationResult(t, "dex-csv-file-validation-test-temp/ISO8859_1Encoding.json", validationResult)
+	fileValidationInputParams := models.FileValidateInputParams{
+		ReceivedFile: filepath.Join(tempDirectory, "ISO8859_1Encoding.csv"),
+	}
+	fmt.Println(fileValidationInputParams)
+	verifyValidationResult(t, fileValidationInputParams, validationResult)
 }
-*/
