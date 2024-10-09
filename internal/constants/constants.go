@@ -1,9 +1,5 @@
 package constants
 
-import (
-	"time"
-)
-
 type EncodingType string
 
 const (
@@ -16,10 +12,7 @@ const (
 )
 
 const (
-	MAX_READ_THRESHOLD = 1024
-	MAX_EXECUTION_TIME = 500 * time.Millisecond
-	BOM_LENGTH         = 3
-
+	BOM_LENGTH                               = 3
 	CSV                                      = "CSV"
 	TSV                                      = "TSV"
 	UNSUPPORTED                         rune = 0

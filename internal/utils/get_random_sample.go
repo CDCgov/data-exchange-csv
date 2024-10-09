@@ -5,11 +5,11 @@ import (
 	"math/rand"
 	"os"
 	"time"
-
-	"github.com/CDCgov/data-exchange-csv/cmd/internal/constants"
 )
 
 func ReadFileRandomly(file *os.File) ([]rune, error) {
+	const MAX_READ_THRESHOLD = 1024
+	const MAX_EXECUTION_TIME = 500 * time.Millisecond
 
 	fileInfo, err := file.Stat()
 	if err != nil {
@@ -18,7 +18,7 @@ func ReadFileRandomly(file *os.File) ([]rune, error) {
 
 	fileSize := fileInfo.Size()
 
-	if fileSize < int64(constants.MAX_READ_THRESHOLD) {
+	if fileSize < int64(MAX_READ_THRESHOLD) {
 		buffer := make([]byte, fileSize)
 		_, err := file.Read(buffer)
 		if err != nil {
@@ -29,7 +29,7 @@ func ReadFileRandomly(file *os.File) ([]rune, error) {
 		return []rune(string(buffer)), nil
 	}
 
-	randomRunes := make([]rune, 0, constants.MAX_READ_THRESHOLD)
+	randomRunes := make([]rune, 0, MAX_READ_THRESHOLD)
 
 	randomNumber := rand.New(rand.NewSource(time.Now().UnixNano()))
 
@@ -37,7 +37,7 @@ func ReadFileRandomly(file *os.File) ([]rune, error) {
 
 	startTime := time.Now()
 
-	for len(randomRunes) < constants.MAX_READ_THRESHOLD && time.Since(startTime) < constants.MAX_EXECUTION_TIME {
+	for len(randomRunes) < MAX_READ_THRESHOLD && time.Since(startTime) < MAX_EXECUTION_TIME {
 		offset := randomNumber.Int63n(fileSize)
 		_, err := file.Seek(offset, 0)
 
