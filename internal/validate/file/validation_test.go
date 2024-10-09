@@ -87,7 +87,7 @@ func TestValidateUTF8EncodedCSVFile(t *testing.T) {
 }
 
 func TestValidateUTF8BomEncodedCSVFile(t *testing.T) {
-	validationResult := models.FileValidationResult{
+	expectedValidationResult := models.FileValidationResult{
 		Delimiter:   constants.COMMA,
 		Encoding:    constants.UTF8_BOM,
 		SizeInBytes: 108,
@@ -99,11 +99,11 @@ func TestValidateUTF8BomEncodedCSVFile(t *testing.T) {
 		Separator:    constants.COMMA,
 		HasHeader:    false,
 	}
-	verifyValidationResult(t, fileValidationInputParams, validationResult)
+	verifyValidationResult(t, fileValidationInputParams, expectedValidationResult)
 }
 
 func TestValidateUSASCIIEncodedCSVFile(t *testing.T) {
-	validationResult := models.FileValidationResult{
+	expectedValidationResult := models.FileValidationResult{
 		Delimiter:   constants.COMMA,
 		Encoding:    constants.UTF8,
 		SizeInBytes: 82,
@@ -115,11 +115,11 @@ func TestValidateUSASCIIEncodedCSVFile(t *testing.T) {
 		Separator:    constants.COMMA,
 		HasHeader:    false,
 	}
-	verifyValidationResult(t, fileValidationInputParams, validationResult)
+	verifyValidationResult(t, fileValidationInputParams, expectedValidationResult)
 }
 
 func TestValidateWindows1252EncodedCSVFile(t *testing.T) {
-	validationResult := models.FileValidationResult{
+	expectedValidationResult := models.FileValidationResult{
 		Delimiter:   constants.COMMA,
 		Encoding:    constants.WINDOWS1252,
 		SizeInBytes: 67,
@@ -131,11 +131,11 @@ func TestValidateWindows1252EncodedCSVFile(t *testing.T) {
 		Separator:    constants.COMMA,
 		HasHeader:    false,
 	}
-	verifyValidationResult(t, fileValidationInputParams, validationResult)
+	verifyValidationResult(t, fileValidationInputParams, expectedValidationResult)
 }
 
 func TestValidateISO8859_1EncodedCSVFile(t *testing.T) {
-	validationResult := models.FileValidationResult{
+	expectedValidationResult := models.FileValidationResult{
 		Delimiter:   constants.COMMA,
 		Encoding:    constants.ISO8859_1,
 		SizeInBytes: 56,
@@ -148,7 +148,7 @@ func TestValidateISO8859_1EncodedCSVFile(t *testing.T) {
 		HasHeader:    false,
 	}
 
-	verifyValidationResult(t, fileValidationInputParams, validationResult)
+	verifyValidationResult(t, fileValidationInputParams, expectedValidationResult)
 }
 
 func TestValidateUTF8BomEncodedTSVFile(t *testing.T) {
