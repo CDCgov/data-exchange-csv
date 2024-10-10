@@ -51,7 +51,38 @@ func TestParseFlagsWithMissingRequiredFlags(t *testing.T) {
 func TestParseFlagsWithOptionalFlags(t *testing.T) {
 	//reset flags before test run
 	resetFlags()
+	os.Args = []string{
+		"cmd",
+		"-fileURL", "testFile.csv",
+		"-destination", "C://destination/folder",
+		"-debug=true",
+		"-log-file=true",
+	}
 
+	expectedResult := models.FileValidateInputParams{
+		ReceivedFile: "testFile.csv",
+		Destination:  "C://destination/folder",
+		Debug:        true,
+		LogToFile:    true,
+	}
+
+	actualResult := ParseFlags()
+	if actualResult.ReceivedFile != expectedResult.ReceivedFile {
+		t.Errorf("Expected file: %s and got: %s", expectedResult.ReceivedFile, actualResult.ReceivedFile)
+	}
+
+	if actualResult.Destination != expectedResult.Destination {
+		t.Errorf("Expected file: %s and got: %s", expectedResult.Destination, actualResult.Destination)
+	}
+
+	if actualResult.Debug != expectedResult.Debug {
+		t.Errorf("Expected file: %s and got: %s", expectedResult.ReceivedFile, actualResult.ReceivedFile)
+	}
+
+	if actualResult.LogToFile != expectedResult.LogToFile {
+		t.Errorf("Expected file: %s and got: %s", expectedResult.ReceivedFile, actualResult.ReceivedFile)
+
+	}
 }
 
 func TestParseFlagsWithOptionalConfigFile(t *testing.T) {

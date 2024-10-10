@@ -37,7 +37,8 @@ func ParseFlags() models.FileValidateInputParams {
 	}
 
 	if debug {
-		fileInputParams.HasHeader = true
+		fmt.Println("Debug Mode")
+		fileInputParams.Debug = true
 	}
 
 	if logToFile {
