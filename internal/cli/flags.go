@@ -44,7 +44,6 @@ func ParseFlags() models.FileValidateInputParams {
 		fileInputParams.LogToFile = true
 	}
 
-	//add logic for config.json file
 	if configFile != "" {
 		configFields := readConfigFile(configFile)
 
