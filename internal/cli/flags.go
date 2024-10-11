@@ -37,7 +37,6 @@ func ParseFlags() models.FileValidateInputParams {
 	}
 
 	if debug {
-		fmt.Println("Debug Mode")
 		fileInputParams.Debug = true
 	}
 
@@ -47,7 +46,6 @@ func ParseFlags() models.FileValidateInputParams {
 
 	if configFile != "" {
 		configFields := readConfigFile(configFile)
-
 		if value, exists := configFields["encoding"]; exists {
 			fileInputParams.Encoding = constants.EncodingType(value.(string))
 		}
