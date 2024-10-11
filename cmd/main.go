@@ -10,10 +10,17 @@ import (
 )
 
 func main() {
+
+	validationInputParams := cli.ParseFlags()
+
+	logToAFile := validationInputParams.LogToFile
+	debug := validationInputParams.Debug
+
+	sloger.InitLogger(logToAFile, debug)
+
 	logger := sloger.With(constants.PACKAGE, constants.MAIN)
 	logger.Info(constants.APPLICATION_STARTED)
 
-	validationInputParams := cli.ParseFlags()
 	rootDir := validationInputParams.Destination
 	err := utils.SetupEnvironment(rootDir)
 
