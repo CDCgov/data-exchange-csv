@@ -21,6 +21,11 @@ func Validate(fileInputParams models.FileValidateInputParams) models.FileValidat
 
 	fileValidationResult := validateFile(fileInputParams)
 
+	//if transform is true, update `fileValidationResult`
+	if fileInputParams.Transform {
+		fileValidationResult.Transform = true
+	}
+
 	if fileValidationResult.Status == constants.STATUS_SUCCESS {
 		row.Validate(fileValidationResult, processor.OnValidateAndTransformRow)
 	}

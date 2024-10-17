@@ -19,6 +19,7 @@ type FileValidateInputParams struct {
 	ConfigFile   string                 `json:"config_file"`
 	Debug        bool                   `json:"debug"`
 	LogToFile    bool                   `json:"log-file"`
+	Transform    bool                   `json:"transform"`
 }
 
 type ConfigFields struct {
@@ -45,4 +46,5 @@ type FileValidationResult struct {
 	Status       string                 `json:"status"`
 	HasHeader    bool                   `json:"has_header"`
 	Destination  string                 `json:"dest_folder"`
+	Transform    bool                   `json:"transform"`
 }

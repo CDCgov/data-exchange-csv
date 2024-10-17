@@ -16,11 +16,13 @@ func ParseFlags() models.FileValidateInputParams {
 	var destination string
 	var debug bool
 	var logToFile bool
+	var transform bool
 	var configFile string
 
 	flag.StringVar(&receivedFile, "fileURL", "", "[Required] The path to the file that will be validated")
 	flag.BoolVar(&debug, "debug", false, "[Optional] enable debug mode to generate debug-level logs")
 	flag.BoolVar(&logToFile, "log-file", false, "[Optional] If true, logs will be written to logs/validation.json, default is stdout")
+	flag.BoolVar(&transform, "transform", false, "[Optional] If true, the validated rows will be transformed to JSON")
 	flag.StringVar(&destination, "destination", "", "[Required] The URL to the folder where validation/transformation results will be stored")
 	flag.StringVar(&configFile, "config", "", "[Optional] The URL to the config.json. If provided overrides auto-detection of encoding, and separator")
 
@@ -42,6 +44,10 @@ func ParseFlags() models.FileValidateInputParams {
 
 	if logToFile {
 		fileInputParams.LogToFile = true
+	}
+
+	if transform {
+		fileInputParams.Transform = true
 	}
 
 	if configFile != "" {
