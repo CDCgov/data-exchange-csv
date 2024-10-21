@@ -1,25 +1,32 @@
 
-# CDC Data Exchange (DEX) CSV Structural Validator
+# CDC Data Exchange (DEX) CSV/TSV Structural Validator and Transformer
 
 ## Overview
-This is a code repository for a validator and transformer specific to character-separated values (CSV) files. The intent behind DEX's CSV product is to provide a high-speed, ultra-scalable CSV validator that can be run in near real-time even at high load and with huge file sizes.
+The CSV/TSV Validator and Transformer is a high-performance tool designed to validate and transform large CSV/TSV files in near real-time. Its currently in the proof-of-concent phase, and this repository reflects the initial development efforts.
 
-The two key functions of the CSV product are:
-- The CSV validator, which checks CSV files for their adherence to the rules set forth in [RFC 4180](https://www.rfc-editor.org/rfc/rfc4180) as well as against an optional header specification. If a optional header specification is provided, the CSV validator will ensure the header row in the CSV matches the header specification. The CSV validator does not validate field content or data types.
-- The CSV transformer, which generates a JSON file for each record in the CSV file. If the optional header specification is present, then the header specification is used to populate the JSON property names.
-
-> The DEX CSV product is under development in a 'proof-of-concept' phase only. It is subject to significant changes and updates.
-
+## WHY
 The intent behind providing these two features in DEX is to ensure CSV files are parseable by downstream big-data processing systems elsewhere in the CDC, such as those built on top of DataBricks. By checking structural validation of CSV files, DEX can rapidly (within seconds in many cases) respond to a sending organization with CSV validation errors and warnings. Doing so gives that sender rapid feedback about why their CSV file isn't parseable. Faster resolution of certain data quality issues related to the structure of the files being sent is ideal, as opposed to waiting hours or days for a batch processing job.
 
-Transforming CSV records into JSON files is an optional feature intended for cases where a consumer of the DEX CSV product would rather work with individual JSON records than CSV files.
 
-Each transformed record is assigned a UUIDv4 and is hashed. The intent behind hashing each record is to aid downstream CDC data systems in detecting duplicate records. The file hash and UUIDv4, among other properties, are included in the file metadata when it's written to disk.
+## Key Features
 
-The CSV product, when built, will be fully integrated with the rest of DEX and will be optional for any teams wishing to process CSV files through DEX. More information will be forthcoming as the CSV products moves from proof-of-concept into the Alpha and Beta phases of product maturity.
+- **CSV/TSV validation** - The validator, which checks the files for their adherence to the rules set forth in [RFC 4180](https://www.rfc-editor.org/rfc/rfc4180). The CSV validator does not validate field content, header fields or data types at this point. Each validated row is assigned:
+    - **File UUID**: Each processed file is assigned a unique `uuid` that is used to link rows to its originating file. This will enable downstream consumers to track back rows to its source file.
+    - **Row UUID**: Each row is assigned unique `uuid` during validation. This ensure that every row can be uniquely referenced.
+    - **SHA-256 Row Hashing**: The content of each row is hashed using  `SHA-256` algorithm to provide ability of detecting duplicates and ensure data entegrity throughout the data pipeline. 
 
-## Character encoding
-The CSV code modules will optionally accept one of several character encodings, such as `UTF-8` or `ISO-8859-1`, and can auto-detect character encodings (albeit with no guarantee of 100% accuracy) if one is not provided by the calling function. 
+- **CSV/TSV transformer** - The  transformer, which generates a JSON object for each row in the file. If the optional header is present, then the header specification is used to populate the JSON property names.
+
+- **Encoding Detection** - If encoding is not specified in the optional command line argument `config.json` , the tool will sample the file for upto 1024 bytes, and attempt to `auto-detect` the file's encoding(with best effor accuracy). Suppported encodings are: 
+    - `UTF-8`
+    - `UTF-8 with BOM`
+    - `USASCII`
+    - `ISO-8859`
+    - `Windows1252`
+
+- **Delimiter Detection** - If the delimiter is not provided in optional `config.json` command file flag, the tool will sample the file upto 1024 bytes of data, and will attempt to `auto-detect` delimiter. Supported delimiters include: 
+    - `,` (comma)
+    - `\t` (tab) 
 
 ## Public Domain Standard Notice
 This repository constitutes a work of the United States Government and is not
