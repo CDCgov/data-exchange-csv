@@ -21,12 +21,29 @@ The intent behind providing these two features in DEX is to ensure CSV files are
     - `UTF-8`
     - `UTF-8 with BOM`
     - `USASCII`
-    - `ISO-8859`
+    - `ISO-8859-1`
     - `Windows1252`
 
 - **Delimiter Detection** - If the delimiter is not provided in optional `config.json` command file flag, the tool will sample the file upto 1024 bytes of data, and will attempt to `auto-detect` delimiter. Supported delimiters include: 
     - `,` (comma)
     - `\t` (tab) 
+
+## Installation
+1. Clone the repository:
+    ```bash
+    git clone https://github.com/CDCgov/data-exchange-csv.git
+    cd data-exchange-csv
+    go build
+    ```
+
+## Usage
+The DEX CSV Validator and Transformer accepts following command-line flags:
+- `-fileURL:` [Required] The path to the file that will be validated.
+- `-destination:` [Required] The path to the folder where validation/transformation results will be stored.
+- `-debug:` [Optional]
+- `-log-file:` [Optional]
+- `-transform:` [Optional]
+- `-config:` [Optional]
 
 ## Public Domain Standard Notice
 This repository constitutes a work of the United States Government and is not
