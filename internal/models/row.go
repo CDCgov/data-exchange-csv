@@ -38,4 +38,5 @@ type RowCallbackParams struct {
 	TransformationResult interface{} `json:"transformation_result"`
 	IsFirst              bool        `json:"is_first"`
 	IsLast               bool        `json:"is_last"`
+	Transform            bool        `json:"transform"`
 }

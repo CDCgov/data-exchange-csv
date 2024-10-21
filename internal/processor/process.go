@@ -71,22 +71,10 @@ func OnValidateAndTransformRow(params models.RowCallbackParams) error {
 		return fmt.Errorf("failed to open or create validation_result.json %s: %w", validationPath, err)
 	}
 
-	// Open `transformation_result.json` file in append mode to write row transformation results
-	fileTransformation, err := os.OpenFile(transformationPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-		return fmt.Errorf("failed to open or create transformation_result.json %s: %w", transformationPath, err)
-	}
-
 	validationWriter := bufio.NewWriter(fileValidation)
-	transformationWriter := bufio.NewWriter(fileTransformation)
-
 	// Write opening bracket if it's the first row
 	if params.IsFirst && params.ValidationResult != nil {
 		validationWriter.WriteString("[")
-	}
-
-	if params.IsFirst && params.TransformationResult != nil {
-		transformationWriter.WriteString("[")
 	}
 
 	// Append the validation result if not nil
@@ -97,28 +85,47 @@ func OnValidateAndTransformRow(params models.RowCallbackParams) error {
 		validationWriter.WriteString(params.ValidationResult.(string))
 	}
 
-	// Append the transformation result if available
-	if params.TransformationResult != nil {
-		if !params.IsFirst {
-			transformationWriter.WriteString(",")
+	var fileTransformation *os.File
+	var transformationWriter *bufio.Writer
+	if params.Transform {
+		// Open `transformation_result.json` file in append mode to write row transformation results
+		fileTransformation, err = os.OpenFile(transformationPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			return fmt.Errorf("failed to open or create transformation_result.json %s: %w", transformationPath, err)
 		}
-		transformationWriter.WriteString(params.TransformationResult.(string))
+		transformationWriter = bufio.NewWriter(fileTransformation)
+
+		if params.IsFirst && params.TransformationResult != nil {
+			transformationWriter.WriteString("[")
+		}
+		// Append the transformation result if available
+		if params.TransformationResult != nil {
+			if !params.IsFirst {
+				transformationWriter.WriteString(",")
+			}
+			transformationWriter.WriteString(params.TransformationResult.(string))
+		}
 	}
 
 	// Write closing bracket and flush the buffers if it's the last row
 	if params.IsLast {
 		validationWriter.WriteString("]")
-		transformationWriter.WriteString("]")
 		validationWriter.Flush()
-		transformationWriter.Flush()
-
 		fileValidation.Close()
-		fileTransformation.Close()
+		if params.Transform {
+			transformationWriter.WriteString("]")
+
+			transformationWriter.Flush()
+
+			fileTransformation.Close()
+		}
 		return nil
 	}
 	// Flush buffers to ensure the data is written
 	validationWriter.Flush()
-	transformationWriter.Flush()
+	if params.Transform {
+		transformationWriter.Flush()
+	}
 
 	return nil
 }

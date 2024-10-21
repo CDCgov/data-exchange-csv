@@ -57,6 +57,7 @@ func RowToJson(row []string, params models.FileValidationResult,
 			FileUUID:             params.FileUUID,
 			TransformationResult: string(jsonContent),
 			Destination:          params.Destination,
+			Transform:            true,
 		})
 
 		return
@@ -77,5 +78,6 @@ func RowToJson(row []string, params models.FileValidationResult,
 		FileUUID:             params.FileUUID,
 		TransformationResult: string(jsonContent),
 		Destination:          params.Destination,
+		Transform:            true,
 	})
 }
