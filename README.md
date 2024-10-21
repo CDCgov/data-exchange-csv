@@ -40,10 +40,20 @@ The intent behind providing these two features in DEX is to ensure CSV files are
 The DEX CSV Validator and Transformer accepts following command-line flags:
 - `-fileURL:` [Required] The path to the file that will be validated.
 - `-destination:` [Required] The path to the folder where validation/transformation results will be stored.
-- `-debug:` [Optional]
-- `-log-file:` [Optional]
-- `-transform:` [Optional]
-- `-config:` [Optional]
+- `-debug:` [Optional] If true, `debug-level` logs will be generated.
+- `-log-file:` [Optional] If true, logs will be written to logs/validation.json, default is stdout.
+- `-transform:` [Optional] If true, the valid rows will be transformed to a `JSON` object.
+- `-config:` [Optional] The path to the `config.json`. If provided overrides auto-detection of encoding, and separator.
+    
+    ```json
+    {
+    "encoding": "UTF-8",
+    "separator": ",",
+    "hasHeader": true
+    }
+      
+## Future Enhancements
+- **Non-blocking Validation/transformation**: Currently, the validation process is performed synchronously, which may introduce delays when processing large files. To address this, we are exploring the use of Go routines to parallelize the validation and transformation process. By leveraging concurrency, we aim to significantly improve performance and reduce processing time.
 
 ## Public Domain Standard Notice
 This repository constitutes a work of the United States Government and is not
