@@ -55,7 +55,7 @@ The DEX CSV Validator and Transformer accepts following command-line flags:
 1. Navigate to the project's root directory
 2. Run the following command
     ```bash
-    go test -v ./...
+    go test ./...
     ```
     **Note:** If you want to see more detailed output you can add `-v` flag. 
 ## Future Enhancements
