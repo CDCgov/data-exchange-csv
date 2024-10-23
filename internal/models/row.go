@@ -30,3 +30,13 @@ type RowError struct {
 	Column   int                `json:"column"`
 	Severity constants.Severity `json:"severity"`
 }
+
+type RowCallbackParams struct {
+	Destination          string      `json:"destination"`
+	FileUUID             uuid.UUID   `json:"file_uuid"`
+	ValidationResult     interface{} `json:"validation_result"`
+	TransformationResult interface{} `json:"transformation_result"`
+	IsFirst              bool        `json:"is_first"`
+	IsLast               bool        `json:"is_last"`
+	Transform            bool        `json:"transform"`
+}

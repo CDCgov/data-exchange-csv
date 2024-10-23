@@ -35,8 +35,9 @@ func checkForBom(filePath *os.File, t *testing.T) bool {
 
 }
 func TestDetectBOM(t *testing.T) {
+	const CSV_FILENAME_WITH_BOM = "HasBOM.csv"
 
-	csvFileWithBOM, err := createTempFile(constants.UTF8Bom, constants.CSV_FILENAME_WITH_BOM)
+	csvFileWithBOM, err := createTempFile(constants.UTF8Bom, CSV_FILENAME_WITH_BOM)
 	if err != nil {
 		t.Errorf(constants.FILE_CREATE_ERROR)
 	}
@@ -50,8 +51,9 @@ func TestDetectBOM(t *testing.T) {
 }
 
 func TestNotDetectBOM(t *testing.T) {
+	const CSV_FILENAME_WITHOUT_BOM = "NoBOM.csv"
 
-	csvFileWithNoBOM, err := createTempFile(constants.UTF8NoBom, constants.CSV_FILENAME_WITHOUT_BOM)
+	csvFileWithNoBOM, err := createTempFile(constants.UTF8NoBom, CSV_FILENAME_WITHOUT_BOM)
 	if err != nil {
 		t.Errorf(constants.FILE_CREATE_ERROR)
 	}

@@ -10,52 +10,41 @@ type FileError struct {
 	Code    int    `json:"code"`
 }
 
-type ConfigIdentifier struct {
-	DataStreamID    string   `json:"data_stream_id"`
-	DataStreamRoute string   `json:"data_stream_route"`
-	Header          []string `json:"header"`
+type FileValidateInputParams struct {
+	ReceivedFile string                 `json:"received_file"`
+	Encoding     constants.EncodingType `json:"encoding"`
+	Separator    rune                   `json:"separator"`
+	HasHeader    bool                   `json:"has_header"`
+	Destination  string                 `json:"destination"`
+	ConfigFile   string                 `json:"config_file"`
+	Debug        bool                   `json:"debug"`
+	LogToFile    bool                   `json:"log-file"`
+	Transform    bool                   `json:"transform"`
 }
 
-type MetadataValidationResult struct {
-	ReceivedFile    string     `json:"received_filename"`
-	Error           *FileError `json:"error"`
-	Status          string     `json:"status"`
-	Jurisdiction    string     `json:"jurisdiction"`
-	DataStreamID    string     `json:"data_stream_id"`
-	DataStreamRoute string     `json:"data_stream_route"`
-	SenderID        string     `json:"sender_id"`
-	DataProducerID  string     `json:"data_producer_id"`
-	Version         string     `json:"version"`
-}
-
-type ConfigValidationResult struct {
-	Error                  *FileError             `json:"error"`
-	Status                 string                 `json:"status"`
-	HeaderValidationResult HeaderValidationResult `json:"header_validation_result"`
-}
-
-type HeaderValidationResult struct {
-	Status string     `json:"status"`
-	Error  *FileError `json:"error"`
-	Header []string   `json:"header"`
+type ConfigFields struct {
+	HasHeader bool                   `json:"has_header"`
+	Separator string                 `json:"separator"`
+	Encoding  constants.EncodingType `json:"encoding"`
 }
 
 type FileValidationParams struct {
 	FileUUID     uuid.UUID              `json:"file_uuid"`
 	ReceivedFile string                 `json:"received_filename"`
 	Encoding     constants.EncodingType `json:"detected_encoding"`
-	Delimiter    string                 `json:"detected_delimiter"`
+	Delimiter    rune                   `json:"detected_delimiter"`
 	Header       []string               `json:"header"`
 }
 
 type FileValidationResult struct {
-	ReceivedFile string                   `json:"received_filename"`
-	Encoding     constants.EncodingType   `json:"encoding"`
-	FileUUID     uuid.UUID                `json:"uuid"`
-	Size         int64                    `json:"size"`
-	Delimiter    string                   `json:"delimiter"`
-	Error        *FileError               `json:"error"`
-	Status       string                   `json:"status"`
-	Metadata     MetadataValidationResult `json:"metadata_validation_result"`
-	Config       ConfigValidationResult   `json:"config_validation_result"`
+	ReceivedFile string                 `json:"received_filename"`
+	Encoding     constants.EncodingType `json:"encoding"`
+	FileUUID     uuid.UUID              `json:"uuid"`
+	SizeInBytes  int64                  `json:"size_bytes"`
+	Delimiter    rune                   `json:"delimiter"`
+	Error        *FileError             `json:"error"`
+	Status       string                 `json:"status"`
+	HasHeader    bool                   `json:"has_header"`
+	Destination  string                 `json:"dest_folder"`
+	Transform    bool                   `json:"transform"`
 }
