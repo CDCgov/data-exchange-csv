@@ -1,6 +1,7 @@
 package file
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -78,12 +79,14 @@ func TestValidateUTF8EncodedCSVFile(t *testing.T) {
 		Encoding:    constants.UTF8,
 		SizeInBytes: 50,
 		HasHeader:   false,
+		Status:      constants.STATUS_SUCCESS,
 	}
 	fileValidationInputParams := models.FileValidateInputParams{
 		ReceivedFile: filepath.Join(tempDirectory, "UTF8Encoding.csv"),
 		Separator:    constants.COMMA,
 		HasHeader:    false,
 	}
+	fmt.Println(expectedValidationResult.Status)
 	verifyValidationResult(t, fileValidationInputParams, expectedValidationResult)
 }
 
@@ -93,6 +96,7 @@ func TestValidateUTF8BomEncodedCSVFile(t *testing.T) {
 		Encoding:    constants.UTF8_BOM,
 		SizeInBytes: 108,
 		HasHeader:   false,
+		Status:      constants.STATUS_SUCCESS,
 	}
 	fileValidationInputParams := models.FileValidateInputParams{
 		ReceivedFile: filepath.Join(tempDirectory, "UTF8BomEncoding.csv"),
@@ -108,6 +112,7 @@ func TestValidateUSASCIIEncodedCSVFile(t *testing.T) {
 		Encoding:    constants.UTF8,
 		SizeInBytes: 82,
 		HasHeader:   false,
+		Status:      constants.STATUS_SUCCESS,
 	}
 	fileValidationInputParams := models.FileValidateInputParams{
 		ReceivedFile: filepath.Join(tempDirectory, "USASCIIEncoding.csv"),
@@ -123,6 +128,7 @@ func TestValidateWindows1252EncodedCSVFile(t *testing.T) {
 		Encoding:    constants.WINDOWS1252,
 		SizeInBytes: 67,
 		HasHeader:   false,
+		Status:      constants.STATUS_SUCCESS,
 	}
 	fileValidationInputParams := models.FileValidateInputParams{
 		ReceivedFile: filepath.Join(tempDirectory, "Windows1252Encoding.csv"),
@@ -138,6 +144,7 @@ func TestValidateISO8859_1EncodedCSVFile(t *testing.T) {
 		Encoding:    constants.ISO8859_1,
 		SizeInBytes: 56,
 		HasHeader:   false,
+		Status:      constants.STATUS_SUCCESS,
 	}
 	fileValidationInputParams := models.FileValidateInputParams{
 		ReceivedFile: filepath.Join(tempDirectory, "ISO8859_1Encoding.csv"),
@@ -154,6 +161,7 @@ func TestValidateUTF8BomEncodedTSVFile(t *testing.T) {
 		Encoding:    constants.UTF8_BOM,
 		SizeInBytes: 108,
 		HasHeader:   false,
+		Status:      constants.STATUS_SUCCESS,
 	}
 	fileValidationInputParams := models.FileValidateInputParams{
 		ReceivedFile: filepath.Join(tempDirectory, "UTF8BomEncoding.tsv"),
