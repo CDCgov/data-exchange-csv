@@ -51,7 +51,13 @@ The DEX CSV Validator and Transformer accepts following command-line flags:
     "separator": ",",
     "hasHeader": true
     }
-      
+### Unit Tests
+1. Navigate to the project's root directory
+2. Run the following command
+    ```bash
+    go test -v ./...
+    ```
+    **Note:** If you want to see more detailed output you can add `-v` flag. 
 ## Future Enhancements
 - **Non-blocking Validation/transformation**: Currently, the validation process is performed synchronously, which may introduce delays when processing large files. To address this, we are exploring the use of Go routines to parallelize the validation and transformation process. By leveraging concurrency, we aim to significantly improve performance and reduce processing time.
 
