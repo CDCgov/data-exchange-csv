@@ -1,7 +1,6 @@
 package file
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -86,7 +85,6 @@ func TestValidateUTF8EncodedCSVFile(t *testing.T) {
 		Separator:    constants.COMMA,
 		HasHeader:    false,
 	}
-	fmt.Println(expectedValidationResult.Status)
 	verifyValidationResult(t, fileValidationInputParams, expectedValidationResult)
 }
 
