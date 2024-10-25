@@ -2,22 +2,21 @@
 # CDC Data Exchange (DEX) CSV/TSV Structural Validator and Transformer
 
 ## Overview
-The CSV/TSV Validator and Transformer is a high-performance tool designed to validate and transform large CSV/TSV files in near real-time. Its currently in the proof-of-concent phase, and this repository reflects the initial development efforts.
+The CSV/TSV Validator and Transformer is a high-performance tool designed to validate and transform large CSV/TSV files in near real-time. Its currently in the proof-of-concept phase, and this repository reflects the initial development efforts.
 
 ## WHY
 The intent behind providing these two features in DEX is to ensure CSV files are parseable by downstream big-data processing systems elsewhere in the CDC, such as those built on top of DataBricks. By checking structural validation of CSV files, DEX can rapidly (within seconds in many cases) respond to a sending organization with CSV validation errors and warnings. Doing so gives that sender rapid feedback about why their CSV file isn't parseable. Faster resolution of certain data quality issues related to the structure of the files being sent is ideal, as opposed to waiting hours or days for a batch processing job.
-
 
 ## Key Features
 
 - **CSV/TSV validation** - The validator, which checks the files for their adherence to the rules set forth in [RFC 4180](https://www.rfc-editor.org/rfc/rfc4180). The CSV validator does not validate field content, header fields or data types at this point. Each validated row is assigned:
     - **File UUID**: Each processed file is assigned a unique `uuid` that is used to link rows to its originating file. This will enable downstream consumers to track back rows to its source file.
     - **Row UUID**: Each row is assigned unique `uuid` during validation. This ensure that every row can be uniquely referenced.
-    - **SHA-256 Row Hashing**: The content of each row is hashed using  `SHA-256` algorithm to provide ability of detecting duplicates and ensure data entegrity throughout the data pipeline. 
+    - **SHA-256 Row Hashing**: The content of each row is hashed using  `SHA-256` algorithm to provide ability of detecting duplicates and ensure data integrity throughout the data pipeline. 
 
-- **CSV/TSV transformer** - The  transformer, which generates a JSON object for each row in the file. If the optional header is present, then the header specification is used to populate the JSON property names.
+- **CSV/TSV transformer** - The transformer, which generates a JSON object for each row in the file. If the optional header is present, then the header specification is used to populate the JSON property names.
 
-- **Encoding Detection** - If encoding is not specified in the optional command line argument `config.json` , the tool will sample the file for upto 1024 bytes, and attempt to `auto-detect` the file's encoding(with best effor accuracy). Suppported encodings are: 
+- **Encoding Detection** - If encoding is not specified in the optional command line argument `config.json` , the tool will sample the file for up to 1024 bytes, and attempt to `auto-detect` the file's encoding (with best effort accuracy). Suppported encodings are: 
     - `UTF-8`
     - `UTF-8 with BOM`
     - `USASCII`
@@ -51,13 +50,16 @@ The DEX CSV Validator and Transformer accepts following command-line flags:
     "separator": ",",
     "hasHeader": true
     }
+    ```
+
 ### Unit Tests
 1. Navigate to the project's root directory
 2. Run the following command
     ```bash
     go test ./...
     ```
-    **Note:** If you want to see more detailed output you can add `-v` flag. 
+    **Note:** If you want to see more detailed output you can add `-v` flag.
+
 ## Future Enhancements
 - **Non-blocking Validation/transformation**: Currently, the validation process is performed synchronously, which may introduce delays when processing large files. To address this, we are exploring the use of Go routines to parallelize the validation and transformation process. By leveraging concurrency, we aim to significantly improve performance and reduce processing time.
 
@@ -119,6 +121,7 @@ published through the [CDC web site](http://www.cdc.gov).
 * [Disclaimer](DISCLAIMER.md)
 * [Contribution Notice](CONTRIBUTING.md)
 * [Code of Conduct](code-of-conduct.md)
+
 ## Additional Standard Notices
 Please refer to [CDC's Template Repository](https://github.com/CDCgov/template)
 for more information about [contributing to this repository](https://github.com/CDCgov/template/blob/master/CONTRIBUTING.md),
