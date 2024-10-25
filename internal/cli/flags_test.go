@@ -78,14 +78,14 @@ func TestParseFlagsWithOptionalFlags(t *testing.T) {
 }
 
 func TestParseFlagsWithConfigFile(t *testing.T) {
-	testCaseNameValidConfigFIle := "Test Case with valid config.json file"
+	testCaseNameValidConfigFile := "Test Case with valid config.json file"
 	tests := []struct {
 		name           string
 		configFields   map[string]interface{}
 		expectedResult models.FileValidateInputParams
 	}{
 		{
-			name: testCaseNameValidConfigFIle,
+			name: testCaseNameValidConfigFile,
 			configFields: map[string]interface{}{
 				"encoding":  "UTF-8",
 				"separator": ",",
@@ -140,10 +140,10 @@ func TestParseFlagsWithConfigFile(t *testing.T) {
 
 			actualResult := ParseFlags()
 
-			if actualResult.Encoding != constants.UTF8 && testCase.name == testCaseNameValidConfigFIle {
+			if actualResult.Encoding != constants.UTF8 && testCase.name == testCaseNameValidConfigFile {
 				t.Errorf("Expected encoding is UTF-8, but got %s", actualResult.Encoding)
 			}
-			if actualResult.Separator != constants.COMMA && testCase.name == testCaseNameValidConfigFIle {
+			if actualResult.Separator != constants.COMMA && testCase.name == testCaseNameValidConfigFile {
 				t.Errorf("Expected separator is `,`, but got %s", string(actualResult.Separator))
 			}
 			if actualResult.HasHeader != testCase.expectedResult.HasHeader {
