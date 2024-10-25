@@ -13,10 +13,10 @@ func main() {
 
 	validationInputParams := cli.ParseFlags()
 
-	logToAFile := validationInputParams.LogToFile
+	logToFile := validationInputParams.LogToFile
 	debug := validationInputParams.Debug
 
-	sloger.InitLogger(logToAFile, debug)
+	sloger.InitLogger(logToFile, debug)
 
 	logger := sloger.With(constants.PACKAGE, constants.MAIN)
 	logger.Info(constants.APPLICATION_STARTED)
