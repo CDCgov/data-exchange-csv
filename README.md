@@ -37,8 +37,11 @@ The intent behind providing these two features in DEX is to ensure CSV files are
     ```bash
     git clone https://github.com/CDCgov/data-exchange-csv.git
     cd data-exchange-csv
+    cd cmd
     go build
     ```
+     **Note:** If you want specify name of binary and path explicitly  `go build -o name.exe`. 
+
 
 ## Usage
 The DEX CSV Validator and Transformer accepts following command-line flags:
@@ -56,7 +59,22 @@ The DEX CSV Validator and Transformer accepts following command-line flags:
     "hasHeader": true
     }
     ```
+### Examples:
+Process the `CSV/TSV` file with required fields:
 
+ ```bash 
+ .\validator.exe -fileURL="/file.csv" -destination="C:\destination"
+```
+Process the `CSV/TSV` file with optional fields:
+
+ ```bash 
+ .\validator.exe -fileURL="/file.csv" -destination="C:\destination" -transform=true -log-file=true
+```
+Process the `CSV/TSV` file with optional `config.json` file:
+
+ ```bash 
+ .\validator.exe -fileURL="/file.csv" -destination="C:\destination" -config="data/config.json"
+```
 ### Unit Tests
 1. Navigate to the project's root directory
 2. Run the following command
