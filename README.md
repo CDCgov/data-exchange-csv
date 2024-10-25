@@ -27,6 +27,11 @@ The intent behind providing these two features in DEX is to ensure CSV files are
     - `,` (comma)
     - `\t` (tab) 
 
+## Prerequisites
+- **Go** (1.22.0 or higher)
+    
+    Install `Go` following the instractions at [golang.org](https://go.dev/doc/install)
+
 ## Installation
 1. Clone the repository:
     ```bash
