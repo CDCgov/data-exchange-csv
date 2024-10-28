@@ -55,7 +55,7 @@ func ReadFileRandomly(file *os.File) ([]rune, error) {
 	}
 
 	// Reset the file pointer to the beginning of the file so that next operation
-	// starts reading from the begining.
+	// starts reading from the beginning.
 	_, err = file.Seek(0, 0)
 	if err != nil {
 		return nil, err
