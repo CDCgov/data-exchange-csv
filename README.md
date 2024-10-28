@@ -4,7 +4,7 @@
 ## Overview
 The CSV/TSV Validator and Transformer is a high-performance tool designed to validate and transform large CSV/TSV files in near real-time. Its currently in the proof-of-concept phase, and this repository reflects the initial development efforts.
 
-## WHY
+## Why
 The intent behind providing these two features in DEX is to ensure CSV files are parseable by downstream big-data processing systems elsewhere in the CDC, such as those built on top of DataBricks. By checking structural validation of CSV files, DEX can rapidly (within seconds in many cases) respond to a sending organization with CSV validation errors and warnings. Doing so gives that sender rapid feedback about why their CSV file isn't parseable. Faster resolution of certain data quality issues related to the structure of the files being sent is ideal, as opposed to waiting hours or days for a batch processing job.
 
 ## Key Features
@@ -12,7 +12,7 @@ The intent behind providing these two features in DEX is to ensure CSV files are
 - **CSV/TSV validation** - The validator, which checks the files for their adherence to the rules set forth in [RFC 4180](https://www.rfc-editor.org/rfc/rfc4180). The CSV validator does not validate field content, header fields or data types at this point. Each validated row is assigned:
     - **File UUID**: Each processed file is assigned a unique `uuid` that is used to link rows to its originating file. This will enable downstream consumers to track back rows to its source file.
     - **Row UUID**: Each row is assigned unique `uuid` during validation. This ensure that every row can be uniquely referenced.
-    - **SHA-256 Row Hashing**: The content of each row is hashed using  `SHA-256` algorithm to provide ability of detecting duplicates and ensure data integrity throughout the data pipeline. 
+    - **SHA-256 Row Hashing**: The content of each row is hashed using `SHA-256` algorithm to provide ability of detecting duplicates and ensure data integrity throughout the data pipeline. 
 
 - **CSV/TSV transformer** - The transformer, which generates a JSON object for each row in the file. If the optional header is present, then the header specification is used to populate the JSON property names.
 
@@ -23,14 +23,14 @@ The intent behind providing these two features in DEX is to ensure CSV files are
     - `ISO-8859-1`
     - `Windows1252`
 
-- **Delimiter Detection** - If the delimiter is not provided in optional `config.json` command file flag, the tool will sample the file upto 1024 bytes of data, and will attempt to `auto-detect` delimiter. Supported delimiters include: 
+- **Delimiter Detection** - If the delimiter is not provided in optional `config.json` command file flag, the tool will sample the file up to 1024 bytes of data, and will attempt to `auto-detect` delimiter. Supported delimiters include: 
     - `,` (comma)
     - `\t` (tab) 
 
 ## Prerequisites
 - **Go** (1.22.0 or higher)
     
-    Install `Go` following the instractions at [golang.org](https://go.dev/doc/install)
+    Install `Go` following the instructions at [golang.org](https://go.dev/doc/install)
 
 ## Installation
 1. Clone the repository:
@@ -42,7 +42,6 @@ The intent behind providing these two features in DEX is to ensure CSV files are
     ```
      **Note:** If you want specify name of binary and path explicitly  `go build -o name.exe`. 
 
-
 ## Usage
 The DEX CSV Validator and Transformer accepts following command-line flags:
 - `-fileURL:` [Required] The path to the file that will be validated.
@@ -50,31 +49,34 @@ The DEX CSV Validator and Transformer accepts following command-line flags:
 - `-debug:` [Optional] If true, `debug-level` logs will be generated.
 - `-log-file:` [Optional] If true, logs will be written to logs/validation.json, default is stdout.
 - `-transform:` [Optional] If true, the valid rows will be transformed to a `JSON` object.
-- `-config:` [Optional] The path to the `config.json`. If provided overrides auto-detection of encoding, and separator.
+- `-config:` [Optional] The path to the `config.json`. If provided, overrides auto-detection of encoding and separator.
     
     ```json
     {
-    "encoding": "UTF-8",
-    "separator": ",",
-    "hasHeader": true
+        "encoding": "UTF-8",
+        "separator": ",",
+        "hasHeader": true
     }
     ```
+
 ### Examples:
 Process the `CSV/TSV` file with required fields:
 
- ```bash 
+```bash 
  .\validator.exe -fileURL="/file.csv" -destination="C:\destination"
 ```
 Process the `CSV/TSV` file with optional fields:
 
- ```bash 
+```bash 
  .\validator.exe -fileURL="/file.csv" -destination="C:\destination" -transform=true -log-file=true
 ```
+
 Process the `CSV/TSV` file with optional `config.json` file:
 
- ```bash 
+```bash 
  .\validator.exe -fileURL="/file.csv" -destination="C:\destination" -config="data/config.json"
 ```
+
 ### Unit Tests
 1. Navigate to the project's root directory
 2. Run the following command
@@ -84,7 +86,7 @@ Process the `CSV/TSV` file with optional `config.json` file:
     **Note:** If you want to see more detailed output you can add `-v` flag.
 
 ## Future Enhancements
-- **Non-blocking Validation/transformation**: Currently, the validation process is performed synchronously, which may introduce delays when processing large files. To address this, we are exploring the use of Go routines to parallelize the validation and transformation process. By leveraging concurrency, we aim to significantly improve performance and reduce processing time.
+- **Non-blocking validation/transformation**: Currently, the validation process is performed synchronously, which may introduce delays when processing large files. To address this, we are exploring the use of Go routines to parallelize the validation and transformation process. By leveraging concurrency, we aim to significantly improve performance and reduce processing time.
 
 ## Public Domain Standard Notice
 This repository constitutes a work of the United States Government and is not
@@ -140,7 +142,6 @@ published through the [CDC web site](http://www.cdc.gov).
 
 * [Open Practices](open_practices.md)
 * [Rules of Behavior](rules_of_behavior.md)
-* [Thanks and Acknowledgements](thanks.md)
 * [Disclaimer](DISCLAIMER.md)
 * [Contribution Notice](CONTRIBUTING.md)
 * [Code of Conduct](code-of-conduct.md)
