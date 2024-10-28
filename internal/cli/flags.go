@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 
 	"github.com/CDCgov/data-exchange-csv/cmd/internal/constants"
 	"github.com/CDCgov/data-exchange-csv/cmd/internal/models"
@@ -28,9 +29,10 @@ func ParseFlags() models.FileValidateInputParams {
 
 	flag.Parse()
 
-	if receivedFile == "" || destination == "" {
+	if strings.TrimSpace(receivedFile) == "" || strings.TrimSpace(destination) == "" {
 		flag.Usage()
 		os.Exit(1)
+		//TO DO: move log initialization logic to flags.go to log parsing related issues and remove flag.Usage().
 	}
 
 	fileInputParams := models.FileValidateInputParams{
