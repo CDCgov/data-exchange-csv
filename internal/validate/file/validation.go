@@ -35,7 +35,7 @@ func Validate(fileInputParams models.FileValidateInputParams) models.FileValidat
 
 func validateFile(params models.FileValidateInputParams) models.FileValidationResult {
 	//initialize local constant variables
-	const ERROR_COMPUTING_FILE_SIZE = "An error ocurred while computing the size of the file"
+	const ERROR_COMPUTING_FILE_SIZE = "An error occurred while computing the size of the file"
 	const EMPTY_FILE_ERROR = "File is empty and can not be validated"
 
 	validationResult := models.FileValidationResult{
