@@ -9,7 +9,10 @@ import (
 )
 
 func DetectBOM(file *os.File) (bool, error) {
-	bom := make([]byte, 3)
+
+	file.Seek(0, 0) //reset pointer to the begining of the file
+
+	bom := make([]byte, constants.BOM_LENGTH)
 
 	_, err := file.Read(bom)
 	if err != nil && err != io.EOF {

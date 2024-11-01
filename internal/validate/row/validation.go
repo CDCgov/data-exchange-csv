@@ -2,6 +2,7 @@ package row
 
 import (
 	"encoding/csv"
+	"encoding/json"
 	"fmt"
 	"io"
 	"os"
@@ -14,7 +15,7 @@ import (
 	"golang.org/x/text/encoding/charmap"
 )
 
-func createReader(file *os.File, encoding constants.EncodingType, delimiter string) (*csv.Reader, error) {
+func createReader(file *os.File, encoding constants.EncodingType, delimiter rune) (*csv.Reader, error) {
 	var reader *csv.Reader
 
 	switch encoding {
@@ -34,17 +35,23 @@ func createReader(file *os.File, encoding constants.EncodingType, delimiter stri
 	}
 	//If the file is tab-separated (TSV), update the reader's separator to TAB.
 	//This ensures that the reader correctly parses each field based on the tab delimiter.
-	if delimiter == string(constants.TAB) {
+	if delimiter == constants.TAB {
 		reader.Comma = constants.TAB
 	}
 
 	return reader, nil
 }
 
-func Validate(params models.FileValidationParams, sendEventsToDestination func(result interface{}, destination string)) {
+func Validate(params models.FileValidationResult, callback func(params models.RowCallbackParams) error) {
+
+	//initialize variables
+	isFirst := true
+	isLast := false
+	var rowHeader []string
+
 	//initialize logger from sloger package
 	logger := sloger.With(constants.PACKAGE, constants.ROW)
-	logger.Info(fmt.Sprintf(constants.MSG_ROW_VALIDATION_BEGIN, params.FileUUID))
+	logger.Debug(fmt.Sprintf(constants.MSG_ROW_VALIDATION_BEGIN, params.FileUUID))
 
 	file, _ := os.Open(params.ReceivedFile)
 
@@ -63,13 +70,13 @@ func Validate(params models.FileValidationParams, sendEventsToDestination func(r
 	if err != nil {
 		validationResult.Error = &models.RowError{Message: constants.CSV_READER_ERROR, Severity: constants.Failure}
 		logger.Error(fmt.Sprintf(constants.MSG_CSV_READER_FAILURE, err.Error()))
-		sendEventsToDestination(validationResult, constants.DEAD_LETTER_QUEUE)
+
 	}
 
 	//If header is present, skip the header to ensure header row is not validated or transformed.
-	if len(params.Header) != 0 {
-		logger.Info(constants.MSG_HEADER_PRESENT_SKIP_FIRST_ROW)
-		reader.Read()
+	if params.HasHeader {
+		rowHeader, _ = reader.Read()
+		logger.Debug(constants.MSG_HEADER_PRESENT_SKIP_FIRST_ROW)
 	}
 
 	rowCount := 1
@@ -78,33 +85,71 @@ func Validate(params models.FileValidationParams, sendEventsToDestination func(r
 		row, err := reader.Read()
 
 		if err == io.EOF {
+			callback(models.RowCallbackParams{
+				IsLast:   true,
+				FileUUID: params.FileUUID,
+			})
 			break
 		}
-
+		//check if row is not empty and write comma
 		validationResult.RowUUID = uuid.New()
-		logger.Info(fmt.Sprintf(constants.MSG_ROW_UUID, validationResult.RowUUID))
+		logger.Debug(fmt.Sprintf(constants.MSG_ROW_UUID, validationResult.RowUUID))
 		validationResult.Hash = ComputeHash(row, params.Delimiter)
-		logger.Info(fmt.Sprintf(constants.MSG_ROW_COMPUTED_HASH, validationResult.Hash))
+		logger.Debug(fmt.Sprintf(constants.MSG_ROW_COMPUTED_HASH, validationResult.Hash))
 		validationResult.RowNumber = rowCount
-		logger.Info(fmt.Sprintf(constants.MSG_ROW_NUMBER, rowCount))
+		logger.Debug(fmt.Sprintf(constants.MSG_ROW_NUMBER, rowCount))
 		rowCount++
 
 		if err != nil {
 			validationResult.Error = processRowError(err)
 			validationResult.Status = constants.STATUS_FAILED
 			logger.Error(fmt.Sprintf(constants.MSG_ROW_VALIDATION_FAILURE, validationResult.Error.Message))
-			sendEventsToDestination(validationResult, constants.DEAD_LETTER_QUEUE)
+			jsonContent, err := json.Marshal(validationResult)
+
+			if err != nil {
+				logger.Error(constants.ERROR_CONVERTING_STRUCT_TO_JSON)
+				return
+			}
+
+			callback(models.RowCallbackParams{
+				IsFirst:          isFirst,
+				IsLast:           isLast,
+				FileUUID:         params.FileUUID,
+				ValidationResult: string(jsonContent),
+				Destination:      params.Destination,
+			})
 			continue
 		}
 
 		validationResult.Status = constants.STATUS_SUCCESS
 		logger.Debug(constants.MSG_ROW_VALIDATION_SUCCESS)
-		sendEventsToDestination(validationResult, constants.ROW_REPORTS)
-		// valid row, ready to transform to json
-		transform.RowToJson(row, params, validationResult.RowUUID, sendEventsToDestination)
 
+		jsonContent, err := json.Marshal(validationResult)
+		if err != nil {
+			logger.Error(constants.ERROR_CONVERTING_STRUCT_TO_JSON)
+		}
+
+		callback(models.RowCallbackParams{
+			IsFirst:          isFirst,
+			IsLast:           isLast,
+			FileUUID:         params.FileUUID,
+			ValidationResult: string(jsonContent),
+			Destination:      params.Destination,
+		})
+		if params.Transform {
+			transform.RowToJson(row, params, validationResult.RowUUID, isFirst, rowHeader, callback)
+		}
+
+		if isFirst {
+			isFirst = false
+		}
 	}
 
+	callback(models.RowCallbackParams{
+		IsLast:      true,
+		Destination: params.Destination,
+		FileUUID:    params.FileUUID,
+	})
 }
 
 func processRowError(err error) *models.RowError {

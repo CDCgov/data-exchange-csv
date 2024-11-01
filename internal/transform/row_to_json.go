@@ -11,12 +11,12 @@ import (
 	"github.com/google/uuid"
 )
 
-func RowToJson(row []string, params models.FileValidationParams,
-	rowUUID uuid.UUID, sendEventsToDestination func(result interface{}, destination string)) {
+func RowToJson(row []string, params models.FileValidationResult,
+	rowUUID uuid.UUID, isFirst bool, header []string, callback func(params models.RowCallbackParams) error) {
 
 	//initialize logger using sloger package
 	logger := sloger.With(constants.PACKAGE, constants.TRANSFORM)
-	logger.Info(fmt.Sprintf(constants.MSG_ROW_TRANSFORMATION_BEGIN, rowUUID))
+	logger.Debug(fmt.Sprintf(constants.MSG_ROW_TRANSFORMATION_BEGIN, rowUUID))
 
 	transformationResult := models.RowTransformationResult{
 		FileUUID: params.FileUUID,
@@ -25,8 +25,8 @@ func RowToJson(row []string, params models.FileValidationParams,
 
 	parsedRow := make(map[string]string)
 
-	if len(params.Header) > 0 {
-		for index, column := range params.Header {
+	if params.HasHeader {
+		for index, column := range header {
 			parsedRow[column] = row[index]
 		}
 	} else {
@@ -46,12 +46,38 @@ func RowToJson(row []string, params models.FileValidationParams,
 		transformationResult.Error = err
 		transformationResult.Status = constants.STATUS_FAILED
 		logger.Error(fmt.Sprintf(constants.MSG_ROW_TRANSFORM_ERROR, err.Error()))
-		sendEventsToDestination(transformationResult, constants.DEAD_LETTER_QUEUE)
+
+		jsonContent, err := json.Marshal(transformationResult)
+		if err != nil {
+			logger.Error(constants.ERROR_CONVERTING_STRUCT_TO_JSON)
+		}
+
+		callback(models.RowCallbackParams{
+			IsFirst:              isFirst,
+			FileUUID:             params.FileUUID,
+			TransformationResult: string(jsonContent),
+			Destination:          params.Destination,
+			Transform:            true,
+		})
+
 		return
 	}
 
 	transformationResult.Status = constants.STATUS_SUCCESS
 	transformationResult.JsonRow = transformedRow
+
 	logger.Debug(constants.MSG_ROW_TRANSFORM_SUCCESS)
-	sendEventsToDestination(transformationResult, constants.TRANSFORMED_ROW_REPORTS)
+
+	jsonContent, err := json.Marshal(transformationResult)
+	if err != nil {
+		logger.Error(constants.ERROR_CONVERTING_STRUCT_TO_JSON)
+	}
+
+	callback(models.RowCallbackParams{
+		IsFirst:              isFirst,
+		FileUUID:             params.FileUUID,
+		TransformationResult: string(jsonContent),
+		Destination:          params.Destination,
+		Transform:            true,
+	})
 }

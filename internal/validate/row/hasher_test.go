@@ -36,7 +36,7 @@ func TestComputeHash(t *testing.T) {
 		},
 	}
 	for _, test := range tests {
-		result := ComputeHash(test.row, string(test.delimiter))
+		result := ComputeHash(test.row, test.delimiter)
 		if result != test.expected {
 			t.Errorf("ActualHash(%v, %q) = %q; ExpectedHash %q", test.row, test.delimiter, result, test.expected)
 		}

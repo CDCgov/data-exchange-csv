@@ -8,10 +8,10 @@ import (
 	"github.com/CDCgov/data-exchange-csv/cmd/internal/constants"
 )
 
-func ComputeHash(row []string, delimiter string) string {
+func ComputeHash(row []string, delimiter rune) string {
 	separator := constants.COMMA
 
-	if delimiter == string(constants.TAB) {
+	if delimiter == constants.TAB {
 		separator = constants.TAB
 	}
 	concatenatedRow := strings.Join(row, string(separator))
