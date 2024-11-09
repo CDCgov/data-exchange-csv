@@ -83,7 +83,9 @@ Process the `CSV/TSV` file with optional `config.json` file:
     ```bash
     go test ./...
     ```
-    **Note:** If you want to see more detailed output you can add `-v` flag.
+    **Note:** 
+    To run the tests with coverage information, use the `-cover` flag. This will show the percentage of code covered by the tests.
+    If you would like more detailed output during the test execution, you can add `-v` flag for verbose logging.
 
 ## Future Enhancements
 - **Non-blocking validation/transformation**: Currently, the validation process is performed synchronously, which may introduce delays when processing large files. To address this, we are exploring the use of Go routines to parallelize the validation and transformation process. By leveraging concurrency, we aim to significantly improve performance and reduce processing time.
