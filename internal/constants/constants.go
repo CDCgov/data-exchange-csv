@@ -93,6 +93,19 @@ var (
 	UTF8Bom   = []byte{0xEF, 0xBB, 0xBF}
 	UTF8NoBom = []byte("Name, Role, Age")
 )
+
+type BenchmarkType int
+
+const (
+	CLI_PARSE_FLAGS_BENCHMARK BenchmarkType = iota
+	FILE_VALIDATION_BENCHMARK
+	SETUP_ENVIRONMENT_BENCHMARK
+	STORE_FILE_VALIDATION_BENCHMARK
+	ROW_VALIDATION_BENCHMARK
+	ROW_TRANSFORMATION_BENCHMARK
+	STORE_RESULTS_BENCHMARK
+)
+
 var Windows1252Map = map[rune]byte{
 	0x20AC: 0x80, // € (Euro sign)
 	0x201A: 0x82, // ‚ (Single low-9 quotation mark)
